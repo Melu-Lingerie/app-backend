@@ -1,4 +1,4 @@
-package ru.melulingerie.domain;
+package ru.melulingerie.domain.media;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

@@ -2,7 +2,7 @@ package ru.melulingerie.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import ru.melulingerie.domain.VideoEntity;
+import ru.melulingerie.domain.media.VideoEntity;
 
 /**
  * Repository interface for managing Video entities.

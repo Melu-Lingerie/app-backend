@@ -2,7 +2,7 @@ package ru.melulingerie.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import ru.melulingerie.domain.ProductMediaEntity;
+import ru.melulingerie.domain.media.ProductMediaEntity;
 
 import java.util.Optional;
 

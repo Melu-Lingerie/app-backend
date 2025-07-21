@@ -1,4 +1,4 @@
-package ru.melulingerie.domain;
+package ru.melulingerie.domain.media;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -11,17 +11,17 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 /**
- * Represents detailed information about an image media type.
- * This entity stores image-specific attributes like dimensions and title,
- * and is linked to a generic ProductMedia entry.
+ * Represents detailed information about a video media type.
+ * This entity stores video-specific attributes such as dimensions, duration,
+ * and description, and is linked to a generic ProductMedia entry.
  */
 @Getter
 @Setter
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "images")
-public class ImageEntity {
+@Table(name = "videos")
+public class VideoEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,11 +37,17 @@ public class ImageEntity {
     @Column(nullable = false)
     private int height;
 
+    @Column(nullable = false)
+    private int duration; // in seconds
+
     private String title;
 
+    @Lob
+    private String description;
+
     @Enumerated(EnumType.STRING)
-    @Column(name = "image_category")
-    private ImageCategory imageCategory = ImageCategory.PRODUCT;
+    @Column(name = "video_category")
+    private VideoCategory videoCategory = VideoCategory.DEMO;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -50,5 +56,4 @@ public class ImageEntity {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
 }

@@ -1,4 +1,4 @@
-package ru.melulingerie.domain;
+package ru.melulingerie.domain.media;
 
 /**
  * Defines the category of an image.
