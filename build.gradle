@@ -36,6 +36,10 @@ dependencies {
     // Development Tools
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+    
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
 
     // Testing
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
