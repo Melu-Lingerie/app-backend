@@ -45,3 +45,5 @@ out/
 
 # Windows
 Thumbs.db
+/users/gradlew
+/users/gradlew.bat
