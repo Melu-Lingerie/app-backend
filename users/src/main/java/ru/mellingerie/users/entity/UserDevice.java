@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -32,6 +33,30 @@ public class UserDevice {
     @Enumerated(EnumType.STRING)
     @Column(name = "device_type", nullable = false)
     private DeviceType deviceType;
+
+    @Column(name = "device_uuid", length = 255, unique = true)
+    private String deviceUuid;
+
+    @Column(name = "device_name", length = 100)
+    private String deviceName;
+
+    @Column(name = "os_version", length = 50)
+    private String osVersion;
+
+    @Column(name = "browser_name", length = 50)
+    private String browserName;
+
+    @Column(name = "browser_version", length = 50)
+    private String browserVersion;
+
+    @Column(name = "screen_width")
+    private Integer screenWidth;
+
+    @Column(name = "screen_height")
+    private Integer screenHeight;
+
+    @Column(name = "screen_density", precision = 4, scale = 2)
+    private BigDecimal screenDensity;
 
     @Column(name = "push_token", columnDefinition = "TEXT")
     private String pushToken;
