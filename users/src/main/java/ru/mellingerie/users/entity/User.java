@@ -34,12 +34,12 @@ public class User {
     @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
-    private UserRole role = UserRole.CUSTOMER;
+    private UserRole role = UserRole.GUEST;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private UserStatus status = UserStatus.PENDING_VERIFICATION;
+    private UserStatus status = UserStatus.UNREGISTERED;
 
     @Column(name = "avatar_url", columnDefinition = "TEXT")
     private String avatarUrl;
@@ -51,4 +51,8 @@ public class User {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+
+    //TODO добавить дату рождения
+
 } 
