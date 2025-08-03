@@ -1,15 +1,12 @@
 package ru.mellingerie.users.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Builder
@@ -34,8 +31,8 @@ public class UserDevice {
     @Column(name = "device_type", nullable = false)
     private DeviceType deviceType;
 
-    @Column(name = "device_uuid", length = 255, unique = true)
-    private String deviceUuid;
+    @Column(name = "device_uuid", columnDefinition = "UUID", unique = true)
+    private UUID deviceUuid;
 
     @Column(name = "device_name", length = 100)
     private String deviceName;
