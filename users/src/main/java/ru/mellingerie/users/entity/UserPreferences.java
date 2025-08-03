@@ -3,7 +3,9 @@ package ru.mellingerie.users.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 
@@ -36,9 +38,11 @@ public class UserPreferences {
     @JoinColumn(name = "preferred_style_id")
     private Style preferredStyle;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "favorite_colors", columnDefinition = "jsonb")
     private String favoriteColors;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "preferences_extended", columnDefinition = "jsonb")
     private String preferencesExtended;
 
