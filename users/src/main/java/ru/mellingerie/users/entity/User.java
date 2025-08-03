@@ -5,7 +5,10 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -31,6 +34,9 @@ public class User {
     @Column(name = "middle_name", length = 50)
     private String middleName;
 
+    @Column(name = "birth_date")
+    private LocalDate birthDate;
+
     @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
@@ -52,7 +58,11 @@ public class User {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @Builder.Default
+    private List<UserCredentials> userCredentials = new ArrayList<>();
 
-    //TODO добавить дату рождения
-
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @Builder.Default
+    private List<UserSession> userSessions = new ArrayList<>();
 }

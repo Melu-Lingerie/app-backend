@@ -34,7 +34,7 @@ public class UserCredentials {
     @Column(name = "identifier", length = 100, nullable = false, unique = true)
     private String identifier;
 
-    @Column(name = "password_hash", length = 255)
+    @Column(name = "password_hash")
     private String passwordHash;
 
     @Builder.Default
