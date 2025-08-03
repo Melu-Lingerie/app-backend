@@ -22,7 +22,7 @@ public class UserDevice {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_device_id_seq")
-    @SequenceGenerator(name = "user_device_id_seq", sequenceName = "user_device_id_seq", allocationSize = 1)
+    @SequenceGenerator(name = "user_device_id_seq", sequenceName = "user_device_id_seq", allocationSize = 10)
     @Column(name = "id")
     private Long id;
 
