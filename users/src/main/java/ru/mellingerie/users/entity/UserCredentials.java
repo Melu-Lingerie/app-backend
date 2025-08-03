@@ -37,8 +37,8 @@ public class UserCredentials {
     @Column(name = "password_hash", length = 255)
     private String passwordHash;
 
-    @Column(name = "is_verified", nullable = false)
     @Builder.Default
+    @Column(name = "is_verified", nullable = false)
     private Boolean isVerified = false;
 
     @Column(name = "verified_at")
@@ -50,11 +50,11 @@ public class UserCredentials {
     @Column(name = "last_failed_login_at")
     private LocalDateTime lastFailedLoginAt;
 
-    @Column(name = "failed_login_count", nullable = false)
     @Builder.Default
+    @Column(name = "failed_login_count", nullable = false)
     private Integer failedLoginCount = 0;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
     @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 } 
