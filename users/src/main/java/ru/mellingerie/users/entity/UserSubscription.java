@@ -38,8 +38,9 @@ public class UserSubscription {
     @Column(name = "status", nullable = false)
     private SubscriptionStatus status = SubscriptionStatus.ACTIVE;
 
-    @Column(name = "frequency", length = 16)
-    private String frequency;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "frequency")
+    private DeliveryFrequency frequency;
 
     @Column(name = "next_delivery_date")
     private LocalDate nextDeliveryDate;
