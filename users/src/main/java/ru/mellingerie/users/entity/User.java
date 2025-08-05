@@ -5,7 +5,10 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -31,15 +34,18 @@ public class User {
     @Column(name = "middle_name", length = 50)
     private String middleName;
 
+    @Column(name = "birth_date")
+    private LocalDate birthDate;
+
     @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
-    private UserRole role = UserRole.CUSTOMER;
+    private UserRole role = UserRole.GUEST;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private UserStatus status = UserStatus.PENDING_VERIFICATION;
+    private UserStatus status = UserStatus.UNREGISTERED;
 
     @Column(name = "avatar_url", columnDefinition = "TEXT")
     private String avatarUrl;
@@ -51,4 +57,12 @@ public class User {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-} 
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @Builder.Default
+    private List<UserCredentials> userCredentials = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @Builder.Default
+    private List<UserSession> userSessions = new ArrayList<>();
+}
