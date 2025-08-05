@@ -14,7 +14,9 @@ public interface CollectionProductRepository extends JpaRepository<CollectionPro
     List<CollectionProduct> findByCollectionId(Long collectionId);
     
     List<CollectionProduct> findByProductId(Long productId);
-    
+
+
+
     @Query("SELECT cp FROM CollectionProduct cp WHERE cp.collection.id = :collectionId")
     List<CollectionProduct> findByCollectionIdQuery(@Param("collectionId") Long collectionId);
     
