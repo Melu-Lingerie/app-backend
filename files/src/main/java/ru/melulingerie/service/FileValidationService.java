@@ -14,22 +14,21 @@ import java.util.stream.Stream;
 @Slf4j
 public class FileValidationService {
 
-    @Value("${file.upload.max-size:10485760}") // 10MB по умолчанию
+    @Value("${file.upload.max-size:10485760}")
     private long maxFileSize;
 
-    private static final Set<String> ALLOWED_IMAGE_TYPES = Set.of(
-            "image/jpeg", "image/png", "image/gif", "image/webp", "image/bmp"
-    );
-    private static final Set<String> ALLOWED_IMAGE_EXTENSIONS = Set.of(
-            ".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp"
-    );
+    @Value("${file.upload.allowed-image-types}")
+    private Set<String> allowedImageTypes;
 
-    private static final Set<String> ALLOWED_VIDEO_TYPES = Set.of(
-            "video/mp4", "video/webm", "video/ogg", "video/quicktime"
-    );
-    private static final Set<String> ALLOWED_VIDEO_EXTENSIONS = Set.of(
-            ".mp4", ".webm", ".ogg", ".mov"
-    );
+    @Value("${file.upload.allowed-image-extensions}")
+    private Set<String> allowedImageExtensions;
+
+    @Value("${file.upload.allowed-video-types}")
+    private Set<String> allowedVideoTypes;
+
+    @Value("${file.upload.allowed-video-extensions}")
+    private Set<String> allowedVideoExtensions;
+
 
     /**
      * Полная валидация одного файла
@@ -67,14 +66,14 @@ public class FileValidationService {
         String fileName = file.getOriginalFilename();
 
         if (contentType != null) {
-            if (ALLOWED_IMAGE_TYPES.contains(contentType.toLowerCase())) return MediaType.IMAGE;
-            if (ALLOWED_VIDEO_TYPES.contains(contentType.toLowerCase())) return MediaType.VIDEO;
+            if (allowedImageTypes.contains(contentType.toLowerCase())) return MediaType.IMAGE;
+            if (allowedVideoTypes.contains(contentType.toLowerCase())) return MediaType.VIDEO;
         }
 
         if (fileName != null) {
             String lowerFileName = fileName.toLowerCase();
-            if (ALLOWED_IMAGE_EXTENSIONS.stream().anyMatch(lowerFileName::endsWith)) return MediaType.IMAGE;
-            if (ALLOWED_VIDEO_EXTENSIONS.stream().anyMatch(lowerFileName::endsWith)) return MediaType.VIDEO;
+            if (allowedImageExtensions.stream().anyMatch(lowerFileName::endsWith)) return MediaType.IMAGE;
+            if (allowedVideoExtensions.stream().anyMatch(lowerFileName::endsWith)) return MediaType.VIDEO;
         }
 
         return null;
