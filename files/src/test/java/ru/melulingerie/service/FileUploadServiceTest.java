@@ -1,9 +1,9 @@
 package ru.melulingerie.service;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
@@ -30,29 +30,24 @@ class FileUploadServiceTest {
     @Mock
     private S3Client s3Client;
 
-    @Mock
-    private FileKeyGenerator fileKeyGenerator;
-
-    @InjectMocks
     private FileUploadService fileUploadService;
+
+    @BeforeEach
+    void setUp() {
+        FileKeyGenerator fileKeyGenerator = new FileKeyGenerator();
+
+        fileUploadService = new FileUploadService(s3Client, fileKeyGenerator);
+        ReflectionTestUtils.setField(fileUploadService, "bucketName", "test-bucket");
+        ReflectionTestUtils.setField(fileUploadService, "publicUrlTemplate", "https://%s.storage.yandexcloud.net/%s");
+    }
 
     /**
      * Проверяет успешную загрузку валидного файла.
      * Убеждается, что сервис возвращает корректный результат UploadResult с правильными
-     * именем бакета, ключом S3 и URL-адресом файла. Также проверяет, что
-     * генератор ключей и S3 клиент были вызваны.
+     * именем бакета, ключом S3 и URL-адресом файла. Также проверяет, что S3 клиент был вызван.
      */
     @Test
     void upload_ShouldSuccessfullyUploadFile_WhenValidFileProvided() throws IOException {
-        // Given
-        String bucketName = "test-bucket";
-        String publicUrlTemplate = "https://%s.storage.yandexcloud.net/%s";
-        String generatedKey = "uploads/2023/12/unique-file-name.jpg";
-        String expectedUrl = "https://test-bucket.storage.yandexcloud.net/uploads/2023/12/unique-file-name.jpg";
-
-        ReflectionTestUtils.setField(fileUploadService, "bucketName", bucketName);
-        ReflectionTestUtils.setField(fileUploadService, "publicUrlTemplate", publicUrlTemplate);
-
         byte[] fileContent = "test image content".getBytes();
         MockMultipartFile mockFile = new MockMultipartFile(
                 "file",
@@ -61,20 +56,18 @@ class FileUploadServiceTest {
                 fileContent
         );
 
-        when(fileKeyGenerator.generate("original-image.jpg")).thenReturn(generatedKey);
         when(s3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
                 .thenReturn(PutObjectResponse.builder().build());
 
-        // When
         UploadResult result = fileUploadService.upload(mockFile);
 
-        // Then
         assertThat(result).isNotNull();
-        assertThat(result.getBucket()).isEqualTo(bucketName);
-        assertThat(result.getKey()).isEqualTo(generatedKey);
-        assertThat(result.getUrl()).isEqualTo(expectedUrl);
+        assertThat(result.getBucket()).isEqualTo("test-bucket");
+        assertThat(result.getKey()).startsWith("original-image_"); // Реально сгенерированный ключ
+        assertThat(result.getKey()).endsWith(".jpg");
+        assertThat(result.getUrl()).startsWith("https://test-bucket.storage.yandexcloud.net/original-image_");
+        assertThat(result.getUrl()).endsWith(".jpg");
 
-        verify(fileKeyGenerator, times(1)).generate("original-image.jpg");
         verify(s3Client, times(1)).putObject(any(PutObjectRequest.class), any(RequestBody.class));
     }
 
@@ -85,13 +78,6 @@ class FileUploadServiceTest {
      */
     @Test
     void upload_ShouldCreateCorrectPutObjectRequest_WhenCalled() throws IOException {
-        // Given
-        String bucketName = "my-storage-bucket";
-        String generatedKey = "files/2023/document.pdf";
-
-        ReflectionTestUtils.setField(fileUploadService, "bucketName", bucketName);
-        ReflectionTestUtils.setField(fileUploadService, "publicUrlTemplate", "https://%s.storage.yandexcloud.net/%s");
-
         byte[] fileContent = "PDF document content".getBytes();
         MockMultipartFile mockFile = new MockMultipartFile(
                 "document",
@@ -100,20 +86,18 @@ class FileUploadServiceTest {
                 fileContent
         );
 
-        when(fileKeyGenerator.generate("important-doc.pdf")).thenReturn(generatedKey);
         when(s3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
                 .thenReturn(PutObjectResponse.builder().build());
 
-        // When
         fileUploadService.upload(mockFile);
 
-        // Then - используем ArgumentCaptor для проверки параметров
         ArgumentCaptor<PutObjectRequest> requestCaptor = ArgumentCaptor.forClass(PutObjectRequest.class);
         verify(s3Client, times(1)).putObject(requestCaptor.capture(), any(RequestBody.class));
 
         PutObjectRequest capturedRequest = requestCaptor.getValue();
-        assertThat(capturedRequest.bucket()).isEqualTo(bucketName);
-        assertThat(capturedRequest.key()).isEqualTo(generatedKey);
+        assertThat(capturedRequest.bucket()).isEqualTo("test-bucket");
+        assertThat(capturedRequest.key()).startsWith("important-doc_"); // Реально сгенерированный ключ
+        assertThat(capturedRequest.key()).endsWith(".pdf");
         assertThat(capturedRequest.contentType()).isEqualTo("application/pdf");
         assertThat(capturedRequest.contentLength()).isEqualTo((long) fileContent.length);
         assertThat(capturedRequest.acl()).isEqualTo(ObjectCannedACL.PUBLIC_READ);
@@ -126,12 +110,6 @@ class FileUploadServiceTest {
      */
     @Test
     void upload_ShouldHandleDifferentFileTypes_Correctly() throws IOException {
-        // Given
-        String bucketName = "media-bucket";
-        ReflectionTestUtils.setField(fileUploadService, "bucketName", bucketName);
-        ReflectionTestUtils.setField(fileUploadService, "publicUrlTemplate", "https://%s.storage.yandexcloud.net/%s");
-
-        // Test with video file
         MockMultipartFile videoFile = new MockMultipartFile(
                 "video",
                 "vacation.mp4",
@@ -139,17 +117,15 @@ class FileUploadServiceTest {
                 "video binary content".getBytes()
         );
 
-        String videoKey = "videos/vacation-processed.mp4";
-        when(fileKeyGenerator.generate("vacation.mp4")).thenReturn(videoKey);
         when(s3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
                 .thenReturn(PutObjectResponse.builder().build());
 
-        // When
         UploadResult result = fileUploadService.upload(videoFile);
 
-        // Then
-        assertThat(result.getKey()).isEqualTo(videoKey);
-        assertThat(result.getUrl()).contains("videos/vacation-processed.mp4");
+        assertThat(result.getKey()).startsWith("vacation_");
+        assertThat(result.getKey()).endsWith(".mp4");
+        assertThat(result.getUrl()).contains("vacation_");
+        assertThat(result.getUrl()).endsWith(".mp4");
 
         ArgumentCaptor<PutObjectRequest> requestCaptor = ArgumentCaptor.forClass(PutObjectRequest.class);
         verify(s3Client, times(1)).putObject(requestCaptor.capture(), any(RequestBody.class));
@@ -165,11 +141,7 @@ class FileUploadServiceTest {
      */
     @Test
     void upload_ShouldUseCustomUrlTemplate_WhenConfigured() throws IOException {
-        // Given
-        String bucketName = "custom-bucket";
         String customUrlTemplate = "https://cdn.example.com/%s/%s"; // Custom CDN template
-
-        ReflectionTestUtils.setField(fileUploadService, "bucketName", bucketName);
         ReflectionTestUtils.setField(fileUploadService, "publicUrlTemplate", customUrlTemplate);
 
         MockMultipartFile mockFile = new MockMultipartFile(
@@ -179,17 +151,13 @@ class FileUploadServiceTest {
                 "logo content".getBytes()
         );
 
-        String generatedKey = "assets/logo-2023.png";
-        when(fileKeyGenerator.generate("logo.png")).thenReturn(generatedKey);
         when(s3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
                 .thenReturn(PutObjectResponse.builder().build());
 
-        // When
         UploadResult result = fileUploadService.upload(mockFile);
 
-        // Then
-        String expectedCustomUrl = "https://cdn.example.com/custom-bucket/assets/logo-2023.png";
-        assertThat(result.getUrl()).isEqualTo(expectedCustomUrl);
+        assertThat(result.getUrl()).startsWith("https://cdn.example.com/test-bucket/logo_");
+        assertThat(result.getUrl()).endsWith(".png");
     }
 
     /**
@@ -199,20 +167,12 @@ class FileUploadServiceTest {
      */
     @Test
     void upload_ShouldThrowIOException_WhenFileInputStreamFails() throws IOException {
-        // Given
-        String bucketName = "test-bucket";
-        ReflectionTestUtils.setField(fileUploadService, "bucketName", bucketName);
-        ReflectionTestUtils.setField(fileUploadService, "publicUrlTemplate", "https://%s.storage.yandexcloud.net/%s");
-
         MultipartFile mockFile = mock(MultipartFile.class);
         when(mockFile.getOriginalFilename()).thenReturn("failing-file.jpg");
         when(mockFile.getContentType()).thenReturn("image/jpeg");
         when(mockFile.getSize()).thenReturn(1024L);
         when(mockFile.getInputStream()).thenThrow(new IOException("Failed to read file stream"));
 
-        when(fileKeyGenerator.generate("failing-file.jpg")).thenReturn("uploads/failing-file.jpg");
-
-        // When & Then
         assertThatThrownBy(() -> fileUploadService.upload(mockFile))
                 .isInstanceOf(IOException.class)
                 .hasMessageContaining("Failed to read file stream");
@@ -227,29 +187,21 @@ class FileUploadServiceTest {
      */
     @Test
     void upload_ShouldHandleEmptyFile_Correctly() throws IOException {
-        // Given
-        String bucketName = "empty-files-bucket";
-        ReflectionTestUtils.setField(fileUploadService, "bucketName", bucketName);
-        ReflectionTestUtils.setField(fileUploadService, "publicUrlTemplate", "https://%s.storage.yandexcloud.net/%s");
-
         MockMultipartFile emptyFile = new MockMultipartFile(
                 "empty",
                 "empty.txt",
                 "text/plain",
-                new byte[0] // Empty file
+                new byte[0]
         );
 
-        String emptyKey = "empty-files/empty.txt";
-        when(fileKeyGenerator.generate("empty.txt")).thenReturn(emptyKey);
         when(s3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
                 .thenReturn(PutObjectResponse.builder().build());
 
-        // When
         UploadResult result = fileUploadService.upload(emptyFile);
 
-        // Then
         assertThat(result).isNotNull();
-        assertThat(result.getKey()).isEqualTo(emptyKey);
+        assertThat(result.getKey()).startsWith("empty_");
+        assertThat(result.getKey()).endsWith(".txt");
 
         ArgumentCaptor<PutObjectRequest> requestCaptor = ArgumentCaptor.forClass(PutObjectRequest.class);
         verify(s3Client, times(1)).putObject(requestCaptor.capture(), any(RequestBody.class));
@@ -260,34 +212,26 @@ class FileUploadServiceTest {
 
     /**
      * Проверяет, что сервис корректно обрабатывает имена файлов, содержащие спецсимволы,
-     * пробелы и кириллицу. Убеждается, что генератор ключей вызывается с
-     * оригинальным именем файла.
+     * пробелы и кириллицу. Убеждается, что FileKeyGenerator обрабатывает имя файла.
      */
     @Test
     void upload_ShouldHandleSpecialCharactersInFilename_Correctly() throws IOException {
-        // Given
-        String bucketName = "special-chars-bucket";
-        ReflectionTestUtils.setField(fileUploadService, "bucketName", bucketName);
-        ReflectionTestUtils.setField(fileUploadService, "publicUrlTemplate", "https://%s.storage.yandexcloud.net/%s");
-
         MockMultipartFile fileWithSpecialChars = new MockMultipartFile(
                 "file",
-                "файл с пробелами & символами (1).jpg", // Cyrillic, spaces, special chars
+                "файл с пробелами & символами (1).jpg",
                 "image/jpeg",
                 "image content".getBytes()
         );
 
-        String processedKey = "images/processed-file-name.jpg";
-        when(fileKeyGenerator.generate("файл с пробелами & символами (1).jpg")).thenReturn(processedKey);
         when(s3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
                 .thenReturn(PutObjectResponse.builder().build());
 
-        // When
         UploadResult result = fileUploadService.upload(fileWithSpecialChars);
 
-        // Then
-        assertThat(result.getKey()).isEqualTo(processedKey);
-        verify(fileKeyGenerator, times(1)).generate("файл с пробелами & символами (1).jpg");
+        assertThat(result.getKey()).startsWith("_____");
+        assertThat(result.getKey()).contains("_");
+        assertThat(result.getKey()).endsWith(".jpg");
+        assertThat(result.getKey()).matches(".*_\\d{8}_\\d{6}_\\d{3}_[a-f0-9]{8}\\.jpg");
     }
 
     /**
@@ -297,11 +241,6 @@ class FileUploadServiceTest {
      */
     @Test
     void upload_ShouldPassCorrectRequestBodyToS3Client() throws IOException {
-        // Given
-        String bucketName = "request-body-test";
-        ReflectionTestUtils.setField(fileUploadService, "bucketName", bucketName);
-        ReflectionTestUtils.setField(fileUploadService, "publicUrlTemplate", "https://%s.storage.yandexcloud.net/%s");
-
         byte[] testContent = "specific test content for verification".getBytes();
         MockMultipartFile mockFile = new MockMultipartFile(
                 "testFile",
@@ -310,14 +249,11 @@ class FileUploadServiceTest {
                 testContent
         );
 
-        when(fileKeyGenerator.generate("test.txt")).thenReturn("test/test.txt");
         when(s3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
                 .thenReturn(PutObjectResponse.builder().build());
 
-        // When
         fileUploadService.upload(mockFile);
 
-        // Then
         ArgumentCaptor<RequestBody> requestBodyCaptor = ArgumentCaptor.forClass(RequestBody.class);
         verify(s3Client, times(1)).putObject(any(PutObjectRequest.class), requestBodyCaptor.capture());
 
@@ -326,17 +262,12 @@ class FileUploadServiceTest {
     }
 
     /**
-     * Проверяет, что FileKeyGenerator вызывается и генерирует правильный ключ для S3.
-     * Тест убеждается, что ключ, сгенерированный моком FileKeyGenerator,
-     * используется в итоговом запросе PutObjectRequest.
+     * Проверяет, что FileKeyGenerator генерирует правильный ключ для S3.
+     * Тест убеждается, что ключ имеет правильный формат и содержит оригинальное имя файла.
      */
     @Test
     void upload_ShouldGenerateCorrectS3Key_WhenCalled() throws IOException {
         // Given
-        String bucketName = "key-generation-test";
-        ReflectionTestUtils.setField(fileUploadService, "bucketName", bucketName);
-        ReflectionTestUtils.setField(fileUploadService, "publicUrlTemplate", "https://%s.storage.yandexcloud.net/%s");
-
         MockMultipartFile mockFile = new MockMultipartFile(
                 "file",
                 "test-document.pdf",
@@ -344,21 +275,17 @@ class FileUploadServiceTest {
                 "document content".getBytes()
         );
 
-        String expectedKey = "documents/2023/12/test-document-uuid.pdf";
-        when(fileKeyGenerator.generate("test-document.pdf")).thenReturn(expectedKey);
         when(s3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
                 .thenReturn(PutObjectResponse.builder().build());
 
-        // When
         fileUploadService.upload(mockFile);
-
-        // Then
-        verify(fileKeyGenerator, times(1)).generate("test-document.pdf");
 
         ArgumentCaptor<PutObjectRequest> requestCaptor = ArgumentCaptor.forClass(PutObjectRequest.class);
         verify(s3Client, times(1)).putObject(requestCaptor.capture(), any(RequestBody.class));
 
         PutObjectRequest capturedRequest = requestCaptor.getValue();
-        assertThat(capturedRequest.key()).isEqualTo(expectedKey);
+        assertThat(capturedRequest.key()).startsWith("test-document_");
+        assertThat(capturedRequest.key()).endsWith(".pdf");
+        assertThat(capturedRequest.key()).matches("test-document_\\d{8}_\\d{6}_\\d{3}_[a-f0-9]{8}\\.pdf");
     }
 }
