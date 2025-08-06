@@ -1,10 +1,12 @@
-package ru.mellingerie.products.entity;
+package ru.mellingerie.products.domain;
 
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+
+import java.util.List;
 
 @Entity
 @Table(name = "stylists")
@@ -32,4 +34,7 @@ public class Stylist {
     
     @Column(name = "is_active")
     private Boolean isActive = true;
+    
+    @OneToMany(mappedBy = "stylist", cascade = CascadeType.ALL)
+    private List<StylingRecommendation> stylingRecommendations;
 } 

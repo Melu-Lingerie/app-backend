@@ -1,7 +1,8 @@
-package ru.mellingerie.products.entity;
+package ru.mellingerie.products.domain;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
@@ -37,4 +38,7 @@ public class Category {
     
     @Column(name = "is_active")
     private Boolean isActive = true;
+    
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
+    private List<Product> products;
 } 

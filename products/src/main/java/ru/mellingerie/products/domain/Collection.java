@@ -1,4 +1,4 @@
-package ru.mellingerie.products.entity;
+package ru.mellingerie.products.domain;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -37,6 +37,14 @@ public class Collection {
     
     @Column(name = "sort_order")
     private Integer sortOrder = 0;
+    
+    @ManyToMany
+    @JoinTable(
+        name = "collection_products",
+        joinColumns = @JoinColumn(name = "collection_id"),
+        inverseJoinColumns = @JoinColumn(name = "product_id")
+    )
+    private List<Product> products;
     
     @OneToMany(mappedBy = "collection", cascade = CascadeType.ALL)
     private List<CollectionProduct> collectionProducts;

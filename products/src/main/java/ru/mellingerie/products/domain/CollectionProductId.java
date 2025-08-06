@@ -1,11 +1,10 @@
-package ru.mellingerie.products.entity;
+package ru.mellingerie.products.domain;
 
 import jakarta.persistence.Embeddable;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 
@@ -14,9 +13,8 @@ import java.io.Serializable;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode
-public class WishlistItemId implements Serializable {
+public class CollectionProductId implements Serializable {
     
-    private Long wishlistId;
+    private Long collectionId;
     private Long productId;
 } 

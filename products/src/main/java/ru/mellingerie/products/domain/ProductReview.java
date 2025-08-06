@@ -1,4 +1,4 @@
-package ru.mellingerie.products.entity;
+package ru.mellingerie.products.domain;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -21,13 +21,13 @@ public class ProductReview {
     private Long id;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
+    @JoinColumn(name = "product_id", nullable = false)
     private Product product;
     
     @Column(name = "user_id")
     private Long userId;
     
-    @Column(name = "rating")
+    @Column(name = "rating", nullable = false)
     private Integer rating;
     
     @Column(name = "review_text", columnDefinition = "TEXT")

@@ -1,4 +1,4 @@
-package ru.mellingerie.products.entity;
+package ru.mellingerie.products.domain;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "products")
@@ -54,6 +55,32 @@ public class Product {
     
     @Column(name = "is_active")
     private Boolean isActive = true;
+    
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ProductVariant> variants;
+    
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ProductImage> images;
+    
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ProductReview> reviews;
+    
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ProductPrice> prices;
+    
+    @ManyToMany(mappedBy = "products")
+    private List<Collection> collections;
+    
+    @ManyToMany(mappedBy = "products")
+    private List<StylingRecommendation> stylingRecommendations;
+    
+    @ManyToMany
+    @JoinTable(
+        name = "product_filter_values",
+        joinColumns = @JoinColumn(name = "product_id"),
+        inverseJoinColumns = @JoinColumn(name = "filter_value_id")
+    )
+    private List<FilterValue> filterValues;
     
     @PrePersist
     protected void onCreate() {

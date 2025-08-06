@@ -1,4 +1,4 @@
-package ru.mellingerie.products.entity;
+package ru.mellingerie.products.domain;
 
 import jakarta.persistence.*;
 import lombok.Getter;

@@ -1,4 +1,4 @@
-package ru.mellingerie.products.entity;
+package ru.mellingerie.products.domain;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -34,8 +34,16 @@ public class StylingRecommendation {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
     
+    @ManyToMany
+    @JoinTable(
+        name = "styling_recommendation_products",
+        joinColumns = @JoinColumn(name = "recommendation_id"),
+        inverseJoinColumns = @JoinColumn(name = "product_id")
+    )
+    private List<Product> products;
+    
     @OneToMany(mappedBy = "stylingRecommendation", cascade = CascadeType.ALL)
-    private List<StylingRecommendationProduct> recommendationProducts;
+    private List<StylingRecommendationProduct> stylingRecommendationProducts;
     
     @PrePersist
     protected void onCreate() {

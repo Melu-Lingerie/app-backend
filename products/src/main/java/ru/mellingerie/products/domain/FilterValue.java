@@ -1,10 +1,12 @@
-package ru.mellingerie.products.entity;
+package ru.mellingerie.products.domain;
 
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+
+import java.util.List;
 
 @Entity
 @Table(name = "filter_values")
@@ -19,7 +21,7 @@ public class FilterValue {
     private Long id;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "filter_id")
+    @JoinColumn(name = "filter_id", nullable = false)
     private Filter filter;
     
     @Column(name = "value", nullable = false, length = 100)
@@ -33,4 +35,7 @@ public class FilterValue {
     
     @Column(name = "sort_order")
     private Integer sortOrder = 0;
+    
+    @ManyToMany(mappedBy = "filterValues")
+    private List<Product> products;
 } 
