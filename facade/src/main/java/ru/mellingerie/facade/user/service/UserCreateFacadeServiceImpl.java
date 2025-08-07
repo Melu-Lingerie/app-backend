@@ -3,9 +3,10 @@ package ru.mellingerie.facade.user.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.mellingerie.facade.user.dto.UserCreateRequestDto;
-import ru.mellingerie.facade.user.dto.UserCreateResponseDto;
+import ru.mellingerie.facade.user.dto.UserCreateFacadeRequestDto;
+import ru.mellingerie.facade.user.dto.UserCreateFacadeResponseDto;
 import ru.mellingerie.facade.user.mapper.UserCreateRequestMapper;
 import ru.mellingerie.facade.user.mapper.UserMapper;
 import ru.mellingerie.users.dto.UserDeviceRequestDto;
@@ -15,6 +16,7 @@ import ru.mellingerie.users.service.UserCreateService;
 import ru.mellingerie.users.service.UserSessionCreateService;
 
 @Slf4j
+@Service
 @RequiredArgsConstructor
 public class UserCreateFacadeServiceImpl implements UserCreateFacadeService {
     
@@ -25,7 +27,7 @@ public class UserCreateFacadeServiceImpl implements UserCreateFacadeService {
 
     @Override
     @Transactional
-    public UserCreateResponseDto createUser(UserCreateRequestDto request) {
+    public UserCreateFacadeResponseDto createUser(UserCreateFacadeRequestDto request) {
         log.info("Создание пользователя-гостя с sessionId: {}", request.getSessionId());
 
         User user = userCreateService.createGuestUser();
@@ -39,7 +41,7 @@ public class UserCreateFacadeServiceImpl implements UserCreateFacadeService {
                 request.getIpAddress()
         );
 
-        UserCreateResponseDto response = userMapper.toUserCreateResponseDto(user);
+        UserCreateFacadeResponseDto response = userMapper.toUserCreateResponseDto(user);
         response.setSessionId(userSession.getSessionId());
 
         log.info("Пользователь-гость успешно создан с ID: {}", user.getId());

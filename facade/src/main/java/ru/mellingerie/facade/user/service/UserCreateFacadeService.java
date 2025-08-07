@@ -1,9 +1,9 @@
 package ru.mellingerie.facade.user.service;
 
-import ru.mellingerie.facade.user.dto.UserCreateRequestDto;
-import ru.mellingerie.facade.user.dto.UserCreateResponseDto;
+import ru.mellingerie.facade.user.dto.UserCreateFacadeRequestDto;
+import ru.mellingerie.facade.user.dto.UserCreateFacadeResponseDto;
 
 public interface UserCreateFacadeService {
 
-   UserCreateResponseDto createUser(UserCreateRequestDto request);
+   UserCreateFacadeResponseDto createUser(UserCreateFacadeRequestDto request);
 }

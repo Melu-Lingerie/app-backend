@@ -3,7 +3,7 @@ package ru.mellingerie.facade.user.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import ru.mellingerie.facade.config.MapStructConfig;
-import ru.mellingerie.facade.user.dto.UserCreateRequestDto;
+import ru.mellingerie.facade.user.dto.UserCreateFacadeRequestDto;
 import ru.mellingerie.users.dto.UserDeviceRequestDto;
 
 
@@ -23,5 +23,5 @@ public interface UserCreateRequestMapper {
     @Mapping(target = "pushToken", source = "userDevice.pushToken")
     @Mapping(target = "lastSeenAt", source = "userDevice.lastSeenAt")
     @Mapping(target = "createdAt", source = "userDevice.createdAt")
-    UserDeviceRequestDto toUserDeviceRequestDto(UserCreateRequestDto request);
+    UserDeviceRequestDto toUserDeviceRequestDto(UserCreateFacadeRequestDto request);
 } 

@@ -4,17 +4,17 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import ru.mellingerie.facade.config.MapStructConfig;
-import ru.mellingerie.facade.user.dto.UserDeviceDto;
+import ru.mellingerie.facade.user.dto.UserDeviceFacadeDto;
 import ru.mellingerie.users.dto.UserDeviceRequestDto;
 
 @Mapper(config = MapStructConfig.class)
 public interface UserDeviceMapper {
     
     @Mapping(target = "deviceType", source = "deviceType", qualifiedByName = "mapDeviceType")
-    UserDeviceRequestDto toUserDeviceRequestDto(UserDeviceDto userDeviceDto);
+    UserDeviceRequestDto toUserDeviceRequestDto(UserDeviceFacadeDto userDeviceFacadeDto);
     
     @Named("mapDeviceType")
-    default UserDeviceRequestDto.DeviceTypeRequestDto mapDeviceType(UserDeviceDto.DeviceTypeDto deviceTypeDto) {
+    default UserDeviceRequestDto.DeviceTypeRequestDto mapDeviceType(UserDeviceFacadeDto.DeviceTypeDto deviceTypeDto) {
         if (deviceTypeDto == null) {
             return null;
         }
