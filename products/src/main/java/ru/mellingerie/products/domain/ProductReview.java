@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 public class ProductReview {
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
     
     @ManyToOne(fetch = FetchType.LAZY)
@@ -32,7 +32,8 @@ public class ProductReview {
     
     @Column(name = "review_text", columnDefinition = "TEXT")
     private String reviewText;
-    
+
+    //todo о чем поле?
     @Column(name = "reviewer_name", length = 100)
     private String reviewerName;
     

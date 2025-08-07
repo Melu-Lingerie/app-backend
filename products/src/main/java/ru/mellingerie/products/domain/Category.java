@@ -17,7 +17,7 @@ import java.util.List;
 public class Category {
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
     
     @Column(name = "name", nullable = false, length = 100)

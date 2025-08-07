@@ -15,7 +15,7 @@ import lombok.AllArgsConstructor;
 public class ProductImage {
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
     
     @ManyToOne(fetch = FetchType.LAZY)
@@ -24,7 +24,8 @@ public class ProductImage {
     
     @Column(name = "image_url", nullable = false, length = 500)
     private String imageUrl;
-    
+
+    //todo о чем поле?
     @Column(name = "alt_text", length = 255)
     private String altText;
     

@@ -17,7 +17,7 @@ import java.math.BigDecimal;
 public class ProductVariant {
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
     
     @ManyToOne(fetch = FetchType.LAZY)
@@ -35,7 +35,8 @@ public class ProductVariant {
     
     @Column(name = "stock_quantity")
     private Integer stockQuantity = 0;
-    
+
+    //todo возможно заменить на порудукт прайс
     @Column(name = "additional_price", precision = 10, scale = 2)
     private BigDecimal additionalPrice = BigDecimal.ZERO;
     

@@ -18,9 +18,10 @@ import java.time.LocalDateTime;
 public class ProductPrice {
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
-    
+
+    //todo как узнать к какому конкретно варианта товару цена относится?
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;

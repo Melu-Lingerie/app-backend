@@ -17,7 +17,7 @@ import java.util.List;
 public class Filter {
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
     
     @Column(name = "name", nullable = false, length = 50)
@@ -25,7 +25,7 @@ public class Filter {
     
     @Enumerated(EnumType.STRING)
     @Column(name = "filter_type", nullable = false)
-    private FilterType filterType;
+    private Type type;
     
     @Column(name = "sort_order")
     private Integer sortOrder = 0;
@@ -33,7 +33,7 @@ public class Filter {
     @OneToMany(mappedBy = "filter", cascade = CascadeType.ALL)
     private List<FilterValue> filterValues;
     
-    public enum FilterType {
+    public enum Type {
         COLOR, SIZE, CATEGORY, MATERIAL, STYLE
     }
 } 
