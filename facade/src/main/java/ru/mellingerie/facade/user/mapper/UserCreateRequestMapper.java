@@ -10,7 +10,6 @@ import ru.mellingerie.users.dto.UserDeviceRequestDto;
 @Mapper(config = MapStructConfig.class, uses = {UserDeviceMapper.class})
 public interface UserCreateRequestMapper {
 
-    @Mapping(target = "id", source = "userDevice.id")
     @Mapping(target = "deviceType", source = "userDevice.deviceType", qualifiedByName = "mapDeviceType")
     @Mapping(target = "deviceUuid", source = "userDevice.deviceUuid")
     @Mapping(target = "deviceName", source = "userDevice.deviceName")
@@ -22,6 +21,5 @@ public interface UserCreateRequestMapper {
     @Mapping(target = "screenDensity", source = "userDevice.screenDensity")
     @Mapping(target = "pushToken", source = "userDevice.pushToken")
     @Mapping(target = "lastSeenAt", source = "userDevice.lastSeenAt")
-    @Mapping(target = "createdAt", source = "userDevice.createdAt")
     UserDeviceRequestDto toUserDeviceRequestDto(UserCreateFacadeRequestDto request);
 } 
