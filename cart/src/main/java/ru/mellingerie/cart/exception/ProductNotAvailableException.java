@@ -9,8 +9,4 @@ public class ProductNotAvailableException extends CartException {
         super(String.format("Product variant not available. ProductId: %d, VariantId: %d", 
             productId, variantId));
     }
-    
-    public ProductNotAvailableException(String message) {
-        super(message);
-    }
 }

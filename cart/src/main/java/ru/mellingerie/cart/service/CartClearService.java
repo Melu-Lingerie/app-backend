@@ -34,7 +34,7 @@ public class CartClearService {
                             userId,
                             cart.getId(),
                             (int) itemsRemoved,
-                            null, // totalValueRemoved - не рассчитывается в текущей логике
+                            null,
                             "Cart successfully cleared",
                             LocalDateTime.now(),
                             "SUCCESS"
@@ -42,9 +42,9 @@ public class CartClearService {
                 })
                 .orElseGet(() -> new ClearCartResponse(
                         userId,
-                        null, // cartId
+                        null,
                         0,
-                        null, // totalValueRemoved
+                        null,
                         "No active cart found for user",
                         LocalDateTime.now(),
                         "NO_CART"

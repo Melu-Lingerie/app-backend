@@ -15,16 +15,23 @@ import ru.mellingerie.cart.service.*;
 public class CartController {
 
     private final CartCreateService cartCreateService;
+    private final CartItemAddService cartItemAddService;
     private final CartQueryService cartQueryService;
     private final CartItemQuantityUpdateService cartItemQuantityUpdateService;
     private final CartItemRemoveService cartItemRemoveService;
     private final CartClearService cartClearService;
 
+    @PostMapping
+    public ResponseEntity<CreateCartResponse> createCart(@RequestHeader("X-User-Id") Long userId) {
+        CreateCartResponse response = cartCreateService.createCart(userId);
+        return ResponseEntity.status(response.isNewCart() ? 201 : 200).body(response);
+    }
+
     @PostMapping("/items")
-    public ResponseEntity<AddToCartResponse> addToCart(
+    public ResponseEntity<AddToCartResponse> addCartItemToCart(
             @RequestHeader("X-User-Id") Long userId,
             @Valid @RequestBody AddToCartRequest request) {
-        AddToCartResponse response = cartCreateService.addToCart(userId, request);
+        AddToCartResponse response = cartItemAddService.addCartItemToCart(userId, request);
         return ResponseEntity.ok(response);
     }
 
