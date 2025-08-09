@@ -54,8 +54,9 @@ public class UserSession {
 
     @PrePersist
     protected void onCreate() {
-        this.lastActivityAt = LocalDateTime.now();
-        this.expiresAt = this.createdAt.plusHours(24);
+        LocalDateTime now = LocalDateTime.now();
+        this.lastActivityAt = now;
+        this.expiresAt = now.plusHours(24);
     }
 
     @PreUpdate

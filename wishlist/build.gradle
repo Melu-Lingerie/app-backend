@@ -13,46 +13,48 @@ java {
     }
 }
 
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
-    }
-}
-
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    // --- Spring ---
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
-    // --- AWS S3 ---
-    implementation platform('software.amazon.awssdk:bom:2.25.43')
-    implementation 'software.amazon.awssdk:s3'
-
-    // --- Lombok ---
+    // Lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    // --- Utility media ---
-    implementation("com.drewnoakes:metadata-extractor:2.19.0")
-
-    // --- Database ---
     runtimeOnly 'org.postgresql:postgresql'
-
-    // --- Testing ---
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-
-    // --- Internal modules ---
     implementation project(':exceptions')
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
 }
 
+group = 'ru.mellingerie'
+version = '0.0.1-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    useJUnitPlatform()
+}
+
 bootJar {
     enabled = false
+}
+
+jar {
+    enabled = true
 }
