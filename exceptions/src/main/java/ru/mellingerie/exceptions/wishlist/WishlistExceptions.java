@@ -1,5 +1,8 @@
-package ru.mellingerie.wishlist.exception;
+package ru.mellingerie.exceptions.wishlist;
 
+/**
+ * Shared wishlist exceptions to be used across modules.
+ */
 public final class WishlistExceptions {
     private WishlistExceptions() {}
 
@@ -15,8 +18,10 @@ public final class WishlistExceptions {
         }
     }
 
-    public static class InvalidIdException extends RuntimeException {
-        public InvalidIdException(Long id) { super("Invalid id: " + id); }
+    public static class WishListInvalidIdException extends RuntimeException {
+        public WishListInvalidIdException(Long id) {
+            super("Invalid id: " + id);
+        }
     }
 
     public static class WishlistCapacityExceededException extends RuntimeException {

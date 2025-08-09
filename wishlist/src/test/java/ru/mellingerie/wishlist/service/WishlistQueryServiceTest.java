@@ -4,11 +4,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+import ru.mellingerie.exceptions.wishlist.WishlistExceptions;
 import ru.mellingerie.wishlist.entity.Wishlist;
 import ru.mellingerie.wishlist.entity.WishlistItem;
-import ru.mellingerie.wishlist.exception.WishlistExceptions.InvalidIdException;
 import ru.mellingerie.wishlist.model.WishlistModel;
 import ru.mellingerie.wishlist.repository.WishlistItemRepository;
 import ru.mellingerie.wishlist.repository.WishlistRepository;
@@ -37,8 +37,8 @@ class WishlistQueryServiceTest {
 
     @Test
     void getWishlist_throwsOnInvalidUserId() {
-        assertThrows(InvalidIdException.class, () -> service.getWishlist(0L));
-        assertThrows(InvalidIdException.class, () -> service.getWishlist(null));
+        assertThrows(WishlistExceptions.WishListInvalidIdException.class, () -> service.getWishlist(0L));
+        assertThrows(WishlistExceptions.WishListInvalidIdException.class, () -> service.getWishlist(null));
         verifyNoInteractions(wishlistItemRepository);
     }
 

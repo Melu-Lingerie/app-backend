@@ -4,12 +4,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+import ru.mellingerie.exceptions.wishlist.WishlistExceptions;
 import ru.mellingerie.wishlist.entity.Wishlist;
 import ru.mellingerie.wishlist.entity.WishlistItem;
-import ru.mellingerie.wishlist.exception.WishlistExceptions.InvalidIdException;
-import ru.mellingerie.wishlist.exception.WishlistExceptions.WishlistItemNotFoundException;
 import ru.mellingerie.wishlist.repository.WishlistItemRepository;
 import ru.mellingerie.wishlist.repository.WishlistRepository;
 
@@ -36,10 +35,10 @@ class WishlistItemRemoveServiceTest {
 
     @Test
     void remove_throwsOnInvalidIds() {
-        assertThrows(InvalidIdException.class, () -> service.remove(null, 1L));
-        assertThrows(InvalidIdException.class, () -> service.remove(1L, null));
-        assertThrows(InvalidIdException.class, () -> service.remove(0L, 1L));
-        assertThrows(InvalidIdException.class, () -> service.remove(1L, 0L));
+        assertThrows(WishlistExceptions.WishListInvalidIdException.class, () -> service.remove(null, 1L));
+        assertThrows(WishlistExceptions.WishListInvalidIdException.class, () -> service.remove(1L, null));
+        assertThrows(WishlistExceptions.WishListInvalidIdException.class, () -> service.remove(0L, 1L));
+        assertThrows(WishlistExceptions.WishListInvalidIdException.class, () -> service.remove(1L, 0L));
         verifyNoInteractions(wishlistItemRepository);
     }
 
@@ -72,7 +71,7 @@ class WishlistItemRemoveServiceTest {
 
         when(wishlistItemRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-        assertThrows(WishlistItemNotFoundException.class, () -> service.remove(userId, itemId));
+        assertThrows(WishlistExceptions.WishlistItemNotFoundException.class, () -> service.remove(userId, itemId));
     }
 }
 

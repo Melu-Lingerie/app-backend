@@ -3,7 +3,7 @@ package ru.mellingerie.wishlist.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.mellingerie.wishlist.exception.WishlistExceptions.InvalidIdException;
+import ru.mellingerie.exceptions.wishlist.WishlistExceptions;
 import ru.mellingerie.wishlist.repository.WishlistItemRepository;
 import ru.mellingerie.wishlist.repository.WishlistRepository;
 
@@ -19,7 +19,7 @@ public class WishlistClearService {
     public void clear(Long userId) {
         validationService.validatePositiveIdOrThrow(userId);
         Long wishlistId = wishlistRepository.findByUserId(userId)
-                .orElseThrow(() -> new InvalidIdException(userId))
+                .orElseThrow(() -> new WishlistExceptions.WishListInvalidIdException(userId))
                 .getId();
         wishlistItemRepository.deleteAllByWishlistId(wishlistId);
     }

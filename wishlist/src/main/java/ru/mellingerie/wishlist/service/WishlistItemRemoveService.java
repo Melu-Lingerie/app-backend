@@ -3,9 +3,8 @@ package ru.mellingerie.wishlist.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.mellingerie.exceptions.wishlist.WishlistExceptions;
 import ru.mellingerie.wishlist.entity.Wishlist;
-import ru.mellingerie.wishlist.exception.WishlistExceptions.InvalidIdException;
-import ru.mellingerie.wishlist.exception.WishlistExceptions.WishlistItemNotFoundException;
 import ru.mellingerie.wishlist.repository.WishlistItemRepository;
 import ru.mellingerie.wishlist.repository.WishlistRepository;
 
@@ -22,7 +21,7 @@ public class WishlistItemRemoveService {
         validationService.validatePositiveIdOrThrow(itemId);
         validationService.validatePositiveIdOrThrow(userId);
         Wishlist wishlist = wishlistRepository.findByUserId(userId)
-                .orElseThrow(() -> new InvalidIdException(userId));
+                .orElseThrow(() -> new WishlistExceptions.WishListInvalidIdException(userId));
         var entity = wishlistItemRepository.findById(itemId).orElse(null);
         entity = validationService.requireOwnedByWishlist(entity, wishlist.getId(), itemId);
         wishlistItemRepository.delete(entity);

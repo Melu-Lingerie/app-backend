@@ -2,13 +2,11 @@ package ru.mellingerie.facade.wishlist.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.mellingerie.facade.wishlist.dto.*;
+import ru.mellingerie.exceptions.wishlist.WishlistExceptions;
+import ru.mellingerie.facade.wishlist.dto.AddToWishlistRequestDto;
+import ru.mellingerie.facade.wishlist.dto.AddToWishlistResponseDto;
+import ru.mellingerie.facade.wishlist.dto.WishlistResponseDto;
 import ru.mellingerie.facade.wishlist.mapper.WishlistFacadeMapper;
-import ru.mellingerie.facade.wishlist.exception.WishlistFacadeExceptions;
-import ru.mellingerie.wishlist.exception.WishlistExceptions.InvalidIdException;
-import ru.mellingerie.wishlist.exception.WishlistExceptions.WishlistItemDuplicateException;
-import ru.mellingerie.wishlist.exception.WishlistExceptions.WishlistItemNotFoundException;
-import ru.mellingerie.wishlist.exception.WishlistExceptions.WishlistCapacityExceededException;
 import ru.mellingerie.wishlist.service.WishlistClearService;
 import ru.mellingerie.wishlist.service.WishlistItemAddService;
 import ru.mellingerie.wishlist.service.WishlistItemRemoveService;
@@ -27,8 +25,8 @@ public class WishlistFacadeServiceImpl implements WishlistFacadeService {
     public WishlistResponseDto getWishlist(Long userId) {
         try {
             return mapper.toDto(wishlistQueryService.getWishlist(userId));
-        } catch (InvalidIdException e) {
-            throw new WishlistFacadeExceptions.InvalidIdException(userId);
+        } catch (WishlistExceptions.WishListInvalidIdException e) {
+            throw new WishlistExceptions.WishListInvalidIdException(userId);
         }
     }
 
@@ -36,12 +34,14 @@ public class WishlistFacadeServiceImpl implements WishlistFacadeService {
     public AddToWishlistResponseDto add(Long userId, AddToWishlistRequestDto request) {
         try {
             return mapper.toDto(wishlistItemAddService.add(userId, mapper.toCore(request)));
-        } catch (InvalidIdException e) {
-            throw new WishlistFacadeExceptions.InvalidIdException(userId);
-        } catch (WishlistItemDuplicateException e) {
-            throw new WishlistItemDuplicateException(request.productId(), request.variantId());
-        } catch (WishlistCapacityExceededException e) {
-            throw new WishlistFacadeExceptions.WishlistCapacityExceededException();
+        } catch (WishlistExceptions.WishListInvalidIdException e) {
+            throw new WishlistExceptions.WishListInvalidIdException(userId);
+        } catch (WishlistExceptions.WishlistItemDuplicateException e) {
+            throw new ru.mellingerie.exceptions.wishlist.WishlistExceptions.WishlistItemDuplicateException(
+                    request.productId(), request.variantId()
+            );
+        } catch (WishlistExceptions.WishlistCapacityExceededException e) {
+            throw new WishlistExceptions.WishlistCapacityExceededException(200);
         }
     }
 
@@ -49,10 +49,10 @@ public class WishlistFacadeServiceImpl implements WishlistFacadeService {
     public void remove(Long userId, Long itemId) {
         try {
             wishlistItemRemoveService.remove(userId, itemId);
-        } catch (InvalidIdException e) {
-            throw new WishlistFacadeExceptions.InvalidIdException(itemId);
-        } catch (WishlistItemNotFoundException e) {
-            throw new WishlistFacadeExceptions.WishlistItemNotFoundException(itemId);
+        } catch (WishlistExceptions.WishListInvalidIdException e) {
+            throw new WishlistExceptions.WishListInvalidIdException(itemId);
+        } catch (WishlistExceptions.WishlistItemNotFoundException e) {
+            throw new ru.mellingerie.exceptions.wishlist.WishlistExceptions.WishlistItemNotFoundException(itemId);
         }
     }
 
@@ -60,8 +60,8 @@ public class WishlistFacadeServiceImpl implements WishlistFacadeService {
     public void clear(Long userId) {
         try {
             wishlistClearService.clear(userId);
-        } catch (InvalidIdException e) {
-            throw new WishlistFacadeExceptions.InvalidIdException(userId);
+        } catch (WishlistExceptions.WishListInvalidIdException e) {
+            throw new WishlistExceptions.WishListInvalidIdException(userId);
         }
     }
 }

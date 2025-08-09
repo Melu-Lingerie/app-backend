@@ -4,10 +4,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
+import ru.mellingerie.exceptions.wishlist.WishlistExceptions;
 import ru.mellingerie.wishlist.entity.Wishlist;
-import ru.mellingerie.wishlist.exception.WishlistExceptions.InvalidIdException;
 import ru.mellingerie.wishlist.repository.WishlistItemRepository;
 import ru.mellingerie.wishlist.repository.WishlistRepository;
 
@@ -33,8 +33,8 @@ class WishlistClearServiceTest {
 
     @Test
     void clear_throwsOnInvalidUserId() {
-        assertThrows(InvalidIdException.class, () -> service.clear(null));
-        assertThrows(InvalidIdException.class, () -> service.clear(0L));
+        assertThrows(WishlistExceptions.WishListInvalidIdException.class, () -> service.clear(null));
+        assertThrows(WishlistExceptions.WishListInvalidIdException.class, () -> service.clear(0L));
         verifyNoInteractions(wishlistItemRepository);
     }
 

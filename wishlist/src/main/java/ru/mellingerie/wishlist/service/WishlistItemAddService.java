@@ -3,11 +3,9 @@ package ru.mellingerie.wishlist.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.mellingerie.exceptions.wishlist.WishlistExceptions;
 import ru.mellingerie.wishlist.entity.Wishlist;
 import ru.mellingerie.wishlist.entity.WishlistItem;
-import ru.mellingerie.wishlist.exception.WishlistExceptions.InvalidIdException;
-import ru.mellingerie.wishlist.exception.WishlistExceptions.WishlistCapacityExceededException;
-import ru.mellingerie.wishlist.exception.WishlistExceptions.WishlistItemDuplicateException;
 import ru.mellingerie.wishlist.model.AddToWishlistModel;
 import ru.mellingerie.wishlist.model.AddToWishlistResponseModel;
 import ru.mellingerie.wishlist.repository.WishlistItemRepository;
@@ -30,7 +28,7 @@ public class WishlistItemAddService {
         validationService.validatePositiveIdOrThrow(userId);
 
         Wishlist wishlist = wishlistRepository.findByUserId(userId)
-                .orElseThrow(() -> new InvalidIdException(userId));
+                .orElseThrow(() -> new WishlistExceptions.WishListInvalidIdException(userId));
         Long wishlistId = wishlist.getId();
 
         int currentCount = wishlistItemRepository.findAllByWishlistId(wishlistId).size();
