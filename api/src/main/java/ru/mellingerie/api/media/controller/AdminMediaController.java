@@ -17,7 +17,7 @@ import java.util.UUID;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-public class AdminMediaUploadController implements AdminMediaResource {
+public class AdminMediaController implements AdminMediaResource {
 
     private final MediaUploadFacadeService mediaUploadFacadeService;
 
@@ -32,7 +32,6 @@ public class AdminMediaUploadController implements AdminMediaResource {
     ) {
         log.info("Получен запрос на загрузку медиа с requestId {}", requestId);
 
-        String adminUser = "admin_user_placeholder";
 
         UploadFacadeRequest request = UploadFacadeRequest.builder()
                 .file(file)
@@ -41,7 +40,7 @@ public class AdminMediaUploadController implements AdminMediaResource {
                 .entityType(entityType)
                 .sortOrder(sortOrder)
                 .isPrimary(isPrimary)
-                .uploadedBy(adminUser)
+                .uploadedBy("")
                 .build();
 
         MediaUploadFacadeResponse response = mediaUploadFacadeService.uploadAndSaveMedia(request);
