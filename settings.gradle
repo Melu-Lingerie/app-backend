@@ -8,3 +8,6 @@ include 'facade'
 
 include 'media'
 include 'media:internal'
+include 'wishlist'
+include 'wishlist'
+include 'wishlist:internal'
