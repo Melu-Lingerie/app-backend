@@ -26,6 +26,7 @@ repositories {
 dependencies {
     // --- Project modules ---
     implementation project(':media')
+    implementation project(':wishlist')
 
     // --- Spring ---
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'

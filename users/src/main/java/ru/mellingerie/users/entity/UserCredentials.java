@@ -3,6 +3,7 @@ package ru.mellingerie.users.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import ru.melulingerie.users.entity.IdentityType;
 
 import java.time.LocalDateTime;
 
