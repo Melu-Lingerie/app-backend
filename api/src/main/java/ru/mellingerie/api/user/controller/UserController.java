@@ -5,9 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
-import ru.mellingerie.facade.user.dto.UserCreateFacadeRequestDto;
-import ru.mellingerie.facade.user.dto.UserCreateFacadeResponseDto;
-import ru.mellingerie.facade.user.service.UserCreateFacadeService;
+import ru.melulingerie.facade.user.dto.UserCreateFacadeRequestDto;
+import ru.melulingerie.facade.user.dto.UserCreateFacadeResponseDto;
+import ru.melulingerie.facade.user.service.UserCreateFacadeService;
 import ru.mellingerie.api.user.resource.UserResource;
 
 @Slf4j

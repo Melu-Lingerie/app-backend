@@ -3,9 +3,8 @@ package ru.mellingerie.api.media.resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.mellingerie.facade.media.dto.CustomMultipartFileFacadeDto;
-import ru.mellingerie.facade.media.dto.EntityTypeFacadeDto;
-import ru.mellingerie.facade.media.dto.MediaUploadFacadeResponse;
+import ru.melulingerie.facade.media.dto.CustomMultipartFileFacadeDto;
+import ru.melulingerie.facade.media.dto.MediaFacadeResponseDto;
 
 import java.util.UUID;
 
@@ -13,10 +12,8 @@ import java.util.UUID;
 public interface AdminMediaResource {
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<MediaUploadFacadeResponse> uploadMedia(
+    ResponseEntity<MediaFacadeResponseDto> uploadMedia(
             @RequestParam("file") CustomMultipartFileFacadeDto file,
-            @RequestParam("entity_id") Long entityId,
-            @RequestParam("entity_type") EntityTypeFacadeDto entityType,
             @RequestHeader("X-Request-Id") UUID requestId,
             @RequestParam(defaultValue = "0", name = "sort_order") int sortOrder,
             @RequestParam(defaultValue = "false", name = "is_primary") boolean isPrimary

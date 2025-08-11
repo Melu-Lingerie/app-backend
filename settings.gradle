@@ -1,6 +1,9 @@
 rootProject.name = 'app-backend'
 
-include 'users'
-include 'files'
-include 'facade'
 include 'api'
+include 'users'
+
+include 'facade'
+
+include 'media'
+include 'media:internal'
