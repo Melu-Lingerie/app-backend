@@ -26,10 +26,4 @@ public class Video {
 
     private int duration;
 
-    private String title;
-    @Column(columnDefinition = "TEXT")
-    private String description;
-
-    @Enumerated(EnumType.STRING)
-    private VideoCategory videoCategory;
 }

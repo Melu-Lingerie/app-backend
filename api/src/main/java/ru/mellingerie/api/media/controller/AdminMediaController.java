@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.mellingerie.api.media.resource.AdminMediaResource;
 import ru.melulingerie.facade.media.dto.CustomMultipartFileFacadeDto;
 import ru.melulingerie.facade.media.dto.MediaFacadeRequestDto;
-import ru.melulingerie.facade.media.dto.MediaFacadeResponseDto;
-import ru.melulingerie.facade.media.service.MediaFacadeApi;
+import ru.melulingerie.facade.media.dto.MediaApiResponseDto;
+import ru.melulingerie.facade.media.api.MediaFacadeApi;
 
 import java.util.UUID;
 
@@ -21,7 +21,7 @@ public class AdminMediaController implements AdminMediaResource {
     private final MediaFacadeApi mediaFacadeApi;
 
     @Override
-    public ResponseEntity<MediaFacadeResponseDto> uploadMedia(
+    public ResponseEntity<MediaApiResponseDto> uploadMedia(
             CustomMultipartFileFacadeDto file,
             UUID requestId,
             int sortOrder,
@@ -37,7 +37,7 @@ public class AdminMediaController implements AdminMediaResource {
                 .uploadedBy("")
                 .build();
 
-        MediaFacadeResponseDto response = mediaFacadeApi.uploadMedia(request);
+        MediaApiResponseDto response = mediaFacadeApi.uploadMedia(request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 }

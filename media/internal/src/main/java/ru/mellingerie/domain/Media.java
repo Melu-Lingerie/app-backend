@@ -45,12 +45,6 @@ public class Media {
     @Column(nullable = false, length = 1000)
     private String s3Url;
 
-    @Column(columnDefinition = "int default 0")
-    private int sortOrder = 0;
-
-    @Column(columnDefinition = "boolean default false")
-    private boolean isPrimary = false;
-
     @Column(columnDefinition = "boolean default true")
     private boolean isActive = true;
 

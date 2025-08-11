@@ -40,16 +40,16 @@ public class MediaApiImpl implements MediaApi {
     private final MediaRepository mediaRepository;
     private final FileValidationService fileValidationService;
 
-    @Transactional
+    @Override
     public MediaResponseDto uploadMedia(MediaRequestDto request) {
         log.info("Processing upload request with ID: {}", request.requestId());
-        fileValidationService.validateSingleFile(request.file());
+
+        fileValidationService.validateFile(request.file());
 
         try {
             String fileHash = FileHashingUtil.calculateSHA256(request.file());
 
             Optional<Media> duplicateMediaOpt = mediaRepository.findByFileHashAndEntityIdAndEntityType(fileHash);
-
             if (duplicateMediaOpt.isPresent()) {
                 log.info("Duplicate record found for file hash {}. Skipping creation.", fileHash);
                 return MediaResponseDto.fromEntity(duplicateMediaOpt.get());
@@ -59,41 +59,47 @@ public class MediaApiImpl implements MediaApi {
 
             populateSpecificMetadata(media, request.file());
 
-            Media savedMedia = mediaRepository.save(media);
+            Media savedMedia = persistMedia(media);
             log.info("Successfully saved NEW media with ID {}", savedMedia.getId());
 
             return MediaResponseDto.fromEntity(savedMedia);
-
-        } catch (IOException | NoSuchAlgorithmException | ImageProcessingException | MetadataException e) {
-            log.error("Failed to process file for request ID {}", request.requestId(), e);
-            throw new MediaProcessingException("Error processing file metadata", e);
+        } catch (NoSuchAlgorithmException e) {
+            log.error("Failed to hash file for request ID {}", request.requestId(), e);
+            throw new MediaProcessingException("Error hashing file content", e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    private Media buildMedia(MediaRequestDto request, String fileHash) throws IOException {
+    @Transactional
+    protected Media persistMedia(Media media) {
+        return mediaRepository.save(media);
+    }
+
+    private Media buildMedia(MediaRequestDto request, String fileHash) {
         Optional<Media> existingFileOpt = mediaRepository.findFirstByFileHash(fileHash);
 
         Media media = new Media();
-        if (existingFileOpt.isPresent()) {
+
+        existingFileOpt.ifPresentOrElse(existingMedia -> {
             log.info("File with hash {} already exists. Reusing S3 object.", fileHash);
-            Media existingMedia = existingFileOpt.get();
             media.setFileHash(existingMedia.getFileHash());
             media.setS3Bucket(existingMedia.getS3Bucket());
             media.setS3Key(existingMedia.getS3Key());
             media.setS3Url(existingMedia.getS3Url());
-        } else {
+        }, () -> {
             MediaUploadResponseDto s3Result = fileUploadService.upload(request.file());
             media.setFileHash(fileHash);
             media.setS3Bucket(s3Result.bucket());
             media.setS3Key(s3Result.key());
             media.setS3Url(s3Result.url());
-        }
+        });
+
         setCommonFields(media, request);
         return media;
     }
 
-    private void populateSpecificMetadata(Media media, CustomMultipartFile file)
-            throws ImageProcessingException, IOException, MetadataException {
+    private void populateSpecificMetadata(Media media, CustomMultipartFile file) {
         try (InputStream inputStream = new BufferedInputStream(new ByteArrayInputStream(file.content()))) {
             Metadata metadata = ImageMetadataReader.readMetadata(inputStream);
 
@@ -102,8 +108,15 @@ public class MediaApiImpl implements MediaApi {
             } else if (media.getMediaType() == MediaType.VIDEO) {
                 extractVideoMetadata(metadata, media);
             }
+        } catch (ImageProcessingException | MetadataException e) {
+            log.error("Failed to parse media metadata", e);
+            throw new MediaProcessingException("Error parsing media metadata", e);
+        } catch (IOException e) {
+            log.error("IO error while reading media content for metadata extraction", e);
+            throw new MediaProcessingException("I/O error reading file for metadata extraction", e);
         }
     }
+
 
     private void extractImageMetadata(Metadata metadata, Media media) {
         Image image = new Image();
@@ -161,8 +174,6 @@ public class MediaApiImpl implements MediaApi {
         media.setMimeType(request.file().contentType());
         media.setFileSize(request.file().size());
         media.setMediaType(fileValidationService.getMediaType(request.file()));
-        media.setSortOrder(request.sortOrder());
-        media.setPrimary(request.isPrimary());
         media.setUploadedBy(request.uploadedBy());
     }
 }

@@ -25,7 +25,6 @@ repositories {
 
 dependencies {
     // --- Project modules ---
-    implementation project(':users')
     implementation project(':media')
 
     // --- Spring ---

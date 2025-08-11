@@ -23,9 +23,4 @@ public class Image {
     private int width;
 
     private int height;
-
-    private String title;
-
-    @Enumerated(EnumType.STRING)
-    private ImageCategory imageCategory;
 }

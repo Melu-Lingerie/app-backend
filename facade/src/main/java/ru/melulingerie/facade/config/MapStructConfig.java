@@ -17,4 +17,4 @@ import org.mapstruct.ReportingPolicy;
     nullValuePropertyMappingStrategy = org.mapstruct.NullValuePropertyMappingStrategy.IGNORE
 )
 public interface MapStructConfig {
-} 
+}

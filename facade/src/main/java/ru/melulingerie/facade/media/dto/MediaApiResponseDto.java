@@ -5,7 +5,7 @@ import lombok.Builder;
 import java.util.UUID;
 
 @Builder
-public record MediaFacadeResponseDto(
+public record MediaApiResponseDto(
         UUID fileId,
         String url,
         String message

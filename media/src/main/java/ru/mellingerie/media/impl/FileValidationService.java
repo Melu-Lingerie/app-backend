@@ -5,7 +5,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.mellingerie.domain.MediaType;
 import ru.mellingerie.media.dto.CustomMultipartFile;
+import ru.mellingerie.media.exception.FileValidationException;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -27,32 +30,31 @@ public class FileValidationService {
     @Value("${file.upload.allowed-video-extensions}")
     private Set<String> allowedVideoExtensions;
 
-
     /**
-     * Полная валидация одного файла
+     * Полная валидация одного файла: собирает все ошибки и выбрасывает одно исключение с их списком.
      */
-    public void validateSingleFile(CustomMultipartFile file) {
-        validateFileNotEmpty(file);
-        validateMediaType(file);
-        validateFileSize(file);
-    }
+    public void validateFile(CustomMultipartFile file) {
+        List<String> errors = new ArrayList<>();
 
-    /**
-     * Проверка, что файл является разрешенным медиа-типом (фото или видео)
-     */
-    public void validateMediaType(CustomMultipartFile file) {
-        if (!isSupportedMedia(file)) {
-            throw new IllegalArgumentException(
-                    "Поддерживаются только изображения (JPEG, PNG, WebP) и видео (MP4, WebM, MOV)"
-            );
+        if (file == null || file.content() == null || file.content().length == 0) {
+            errors.add("Файл не выбран или пустой");
         }
-    }
 
-    /**
-     * Определяет, является ли файл изображением или видео
-     */
-    public boolean isSupportedMedia(CustomMultipartFile file) {
-        return getMediaType(file) != null;
+        MediaType mediaType;
+        if (file != null) {
+            mediaType = getMediaType(file);
+            if (mediaType == null) {
+                errors.add("Поддерживаются только изображения (JPEG, PNG, WebP) и видео (MP4, WebM, MOV)");
+            }
+        }
+
+        if (file != null && file.size() > maxFileSize) {
+            errors.add(String.format("Размер файла не должен превышать %d МБ", maxFileSize / (1024 * 1024)));
+        }
+
+        if (!errors.isEmpty()) {
+            throw new FileValidationException(errors);
+        }
     }
 
     /**
@@ -75,19 +77,5 @@ public class FileValidationService {
         }
 
         return null;
-    }
-
-    public void validateFileNotEmpty(CustomMultipartFile file) {
-        if (file == null || file.content() == null || file.content().length == 0) {
-            throw new IllegalArgumentException("Файл не выбран или пустой");
-        }
-    }
-
-    public void validateFileSize(CustomMultipartFile file) {
-        if (file.size() > maxFileSize) {
-            throw new IllegalArgumentException(
-                    String.format("Размер файла не должен превышать %d МБ", maxFileSize / (1024 * 1024))
-            );
-        }
     }
 }
