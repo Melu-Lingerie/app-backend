@@ -5,7 +5,7 @@ import ru.mellingerie.domain.Media;
 
 @Builder
 public record MediaResponseDto(Long mediaId, String s3Url, String mediaType, String fileName,
-                               long fileSize, boolean isPrimary, int sortOrder) {
+                               long fileSize) {
     public static MediaResponseDto fromEntity(Media media) {
         return MediaResponseDto.builder()
                 .mediaId(media.getId())
@@ -13,8 +13,6 @@ public record MediaResponseDto(Long mediaId, String s3Url, String mediaType, Str
                 .mediaType(media.getMediaType().name())
                 .fileName(media.getFileName())
                 .fileSize(media.getFileSize())
-                .isPrimary(media.isPrimary())
-                .sortOrder(media.getSortOrder())
                 .build();
     }
 }

@@ -23,11 +23,11 @@ public class MediaFacadeApiImpl implements MediaFacadeApi {
     public MediaApiResponseDto uploadMedia(MediaFacadeRequestDto request) {
         log.info("Facade layer: Processing upload request with ID: {}", request.requestId());
 
-        MediaRequestDto coreRequest = mediaFacadeMapper.toCoreUploadRequest(request);
+        MediaRequestDto coreRequest = mediaFacadeMapper.toMediaRequestDto(request);
 
         MediaResponseDto coreResponse = mediaApi.uploadMedia(coreRequest);
 
-        MediaApiResponseDto facadeResponse = mediaFacadeMapper.toFacadeMediaUploadResponse(coreResponse);
+        MediaApiResponseDto facadeResponse = mediaFacadeMapper.toMediaApiResponseDto(coreResponse);
 
         log.info("Facade layer: Successfully processed request with ID: {}", request.requestId());
 

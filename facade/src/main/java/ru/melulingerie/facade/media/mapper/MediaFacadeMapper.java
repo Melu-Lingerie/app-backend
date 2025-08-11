@@ -14,9 +14,9 @@ public interface MediaFacadeMapper {
 
     @Mapping(target = "file", source = "file", qualifiedByName = "mapFile")
     @Mapping(target = "entityType", source = "entityType", qualifiedByName = "mapEntityType")
-    MediaRequestDto toCoreUploadRequest(MediaFacadeRequestDto facadeRequest);
+    MediaRequestDto toMediaRequestDto(MediaFacadeRequestDto facadeRequest);
 
-    MediaApiResponseDto toFacadeMediaUploadResponse(MediaResponseDto coreResponse);
+    MediaApiResponseDto toMediaApiResponseDto(MediaResponseDto coreResponse);
 
     @Named("mapFile")
     default CustomMultipartFile mapFile(CustomMultipartFileFacadeDto facadeFile) {
