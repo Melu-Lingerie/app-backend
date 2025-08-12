@@ -47,4 +47,27 @@ public class UserSessionCreateService {
             throw new RuntimeException("Не удалось создать сессию пользователя", e);
         }
     }
+    
+    @Transactional
+    public UserSession createUserSession(UUID sessionId, Long userId) {
+        User user = new User();
+        user.setId(userId);
+        
+        UserSession userSession = UserSession.builder()
+                .sessionId(sessionId)
+                .user(user)
+                .status(SessionStatus.ACTIVE)
+                .build();
+        
+        UserSession savedSession = userSessionRepository.save(userSession);
+        log.info("Создана сессия пользователя с ID: {} для userId: {}", savedSession.getId(), userId);
+        return savedSession;
+    }
+    
+    @Transactional
+    public UserSession saveUserSession(UserSession userSession) {
+        UserSession savedSession = userSessionRepository.save(userSession);
+        log.debug("Сохранена сессия пользователя с ID: {}", savedSession.getId());
+        return savedSession;
+    }
 } 
