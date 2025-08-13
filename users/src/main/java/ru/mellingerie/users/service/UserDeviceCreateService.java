@@ -51,7 +51,7 @@ public class UserDeviceCreateService {
         
         UserDevice userDevice = UserDevice.builder()
                 .user(user)
-                .deviceType(deviceInfo.getDeviceType())
+                .deviceType(mapDeviceInfoToDeviceType(deviceInfo.getDeviceType()))
                 .deviceUuid(deviceInfo.getDeviceUuid())
                 .deviceName(deviceInfo.getDeviceName())
                 .osVersion(deviceInfo.getOsVersion())
@@ -69,14 +69,19 @@ public class UserDeviceCreateService {
     }
     
     private DeviceType mapDeviceType(UserDeviceRequestDto.DeviceTypeRequestDto deviceTypeDto) {
+        // нужно ли значение по умолчанию?
         if (deviceTypeDto == null) {
-            return DeviceType.WEB; // По умолчанию WEB
+            return DeviceType.DESKTOP; // По умолчанию DESKTOP (вместо WEB)
         }
         
         return switch (deviceTypeDto) {
-            case IOS -> DeviceType.IOS;
-            case ANDROID -> DeviceType.ANDROID;
-            case WEB -> DeviceType.WEB;
+            case IOS -> DeviceType.MOBILE;
+            case ANDROID -> DeviceType.MOBILE;
+            case WEB -> DeviceType.DESKTOP;
         };
     }
-} 
+    //TODO что за мапинг
+    private DeviceType mapDeviceInfoToDeviceType(DeviceType deviceType) {
+        return deviceType != null ? deviceType : DeviceType.DESKTOP;
+    }
+}
