@@ -24,5 +24,6 @@ public interface UserFacadeMapper {
     //TODO првоерить на правильность expression
     @Mapping(target = "createdAt", expression = "java(java.time.LocalDateTime.now())")
     @Mapping(target = "sessionStatus", expression = "java(ru.mellingerie.users.entity.SessionStatus.ACTIVE)")
+    @Mapping(target = "sessionExpiresAt", source = "usersResponse.sessionExpiresAt")
     UserCreateFacadeResponseDto usersDtoToFacadeDto(UserCreateResponseDto usersResponse, Long cartId, Long wishlistId);
 }

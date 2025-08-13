@@ -69,19 +69,23 @@ public class UserDeviceCreateService {
     }
     
     private DeviceType mapDeviceType(UserDeviceRequestDto.DeviceTypeRequestDto deviceTypeDto) {
-        // нужно ли значение по умолчанию?
-        if (deviceTypeDto == null) {
-            return DeviceType.DESKTOP; // По умолчанию DESKTOP (вместо WEB)
-        }
-        
-        return switch (deviceTypeDto) {
-            case IOS -> DeviceType.MOBILE;
-            case ANDROID -> DeviceType.MOBILE;
-            case WEB -> DeviceType.DESKTOP;
-        };
+		if (deviceTypeDto == null) {
+			throw new IllegalArgumentException("deviceType is required");
+		}
+		
+		return switch (deviceTypeDto) {
+			case IOS -> DeviceType.MOBILE;
+			case ANDROID -> DeviceType.MOBILE;
+			case WEB -> DeviceType.DESKTOP;
+			case TABLET -> DeviceType.TABLET;
+			case OTHER -> DeviceType.DESKTOP;
+		};
     }
-    //TODO что за мапинг
-    private DeviceType mapDeviceInfoToDeviceType(DeviceType deviceType) {
-        return deviceType != null ? deviceType : DeviceType.DESKTOP;
-    }
+
+	private DeviceType mapDeviceInfoToDeviceType(DeviceType deviceType) {
+		if (deviceType == null) {
+			throw new IllegalArgumentException("deviceType is required");
+		}
+		return deviceType;
+	}
 }

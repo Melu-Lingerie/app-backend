@@ -18,10 +18,8 @@ import ru.mellingerie.users.dto.UserCreateResponseDto;
 @RequiredArgsConstructor
 public class UserFacadeCreateServiceImpl implements UserFacadeCreateService {
 
-    // доменный сервис users-модуля
     private final UserCreateService userCreateService;
     private final UserFacadeMapper userFacadeMapper;
-    // Убраны зависимости на заглушки Cart/Wishlist. Идентификаторы будет null до появления реальных модулей
 
     @Override
     @Transactional
