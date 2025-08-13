@@ -1,6 +1,8 @@
 package ru.melulingerie.wishlist.domain;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -35,6 +37,13 @@ public class WishlistItem {
 
     @Column(name = "added_at", nullable = false)
     private LocalDateTime addedAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
+    @Column(name = "is_deleted", nullable = false)
+    private boolean isDeleted = false;
 }
 
 

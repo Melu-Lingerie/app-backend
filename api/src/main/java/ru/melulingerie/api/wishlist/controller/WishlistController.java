@@ -6,9 +6,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import ru.melulingerie.api.wishlist.resource.WishlistResource;
-import ru.melulingerie.facade.wishlist.dto.WishlistApiListItemsResponseDto;
-import ru.melulingerie.facade.wishlist.dto.WishlistApiRequestDto;
-import ru.melulingerie.facade.wishlist.dto.WishlistApiResponseDto;
+import ru.melulingerie.facade.wishlist.dto.GetWishlistListItemsResponseDto;
+import ru.melulingerie.facade.wishlist.dto.AddWishlistRequestDto;
+import ru.melulingerie.facade.wishlist.dto.AddWishlistResponseDto;
 import ru.melulingerie.facade.wishlist.service.WishlistQueryFacadeService;
 import ru.melulingerie.facade.wishlist.service.WishlistItemAddFacadeService;
 import ru.melulingerie.facade.wishlist.service.WishlistItemRemoveFacadeService;
@@ -25,14 +25,14 @@ public class WishlistController implements WishlistResource {
     private final WishlistClearFacadeService wishlistClearFacadeService;
 
     @Override
-    public ResponseEntity<WishlistApiListItemsResponseDto> getWishlist(Long userId) {
-        WishlistApiListItemsResponseDto response = wishlistQueryFacadeService.getWishlist(userId);
+    public ResponseEntity<GetWishlistListItemsResponseDto> getWishlist(Long userId) {
+        GetWishlistListItemsResponseDto response = wishlistQueryFacadeService.getWishlist(userId);
         return ResponseEntity.ok(response);
     }
 
     @Override
-    public ResponseEntity<WishlistApiResponseDto> addItemToWishlist(Long userId, WishlistApiRequestDto request) {
-        WishlistApiResponseDto response = wishlistItemAddFacadeService.addItemToWishlist(userId, request);
+    public ResponseEntity<AddWishlistResponseDto> addItemToWishlist(Long userId, AddWishlistRequestDto request) {
+        AddWishlistResponseDto response = wishlistItemAddFacadeService.addItemToWishlist(userId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 

@@ -3,8 +3,8 @@ package ru.melulingerie.facade.wishlist.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.melulingerie.dto.WishlistResponseDto;
-import ru.melulingerie.facade.wishlist.dto.WishlistApiListItemsResponseDto;
+import ru.melulingerie.dto.GetWishlistResponseDto;
+import ru.melulingerie.facade.wishlist.dto.GetWishlistListItemsResponseDto;
 import ru.melulingerie.facade.wishlist.mapper.WishlistMapper;
 import ru.melulingerie.facade.wishlist.mocks.UserService;
 import ru.melulingerie.service.WishlistQueryDomainService;
@@ -21,14 +21,11 @@ public class WishlistQueryFacadeService {
     private final WishlistMapper wishlistMapper;
     private final UserService userService;
 
-    public WishlistApiListItemsResponseDto getWishlist(Long userId) {
-        // Междоменная валидация пользователя
+    public GetWishlistListItemsResponseDto getWishlist(Long userId) {
         validateUserExists(userId);
         
-        // Делегация в доменный сервис
-        WishlistResponseDto domainResponse = wishlistQueryDomainService.getWishlist(userId);
+        GetWishlistResponseDto domainResponse = wishlistQueryDomainService.getWishlist(userId);
         
-        // Маппинг в API DTO
         return wishlistMapper.toFacadeWishListResponseDto(domainResponse);
     }
 

@@ -57,7 +57,6 @@ public class WishlistItemAddDomainService {
         return new AddItemToWishlistResponseDto(saved.getId(), "Added to wishlist");
     }
 
-    @Transactional
     protected WishlistItem addWishlistItem(Wishlist wishlist, AddItemToWishlistRequestDto request) {
         log.debug("Creating wishlist item for wishlistId: {}, productId: {}, variantId: {}",
                 wishlist.getId(), request.productId(), request.variantId());

@@ -2,23 +2,23 @@ package ru.melulingerie.api.wishlist.resource;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.melulingerie.facade.wishlist.dto.WishlistApiListItemsResponseDto;
-import ru.melulingerie.facade.wishlist.dto.WishlistApiRequestDto;
-import ru.melulingerie.facade.wishlist.dto.WishlistApiResponseDto;
+import ru.melulingerie.facade.wishlist.dto.GetWishlistListItemsResponseDto;
+import ru.melulingerie.facade.wishlist.dto.AddWishlistRequestDto;
+import ru.melulingerie.facade.wishlist.dto.AddWishlistResponseDto;
 
-@RequestMapping("/api/v1/wishlist")
+@RequestMapping("/api/v1/wishlist/{userId}")
 public interface WishlistResource {
 
-    @GetMapping("/{userId}")
-    ResponseEntity<WishlistApiListItemsResponseDto> getWishlist(@PathVariable Long userId);
+    @GetMapping
+    ResponseEntity<GetWishlistListItemsResponseDto> getWishlist(@PathVariable("userId") Long userId);
 
-    @PostMapping("/{userId}/items")
-    ResponseEntity<WishlistApiResponseDto> addItemToWishlist(@PathVariable Long userId, @RequestBody WishlistApiRequestDto request);
+    @PostMapping("/items")
+    ResponseEntity<AddWishlistResponseDto> addItemToWishlist(@PathVariable("userId") Long userId, @RequestBody AddWishlistRequestDto request);
 
-    @DeleteMapping("/{userId}/items/{itemId}")
-    ResponseEntity<Void> removeItemFromWishlist(@PathVariable Long userId, @PathVariable Long itemId);
+    @DeleteMapping("/items/{itemId}")
+    ResponseEntity<Void> removeItemFromWishlist(@PathVariable("userId") Long userId, @PathVariable Long itemId);
 
-    @DeleteMapping("/{userId}")
-    ResponseEntity<Void> clearWishlist(@PathVariable Long userId);
+    @DeleteMapping
+    ResponseEntity<Void> clearWishlist(@PathVariable("userId") Long userId);
 }
 

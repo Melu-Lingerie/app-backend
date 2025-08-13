@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import ru.melulingerie.facade.media.dto.CustomMultipartFileFacadeDto;
-import ru.melulingerie.facade.media.dto.MediaApiResponseDto;
+import ru.melulingerie.facade.media.dto.UploadMultipartFileDto;
+import ru.melulingerie.facade.media.dto.UploadMediaResponseDto;
 
 import java.util.UUID;
 
@@ -15,8 +15,8 @@ import java.util.UUID;
 public interface AdminMediaResource {
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    ResponseEntity<MediaApiResponseDto> uploadMedia(
-            @RequestParam("file") CustomMultipartFileFacadeDto file,
+    ResponseEntity<UploadMediaResponseDto> uploadMedia(
+            @RequestParam("file") UploadMultipartFileDto file,
             @RequestHeader("X-Request-Id") UUID requestId
     );
 }

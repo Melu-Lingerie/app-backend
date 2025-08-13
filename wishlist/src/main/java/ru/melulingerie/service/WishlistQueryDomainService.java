@@ -3,9 +3,8 @@ package ru.melulingerie.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.melulingerie.dto.WishListItemResponseDto;
-import ru.melulingerie.dto.WishlistResponseDto;
-import ru.melulingerie.service.WishlistValidationService;
+import ru.melulingerie.dto.GetWishlistItemResponseDto;
+import ru.melulingerie.dto.GetWishlistResponseDto;
 import ru.melulingerie.wishlist.domain.Wishlist;
 import ru.melulingerie.wishlist.domain.WishlistItem;
 import ru.melulingerie.wishlist.repository.WishlistItemRepository;
@@ -25,7 +24,7 @@ public class WishlistQueryDomainService {
     private final WishlistItemRepository wishlistItemRepository;
     private final WishlistValidationService validationService;
 
-    public WishlistResponseDto getWishlist(Long userId) {
+    public GetWishlistResponseDto getWishlist(Long userId) {
         log.info("Starting get wishlist for userId: {}", userId);
 
         validationService.validatePositiveIdOrThrow(userId);
@@ -36,10 +35,10 @@ public class WishlistQueryDomainService {
 
         if (wishlistId == null) {
             log.debug("Wishlist not found for userId: {}, returning empty model", userId);
-            return new WishlistResponseDto(List.of(), 0);
+            return new GetWishlistResponseDto(List.of(), 0);
         }
 
-        List<WishListItemResponseDto> items = wishlistItemRepository.findAllByWishlistId(wishlistId)
+        List<GetWishlistItemResponseDto> items = wishlistItemRepository.findAllByWishlistId(wishlistId)
                 .stream()
                 .map(this::toModel)
                 .toList();
@@ -47,11 +46,11 @@ public class WishlistQueryDomainService {
         log.info("Wishlist loaded successfully for userId: {}, wishlistId: {}, itemsCount: {}",
                 userId, wishlistId, items.size());
 
-        return new WishlistResponseDto(items, items.size());
+        return new GetWishlistResponseDto(items, items.size());
     }
 
-    private WishListItemResponseDto toModel(WishlistItem wishlistItem) {
-        return new WishListItemResponseDto(
+    private GetWishlistItemResponseDto toModel(WishlistItem wishlistItem) {
+        return new GetWishlistItemResponseDto(
                 wishlistItem.getId(),
                 wishlistItem.getProductId(),
                 wishlistItem.getVariantId(),

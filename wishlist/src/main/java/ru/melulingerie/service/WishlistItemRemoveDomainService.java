@@ -45,7 +45,6 @@ public class WishlistItemRemoveDomainService {
         log.info("Wishlist item removed successfully for userId: {}, itemId: {}", userId, itemId);
     }
 
-    @Transactional
     protected void removeWishlistItem(WishlistItem item) {
         log.debug("Deleting wishlist item: {}", item.getId());
         wishlistItemRepository.delete(item);

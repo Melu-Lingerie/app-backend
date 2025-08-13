@@ -37,7 +37,6 @@ public class WishlistClearDomainService {
         log.info("Wishlist cleared successfully for userId: {}, wishlistId: {}", userId, wishlist.getId());
     }
 
-    @Transactional
     protected void clearWishlistItems(Long wishlistId) {
         log.debug("Deleting all items for wishlistId: {}", wishlistId);
         wishlistItemRepository.deleteAllByWishlistId(wishlistId);

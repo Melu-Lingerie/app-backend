@@ -3,10 +3,12 @@ package ru.melulingerie.facade.wishlist.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import ru.melulingerie.dto.AddItemToWishlistRequestDto;
 import ru.melulingerie.dto.AddItemToWishlistResponseDto;
-import ru.melulingerie.facade.wishlist.dto.WishlistApiRequestDto;
-import ru.melulingerie.facade.wishlist.dto.WishlistApiResponseDto;
+import ru.melulingerie.facade.wishlist.dto.AddWishlistRequestDto;
+import ru.melulingerie.facade.wishlist.dto.AddWishlistResponseDto;
 import ru.melulingerie.facade.wishlist.mapper.WishlistMapper;
 import ru.melulingerie.facade.wishlist.mocks.ProductService;
 import ru.melulingerie.facade.wishlist.mocks.UserService;
@@ -24,21 +26,21 @@ public class WishlistItemAddFacadeService {
     private final WishlistMapper wishlistMapper;
     private final UserService userService;
     private final ProductService productService;
+    private final PlatformTransactionManager transactionManager;
 
-    public WishlistApiResponseDto addItemToWishlist(Long userId, WishlistApiRequestDto request) {
-        // Междоменная валидация
+    public AddWishlistResponseDto addItemToWishlist(Long userId, AddWishlistRequestDto request) {
         validateUserExists(userId);
         validateProductExists(request.productId());
         validateProductVariantExists(request.variantId());
         
-        // Маппинг в доменный DTO
-        AddItemToWishlistRequestDto domainRequest = wishlistMapper.toModuleRequestDto(request);
+        AddItemToWishlistRequestDto addItemDomainRequest = wishlistMapper.toModuleRequestDto(request);
         
-        // Делегация в доменный сервис
-        AddItemToWishlistResponseDto domainResponse = wishlistItemAddDomainService.addWishlistItemToWishlist(userId, domainRequest);
+        TransactionTemplate tx = new TransactionTemplate(transactionManager);
+        AddItemToWishlistResponseDto addItemDomainResponse = tx.execute(status ->
+                wishlistItemAddDomainService.addWishlistItemToWishlist(userId, addItemDomainRequest)
+        );
         
-        // Маппинг в API DTO
-        return wishlistMapper.toFacadeResponseDto(domainResponse);
+        return wishlistMapper.toFacadeResponseDto(addItemDomainResponse);
     }
 
     private void validateUserExists(Long userId) {

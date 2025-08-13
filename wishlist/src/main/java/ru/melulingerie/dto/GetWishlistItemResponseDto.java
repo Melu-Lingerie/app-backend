@@ -2,7 +2,7 @@ package ru.melulingerie.dto;
 
 import java.time.LocalDateTime;
 
-public record WishListItemResponseDto(
+public record GetWishlistItemResponseDto(
         Long id,
         Long productId,
         Long variantId,

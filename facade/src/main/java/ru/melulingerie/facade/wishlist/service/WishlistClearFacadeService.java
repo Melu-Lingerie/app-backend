@@ -3,6 +3,8 @@ package ru.melulingerie.facade.wishlist.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import ru.melulingerie.facade.wishlist.mocks.UserService;
 import ru.melulingerie.service.WishlistClearDomainService;
 
@@ -16,13 +18,13 @@ public class WishlistClearFacadeService {
 
     private final WishlistClearDomainService wishlistClearDomainService;
     private final UserService userService;
+    private final PlatformTransactionManager transactionManager;
 
     public void clearWishlist(Long userId) {
-        // Междоменная валидация пользователя
         validateUserExists(userId);
         
-        // Делегация в доменный сервис
-        wishlistClearDomainService.clearWishlist(userId);
+        TransactionTemplate tx = new TransactionTemplate(transactionManager);
+        tx.executeWithoutResult(status -> wishlistClearDomainService.clearWishlist(userId));
     }
 
     private void validateUserExists(Long userId) {

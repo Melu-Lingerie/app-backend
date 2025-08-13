@@ -5,8 +5,8 @@ import lombok.Builder;
 import java.util.UUID;
 
 @Builder
-public record MediaApiRequestDto(
-        CustomMultipartFileFacadeDto file,
+public record UploadMediaRequestDto(
+        UploadMultipartFileDto file,
         UUID requestId,
         String uploadedBy
 ) {}

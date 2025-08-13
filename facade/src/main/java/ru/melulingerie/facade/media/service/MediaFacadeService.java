@@ -3,8 +3,10 @@ package ru.melulingerie.facade.media.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.melulingerie.facade.media.dto.MediaApiRequestDto;
-import ru.melulingerie.facade.media.dto.MediaApiResponseDto;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
+import ru.melulingerie.facade.media.dto.UploadMediaRequestDto;
+import ru.melulingerie.facade.media.dto.UploadMediaResponseDto;
 import ru.melulingerie.facade.media.mapper.MediaMapper;
 import ru.melulingerie.media.api.DomainMediaApi;
 import ru.melulingerie.media.dto.MediaRequestDto;
@@ -17,18 +19,18 @@ public class MediaFacadeService {
 
     private final DomainMediaApi domainMediaApi;
     private final MediaMapper mediaMapper;
+    private final PlatformTransactionManager transactionManager;
 
-    public MediaApiResponseDto uploadMedia(MediaApiRequestDto request) {
+    public UploadMediaResponseDto uploadMedia(UploadMediaRequestDto request) {
         log.info("Facade layer: Processing upload request with ID: {}", request.requestId());
 
-        MediaRequestDto coreRequest = mediaMapper.toMediaRequestDto(request);
+        MediaRequestDto domainMediaRequest = mediaMapper.toMediaRequestDto(request);
 
-        MediaResponseDto coreResponse = domainMediaApi.uploadMedia(coreRequest);
-
-        MediaApiResponseDto facadeResponse = mediaMapper.toMediaApiResponseDto(coreResponse);
+        TransactionTemplate tx = new TransactionTemplate(transactionManager);
+        MediaResponseDto domainMediaResponse = tx.execute(status -> domainMediaApi.uploadMedia(domainMediaRequest));
 
         log.info("Facade layer: Successfully processed request with ID: {}", request.requestId());
 
-        return facadeResponse;
+        return mediaMapper.toMediaApiResponseDto(domainMediaResponse);
     }
 }

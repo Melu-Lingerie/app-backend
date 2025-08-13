@@ -6,9 +6,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import ru.melulingerie.api.media.resource.AdminMediaResource;
-import ru.melulingerie.facade.media.dto.CustomMultipartFileFacadeDto;
-import ru.melulingerie.facade.media.dto.MediaApiRequestDto;
-import ru.melulingerie.facade.media.dto.MediaApiResponseDto;
+import ru.melulingerie.facade.media.dto.UploadMultipartFileDto;
+import ru.melulingerie.facade.media.dto.UploadMediaRequestDto;
+import ru.melulingerie.facade.media.dto.UploadMediaResponseDto;
 import ru.melulingerie.facade.media.service.MediaFacadeService;
 
 import java.util.UUID;
@@ -21,16 +21,16 @@ public class AdminMediaController implements AdminMediaResource {
     private final MediaFacadeService mediaFacadeService;
 
     @Override
-    public ResponseEntity<MediaApiResponseDto> uploadMedia(
-            CustomMultipartFileFacadeDto file,
+    public ResponseEntity<UploadMediaResponseDto> uploadMedia(
+            UploadMultipartFileDto file,
             UUID requestId
     ) {
-            MediaApiRequestDto request = MediaApiRequestDto.builder()
+            UploadMediaRequestDto request = UploadMediaRequestDto.builder()
                     .file(file)
                     .requestId(requestId)
                     .build();
 
-            MediaApiResponseDto response = mediaFacadeService.uploadMedia(request);
+            UploadMediaResponseDto response = mediaFacadeService.uploadMedia(request);
 
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
