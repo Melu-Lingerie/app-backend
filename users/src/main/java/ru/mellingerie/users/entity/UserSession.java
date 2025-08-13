@@ -64,4 +64,8 @@ public class UserSession {
         this.lastActivityAt = LocalDateTime.now();
         this.expiresAt = LocalDateTime.now().plusHours(24);
     }
+
+    public void addDevice(UserDevice device) {
+        this.userDevice = device;
+    }
 }
