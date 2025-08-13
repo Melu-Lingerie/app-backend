@@ -16,8 +16,6 @@ import ru.melulingerie.domain.Image;
 import ru.melulingerie.domain.Media;
 import ru.melulingerie.domain.MediaType;
 import ru.melulingerie.domain.Video;
-import ru.melulingerie.media.api.FileUploadService;
-import ru.melulingerie.media.api.DomainMediaApi;
 import ru.melulingerie.media.dto.*;
 import ru.melulingerie.media.exception.MediaProcessingException;
 import ru.melulingerie.media.util.FileHashingUtil;
@@ -34,13 +32,12 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class DomainMediaApiImpl implements DomainMediaApi {
+public class MediaUploadService {
 
     private final FileUploadService fileUploadService;
     private final MediaRepository mediaRepository;
     private final FileValidationService fileValidationService;
 
-    @Override
     public MediaResponseDto uploadMedia(MediaRequestDto request) {
         log.info("Processing upload request with ID: {}", request.requestId());
 

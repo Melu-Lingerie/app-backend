@@ -8,17 +8,17 @@ import org.springframework.transaction.support.TransactionTemplate;
 import ru.melulingerie.facade.media.dto.UploadMediaRequestDto;
 import ru.melulingerie.facade.media.dto.UploadMediaResponseDto;
 import ru.melulingerie.facade.media.mapper.MediaMapper;
-import ru.melulingerie.media.api.DomainMediaApi;
 import ru.melulingerie.media.dto.MediaRequestDto;
 import ru.melulingerie.media.dto.MediaResponseDto;
+import ru.melulingerie.media.impl.MediaUploadService;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class MediaFacadeService {
 
-    private final DomainMediaApi domainMediaApi;
     private final MediaMapper mediaMapper;
+    private final MediaUploadService mediaUploadService;
     private final PlatformTransactionManager transactionManager;
 
     public UploadMediaResponseDto uploadMedia(UploadMediaRequestDto request) {
@@ -27,7 +27,7 @@ public class MediaFacadeService {
         MediaRequestDto domainMediaRequest = mediaMapper.toMediaRequestDto(request);
 
         TransactionTemplate tx = new TransactionTemplate(transactionManager);
-        MediaResponseDto domainMediaResponse = tx.execute(status -> domainMediaApi.uploadMedia(domainMediaRequest));
+        MediaResponseDto domainMediaResponse = tx.execute(status -> mediaUploadService.uploadMedia(domainMediaRequest));
 
         log.info("Facade layer: Successfully processed request with ID: {}", request.requestId());
 

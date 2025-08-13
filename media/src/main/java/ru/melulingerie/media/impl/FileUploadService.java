@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import ru.melulingerie.media.api.FileUploadService;
 import ru.melulingerie.media.dto.CustomMultipartFile;
 import ru.melulingerie.media.dto.MediaUploadResponseDto;
 import ru.melulingerie.media.util.FileKeyGenerator;
@@ -18,7 +17,7 @@ import java.io.ByteArrayInputStream;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-class FileUploadServiceImpl implements FileUploadService {
+public class FileUploadService {
 
     private final S3Client s3Client;
     private final FileKeyGenerator fileKeyGenerator;
