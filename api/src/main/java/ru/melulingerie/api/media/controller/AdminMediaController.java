@@ -9,7 +9,7 @@ import ru.melulingerie.api.media.resource.AdminMediaResource;
 import ru.melulingerie.facade.media.dto.UploadMultipartFileDto;
 import ru.melulingerie.facade.media.dto.UploadMediaRequestDto;
 import ru.melulingerie.facade.media.dto.UploadMediaResponseDto;
-import ru.melulingerie.facade.media.service.MediaFacadeService;
+import ru.melulingerie.facade.media.service.MediaUploadFacadeService;
 
 import java.util.UUID;
 
@@ -18,7 +18,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AdminMediaController implements AdminMediaResource {
 
-    private final MediaFacadeService mediaFacadeService;
+    private final MediaUploadFacadeService mediaUploadFacadeService;
 
     @Override
     public ResponseEntity<UploadMediaResponseDto> uploadMedia(
@@ -30,7 +30,7 @@ public class AdminMediaController implements AdminMediaResource {
                     .requestId(requestId)
                     .build();
 
-            UploadMediaResponseDto response = mediaFacadeService.uploadMedia(request);
+            UploadMediaResponseDto response = mediaUploadFacadeService.uploadMedia(request);
 
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

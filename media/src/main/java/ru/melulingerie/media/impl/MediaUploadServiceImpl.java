@@ -18,6 +18,7 @@ import ru.melulingerie.domain.MediaType;
 import ru.melulingerie.domain.Video;
 import ru.melulingerie.media.dto.*;
 import ru.melulingerie.media.exception.MediaProcessingException;
+import ru.melulingerie.media.service.MediaUploadService;
 import ru.melulingerie.media.util.FileHashingUtil;
 import ru.melulingerie.repository.MediaRepository;
 
@@ -32,12 +33,13 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class MediaUploadService {
+public class MediaUploadServiceImpl implements MediaUploadService {
 
     private final FileUploadService fileUploadService;
     private final MediaRepository mediaRepository;
     private final FileValidationService fileValidationService;
 
+    @Override
     public MediaResponseDto uploadMedia(MediaRequestDto request) {
         log.info("Processing upload request with ID: {}", request.requestId());
 
