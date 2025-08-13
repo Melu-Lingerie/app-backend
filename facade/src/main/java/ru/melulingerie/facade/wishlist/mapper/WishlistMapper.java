@@ -26,4 +26,3 @@ public interface WishlistMapper {
      */
     GetWishlistListItemsResponseDto toFacadeWishListResponseDto(GetWishlistResponseDto moduleResponse);
 }
-

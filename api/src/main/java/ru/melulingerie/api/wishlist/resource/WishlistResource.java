@@ -21,4 +21,3 @@ public interface WishlistResource {
     @DeleteMapping
     ResponseEntity<Void> clearWishlist(@PathVariable("userId") Long userId);
 }
-

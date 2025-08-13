@@ -33,7 +33,5 @@ public class AdminMediaController implements AdminMediaResource {
             UploadMediaResponseDto response = mediaFacadeService.uploadMedia(request);
 
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
-
     }
-
 }
