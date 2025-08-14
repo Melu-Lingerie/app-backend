@@ -1,17 +1,16 @@
 package ru.melulingerie.facade.user.service;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.mellingerie.users.dto.UserCreateRequestDto;
+import ru.mellingerie.users.dto.UserCreateResponseDto;
 import ru.mellingerie.users.service.UserCreateService;
 import ru.melulingerie.facade.user.api.UserFacadeCreateService;
 import ru.melulingerie.facade.user.dto.UserCreateFacadeRequestDto;
 import ru.melulingerie.facade.user.dto.UserCreateFacadeResponseDto;
 import ru.melulingerie.facade.user.mapper.UserFacadeMapper;
-import ru.mellingerie.users.dto.UserCreateRequestDto;
-import ru.mellingerie.users.dto.UserCreateResponseDto;
 
 @Slf4j
 @Service
@@ -23,10 +22,7 @@ public class UserFacadeCreateServiceImpl implements UserFacadeCreateService {
 
     @Override
     @Transactional
-    public UserCreateFacadeResponseDto createUser(
-            UserCreateFacadeRequestDto request,
-            HttpServletRequest httpRequest
-    ) {
+    public UserCreateFacadeResponseDto createUser(UserCreateFacadeRequestDto request) {
         log.info("Создание гостевого пользователя с sessionId: {}", request.getSessionId());
 
         // 1. Маппинг facade DTO в users DTO

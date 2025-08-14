@@ -14,6 +14,5 @@ public interface UserResource {
 
     @PostMapping("/guests")
     ResponseEntity<UserCreateFacadeResponseDto> createUser(
-            @Valid @RequestBody UserCreateFacadeRequestDto request,
-            HttpServletRequest httpRequest);
+            @Valid @RequestBody UserCreateFacadeRequestDto request);
 }

@@ -13,7 +13,6 @@ public interface UserFacadeMapper {
     /**
      * Конвертирует фасадный DTO в DTO для модуля users
      */
-    @Mapping(target = "ipAddress", source = "ipAddress")
     UserCreateRequestDto facadeDtoToUsersDto(UserCreateFacadeRequestDto facadeDto);
     
     /**

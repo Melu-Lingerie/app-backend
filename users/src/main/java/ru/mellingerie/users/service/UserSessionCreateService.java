@@ -20,7 +20,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class UserSessionCreateService {
-    
+
     private final UserSessionRepository userSessionRepository;
     private final UserDeviceCreateService userDeviceCreateService;
     private final UserDeviceQueryService userDeviceQueryService;
@@ -53,12 +53,12 @@ public class UserSessionCreateService {
                 log.warn("Не удалось распарсить IP-адрес '{}': {}", ipAddressStr, e.getMessage());
             }
         }
-        
+
         UserSession savedSession = userSessionRepository.save(userSession);
         log.info("Создана сессия пользователя с ID: {} для userId: {}", savedSession.getId(), user.getId());
         return savedSession;
     }
-    
+
     @Transactional
     public UserSession saveUserSession(UserSession userSession) {
         UserSession savedSession = userSessionRepository.save(userSession);

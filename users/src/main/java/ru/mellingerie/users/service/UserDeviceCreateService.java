@@ -17,38 +17,14 @@ import java.time.LocalDateTime;
 @Service
 @RequiredArgsConstructor
 public class UserDeviceCreateService {
-    
+
     private final UserDeviceRepository userDeviceRepository;
-    
-    @Transactional
-    public UserDevice createUserDevice(User user, UserDeviceRequestDto deviceDto) {
-        DeviceType deviceType = mapDeviceType(deviceDto.getDeviceType());
-        
-        UserDevice userDevice = UserDevice.builder()
-                .user(user)
-                .deviceType(deviceType)
-                .deviceUuid(deviceDto.getDeviceUuid())
-                .deviceName(deviceDto.getDeviceName())
-                .osVersion(deviceDto.getOsVersion())
-                .browserName(deviceDto.getBrowserName())
-                .browserVersion(deviceDto.getBrowserVersion())
-                .screenWidth(deviceDto.getScreenWidth())
-                .screenHeight(deviceDto.getScreenHeight())
-                .screenDensity(deviceDto.getScreenDensity())
-                .pushToken(deviceDto.getPushToken())
-                .lastSeenAt(deviceDto.getLastSeenAt())
-                .build();
-        
-        UserDevice savedDevice = userDeviceRepository.save(userDevice);
-        log.info("Создано устройство пользователя с ID: {}", savedDevice.getId());
-        return savedDevice;
-    }
-    
+
     @Transactional
     public UserDevice createUserDevice(UserCreateRequestDto.DeviceInfoDto deviceInfo, Long userId) {
         User user = new User();
         user.setId(userId);
-        
+
         UserDevice userDevice = UserDevice.builder()
                 .user(user)
                 .deviceType(mapDeviceInfoToDeviceType(deviceInfo.getDeviceType()))
@@ -62,30 +38,30 @@ public class UserDeviceCreateService {
                 .screenDensity(deviceInfo.getScreenDensity())
                 .lastSeenAt(LocalDateTime.now())
                 .build();
-        
+
         UserDevice savedDevice = userDeviceRepository.save(userDevice);
         log.info("Создано устройство пользователя с ID: {} для userId: {}", savedDevice.getId(), userId);
         return savedDevice;
     }
-    
+
     private DeviceType mapDeviceType(UserDeviceRequestDto.DeviceTypeRequestDto deviceTypeDto) {
-		if (deviceTypeDto == null) {
-			throw new IllegalArgumentException("deviceType is required");
-		}
-		
-		return switch (deviceTypeDto) {
-			case IOS -> DeviceType.MOBILE;
-			case ANDROID -> DeviceType.MOBILE;
-			case WEB -> DeviceType.DESKTOP;
-			case TABLET -> DeviceType.TABLET;
-			case OTHER -> DeviceType.DESKTOP;
-		};
+        if (deviceTypeDto == null) {
+            throw new IllegalArgumentException("deviceType is required");
+        }
+
+        return switch (deviceTypeDto) {
+            case IOS -> DeviceType.MOBILE;
+            case ANDROID -> DeviceType.MOBILE;
+            case WEB -> DeviceType.DESKTOP;
+            case TABLET -> DeviceType.TABLET;
+            case OTHER -> DeviceType.DESKTOP;
+        };
     }
 
-	private DeviceType mapDeviceInfoToDeviceType(DeviceType deviceType) {
-		if (deviceType == null) {
-			throw new IllegalArgumentException("deviceType is required");
-		}
-		return deviceType;
-	}
+    private DeviceType mapDeviceInfoToDeviceType(DeviceType deviceType) {
+        if (deviceType == null) {
+            throw new IllegalArgumentException("deviceType is required");
+        }
+        return deviceType;
+    }
 }

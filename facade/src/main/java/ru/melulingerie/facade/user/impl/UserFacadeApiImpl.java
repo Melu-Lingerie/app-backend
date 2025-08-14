@@ -8,27 +8,27 @@ import ru.melulingerie.facade.user.api.UserFacadeApi;
 import ru.melulingerie.facade.user.api.UserFacadeCreateService;
 import ru.melulingerie.facade.user.dto.UserCreateFacadeRequestDto;
 import ru.melulingerie.facade.user.dto.UserCreateFacadeResponseDto;
-import jakarta.servlet.http.HttpServletRequest;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserFacadeApiImpl implements UserFacadeApi {
-    
+
     private final UserFacadeCreateService userFacadeCreateService;
-    
+
     @Override
+    //TODO стоит ли тут оставить transactional
     @Transactional
-    public UserCreateFacadeResponseDto createUser(UserCreateFacadeRequestDto request, HttpServletRequest httpRequest) {
+    public UserCreateFacadeResponseDto createUser(UserCreateFacadeRequestDto request) {
         log.info("Создание гостевого пользователя через фасад для sessionId: {}", request.getSessionId());
-        
+
         try {
             // Делегируем создание пользователя сервису, который содержит всю бизнес-логику
-            UserCreateFacadeResponseDto response = userFacadeCreateService.createUser(request, httpRequest);
-            
+            UserCreateFacadeResponseDto response = userFacadeCreateService.createUser(request);
+
             log.info("Гостевой пользователь успешно создан с ID: {}", response.getUserId());
             return response;
-            
+
         } catch (Exception e) {
             log.error("Ошибка при создании гостевого пользователя: {}", e.getMessage(), e);
             throw new RuntimeException("Не удалось создать гостевого пользователя", e);
