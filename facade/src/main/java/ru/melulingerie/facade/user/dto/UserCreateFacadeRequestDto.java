@@ -22,6 +22,10 @@ public class UserCreateFacadeRequestDto {
     @NotNull
     private UUID sessionId;
 
+    @NotBlank
+    @Size(max = 45)
+    private String ipAddress;
+
     @Valid
     @NotNull
     private DeviceInfoDto deviceInfo;

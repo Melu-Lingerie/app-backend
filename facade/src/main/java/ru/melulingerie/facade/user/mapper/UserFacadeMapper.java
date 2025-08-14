@@ -13,7 +13,7 @@ public interface UserFacadeMapper {
     /**
      * Конвертирует фасадный DTO в DTO для модуля users
      */
-    @Mapping(target = "ipAddress", ignore = true) // IP будет добавлен в сервисе
+    @Mapping(target = "ipAddress", source = "ipAddress")
     UserCreateRequestDto facadeDtoToUsersDto(UserCreateFacadeRequestDto facadeDto);
     
     /**
@@ -21,9 +21,8 @@ public interface UserFacadeMapper {
      */
     @Mapping(target = "cartId", source = "cartId")
     @Mapping(target = "wishlistId", source = "wishlistId")
-    //TODO првоерить на правильность expression
+    //TODO проверить expression
     @Mapping(target = "createdAt", expression = "java(java.time.LocalDateTime.now())")
     @Mapping(target = "sessionStatus", expression = "java(ru.mellingerie.users.entity.SessionStatus.ACTIVE)")
-    @Mapping(target = "sessionExpiresAt", source = "usersResponse.sessionExpiresAt")
     UserCreateFacadeResponseDto usersDtoToFacadeDto(UserCreateResponseDto usersResponse, Long cartId, Long wishlistId);
 }

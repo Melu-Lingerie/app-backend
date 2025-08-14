@@ -32,18 +32,14 @@ public class UserFacadeCreateServiceImpl implements UserFacadeCreateService {
         // 1. Маппинг facade DTO в users DTO
         UserCreateRequestDto usersRequest = userFacadeMapper.facadeDtoToUsersDto(request);
 
-        // 2. Добавляем IP адрес из HTTP запроса
-        String ipAddress = extractIpAddress(httpRequest);
-        usersRequest.setIpAddress(ipAddress);
-
-        // 3. Создание пользователя через модуль users (доменный слой)
+        // 2. Создание пользователя через модуль users (доменный слой)
         UserCreateResponseDto usersResponse = userCreateService.createUser(usersRequest);
 
-        // 4-5. Корзина и wishlist пока не создаются (заглушки удалены)
+        // 3-4. Корзина и wishlist пока не создаются (заглушки удалены)
         Long cartId = null;
         Long wishlistId = null;
 
-        // 6. Маппинг ответа обратно в facade DTO
+        // 5. Маппинг ответа обратно в facade DTO
         UserCreateFacadeResponseDto facadeResponse =
                 userFacadeMapper.usersDtoToFacadeDto(usersResponse, cartId, wishlistId);
 
@@ -55,19 +51,5 @@ public class UserFacadeCreateServiceImpl implements UserFacadeCreateService {
         );
 
         return facadeResponse;
-    }
-    //TODO проаналитить
-    private String extractIpAddress(HttpServletRequest request) {
-        String xForwardedFor = request.getHeader("X-Forwarded-For");
-        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
-            return xForwardedFor.split(",")[0].trim();
-        }
-
-        String xRealIp = request.getHeader("X-Real-IP");
-        if (xRealIp != null && !xRealIp.isEmpty()) {
-            return xRealIp;
-        }
-
-        return request.getRemoteAddr();
     }
 }
