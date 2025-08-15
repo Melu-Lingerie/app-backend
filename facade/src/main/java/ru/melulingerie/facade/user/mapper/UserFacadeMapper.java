@@ -2,6 +2,8 @@ package ru.melulingerie.facade.user.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+
+
 import ru.melulingerie.facade.user.dto.UserCreateFacadeRequestDto;
 import ru.melulingerie.facade.user.dto.UserCreateFacadeResponseDto;
 import ru.mellingerie.users.dto.UserCreateRequestDto;
@@ -13,15 +15,11 @@ public interface UserFacadeMapper {
     /**
      * Конвертирует фасадный DTO в DTO для модуля users
      */
-    UserCreateRequestDto facadeDtoToUsersDto(UserCreateFacadeRequestDto facadeDto);
+    @Mapping(target = "sessionId", source = "sessionId")
+    UserCreateRequestDto facadeDtoToUsersDto(UserCreateFacadeRequestDto facadeDto, String sessionId);
     
     /**
      * Конвертирует DTO из модуля users в фасадный DTO
      */
-    @Mapping(target = "cartId", source = "cartId")
-    @Mapping(target = "wishlistId", source = "wishlistId")
-    //TODO проверить expression
-    @Mapping(target = "createdAt", expression = "java(java.time.LocalDateTime.now())")
-    @Mapping(target = "sessionStatus", expression = "java(ru.mellingerie.users.entity.SessionStatus.ACTIVE)")
-    UserCreateFacadeResponseDto usersDtoToFacadeDto(UserCreateResponseDto usersResponse, Long cartId, Long wishlistId);
+    UserCreateFacadeResponseDto usersDtoToFacadeDto(UserCreateResponseDto usersResponse);
 }

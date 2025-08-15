@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.mellingerie.users.dto.UserCreateRequestDto;
-import ru.mellingerie.users.dto.UserDeviceRequestDto;
 import ru.mellingerie.users.entity.DeviceType;
 import ru.mellingerie.users.entity.User;
 import ru.mellingerie.users.entity.UserDevice;
@@ -28,7 +27,6 @@ public class UserDeviceCreateService {
         UserDevice userDevice = UserDevice.builder()
                 .user(user)
                 .deviceType(mapDeviceInfoToDeviceType(deviceInfo.getDeviceType()))
-                .deviceUuid(deviceInfo.getDeviceUuid())
                 .deviceName(deviceInfo.getDeviceName())
                 .osVersion(deviceInfo.getOsVersion())
                 .browserName(deviceInfo.getBrowserName())
@@ -42,20 +40,6 @@ public class UserDeviceCreateService {
         UserDevice savedDevice = userDeviceRepository.save(userDevice);
         log.info("Создано устройство пользователя с ID: {} для userId: {}", savedDevice.getId(), userId);
         return savedDevice;
-    }
-
-    private DeviceType mapDeviceType(UserDeviceRequestDto.DeviceTypeRequestDto deviceTypeDto) {
-        if (deviceTypeDto == null) {
-            throw new IllegalArgumentException("deviceType is required");
-        }
-
-        return switch (deviceTypeDto) {
-            case IOS -> DeviceType.MOBILE;
-            case ANDROID -> DeviceType.MOBILE;
-            case WEB -> DeviceType.DESKTOP;
-            case TABLET -> DeviceType.TABLET;
-            case OTHER -> DeviceType.DESKTOP;
-        };
     }
 
     private DeviceType mapDeviceInfoToDeviceType(DeviceType deviceType) {

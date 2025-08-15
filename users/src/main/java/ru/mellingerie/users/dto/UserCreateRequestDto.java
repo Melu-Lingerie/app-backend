@@ -8,7 +8,6 @@ import lombok.Setter;
 import ru.mellingerie.users.entity.DeviceType;
 
 import java.math.BigDecimal;
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -17,11 +16,8 @@ import java.util.UUID;
 @AllArgsConstructor
 public class UserCreateRequestDto {
 
-    private UUID sessionId;
-
+    private String sessionId;
     private DeviceInfoDto deviceInfo;
-
-    private String ipAddress;
 
     @Getter
     @Setter
@@ -30,9 +26,9 @@ public class UserCreateRequestDto {
     @AllArgsConstructor
     public static class DeviceInfoDto {
 
-        private DeviceType deviceType;
+        private String ipAddress;
 
-        private UUID deviceUuid;
+        private DeviceType deviceType;
 
         private String deviceName;
 

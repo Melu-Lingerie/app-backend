@@ -1,12 +1,6 @@
 package ru.mellingerie.users.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-import java.time.LocalDateTime;
+import lombok.*;
 
 @Getter
 @Setter
@@ -14,9 +8,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserCreateResponseDto {
-
+    //TODO оставить только userId
     private Long userId;
-    private Long userSessionId;
-    private Long userDeviceId;
-    private LocalDateTime sessionExpiresAt;
+    private Long cartId;
+    private Long wishlistId;
 }

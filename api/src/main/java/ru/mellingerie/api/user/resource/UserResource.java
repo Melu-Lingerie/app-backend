@@ -1,11 +1,10 @@
 package ru.mellingerie.api.user.resource;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
+
+
 import ru.melulingerie.facade.user.dto.UserCreateFacadeRequestDto;
 import ru.melulingerie.facade.user.dto.UserCreateFacadeResponseDto;
 
@@ -13,6 +12,7 @@ import ru.melulingerie.facade.user.dto.UserCreateFacadeResponseDto;
 public interface UserResource {
 
     @PostMapping("/guests")
-    ResponseEntity<UserCreateFacadeResponseDto> createUser(
+    ResponseEntity<UserCreateFacadeResponseDto> createGuestUser(
+            @CookieValue(name = "sessionId", required = false) String sessionIdCookie,
             @Valid @RequestBody UserCreateFacadeRequestDto request);
 }

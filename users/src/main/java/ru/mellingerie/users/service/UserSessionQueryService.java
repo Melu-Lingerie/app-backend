@@ -14,7 +14,7 @@ public class UserSessionQueryService {
 
     private final UserSessionRepository userSessionRepository;
 
-    public Optional<UserSession> findBySessionId(UUID sessionId) {
+    public Optional<UserSession> findBySessionId(String sessionId) {
         return userSessionRepository.findBySessionId(sessionId);
     }
 }

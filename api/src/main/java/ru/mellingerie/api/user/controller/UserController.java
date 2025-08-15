@@ -5,14 +5,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.mellingerie.api.user.resource.UserResource;
-import ru.melulingerie.facade.user.api.UserFacadeApi;
 import ru.melulingerie.facade.user.dto.UserCreateFacadeRequestDto;
 import ru.melulingerie.facade.user.dto.UserCreateFacadeResponseDto;
+import ru.melulingerie.facade.user.service.UserCreateFacadeService;
 
 @Slf4j
 @RestController
@@ -20,21 +17,25 @@ import ru.melulingerie.facade.user.dto.UserCreateFacadeResponseDto;
 @RequiredArgsConstructor
 public class UserController implements UserResource {
 
-    private final UserFacadeApi userFacadeApi;
+    private final UserCreateFacadeService userCreateFacadeService;
 
     @Override
     @PostMapping("/guests")
-    public ResponseEntity<UserCreateFacadeResponseDto> createUser(@Valid @RequestBody UserCreateFacadeRequestDto request) {
-        log.info("Получен запрос на создание гостевого пользователя с sessionId: {}", request.getSessionId());
+    public ResponseEntity<UserCreateFacadeResponseDto> createGuestUser(
+            @CookieValue(name = "sessionId") String sessionId,
+            @Valid @RequestBody UserCreateFacadeRequestDto request) {
+
+        log.info("Получен запрос на создание гостевого пользователя с sessionId: {}", sessionId);
+        //TODO убрать try и сделать эксепшен хэндлер
         try {
-            UserCreateFacadeResponseDto response = userFacadeApi.createUser(request);
+            UserCreateFacadeResponseDto response = userCreateFacadeService.createGuestUser(request, sessionId);
             log.info("Гостевой пользователь успешно создан с ID: {}", response.getUserId());
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             log.warn("Некорректные данные запроса: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         } catch (Exception e) {
-            log.error("Ошибка при создании гостевого пользователя: sessionId {}, ошибка: {}", request.getSessionId(), e.getMessage(), e);
+            log.error("Ошибка при создании гостевого пользователя: sessionId {}, ошибка: {}", sessionId, e.getMessage(), e);
             return ResponseEntity.internalServerError().build();
         }
     }

@@ -10,7 +10,7 @@ import lombok.Setter;
 import ru.mellingerie.users.entity.DeviceType;
 
 import java.math.BigDecimal;
-import java.util.UUID;
+import java.net.Inet4Address;
 
 @Getter
 @Setter
@@ -19,12 +19,8 @@ import java.util.UUID;
 @AllArgsConstructor
 public class UserCreateFacadeRequestDto {
 
-    @NotNull
-    private UUID sessionId;
-
-    @NotBlank
-    @Size(max = 45)
-    private String ipAddress;
+    @Size(max = 100)
+    private String sessionId;
 
     @Valid
     @NotNull
@@ -40,8 +36,7 @@ public class UserCreateFacadeRequestDto {
         @NotNull
         private DeviceType deviceType;
 
-        // UUID валидируется десериализатором; допускается null
-        private UUID deviceUuid;
+        private String ipAddress;
 
         @Size(max = 100)
         private String deviceName;
@@ -60,7 +55,7 @@ public class UserCreateFacadeRequestDto {
 
         @Positive
         private Integer screenHeight;
-
+        //TODO  inclusive?
         @DecimalMin(value = "0.0", inclusive = false)
         private BigDecimal screenDensity;
     }
