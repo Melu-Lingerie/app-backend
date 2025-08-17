@@ -6,7 +6,6 @@ import ru.mellingerie.users.entity.UserSession;
 import ru.mellingerie.users.repository.UserSessionRepository;
 
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor

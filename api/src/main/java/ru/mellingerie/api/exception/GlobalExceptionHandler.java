@@ -1,7 +1,9 @@
 package ru.mellingerie.api.exception;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -14,9 +16,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.ConstraintViolationException;
-
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -25,84 +24,108 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ErrorResponse> handleValidation(
+            MethodArgumentNotValidException ex, HttpServletRequest request) {
+
         Map<String, String> fieldErrors = ex.getBindingResult().getFieldErrors().stream()
-                .collect(Collectors.toMap(FieldError::getField, DefaultMessageSourceResolvable::getDefaultMessage, (a, b) -> a));
-        
+                .collect(Collectors.toMap(FieldError::getField,
+                        error -> error.getDefaultMessage() != null ? error.getDefaultMessage() : "Invalid value",
+                        (existing, replacement) -> existing));
+
         log.debug("Validation failed: {}", fieldErrors);
-        ErrorResponse error = ErrorResponse.withValidation(400, "Validation failed", fieldErrors);
+
+        ErrorResponse error = ErrorResponse.validation("Validation failed",
+                request.getRequestURI(), fieldErrors);
         return ResponseEntity.badRequest().body(error);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<ErrorResponse> handleConstraint(ConstraintViolationException ex) {
+    public ResponseEntity<ErrorResponse> handleConstraint(
+            ConstraintViolationException ex, HttpServletRequest request) {
+
         Map<String, String> violations = ex.getConstraintViolations().stream()
-                .collect(Collectors.toMap(v -> v.getPropertyPath().toString(), ConstraintViolation::getMessage, (a, b) -> a));
-        
+                .collect(Collectors.toMap(
+                        v -> v.getPropertyPath().toString(),
+                        ConstraintViolation::getMessage,
+                        (existing, replacement) -> existing));
+
         log.debug("Constraint violation: {}", violations);
-        ErrorResponse error = ErrorResponse.withValidation(400, "Constraint violation", violations);
+
+        ErrorResponse error = ErrorResponse.validation("Constraint violation",
+                request.getRequestURI(), violations);
         return ResponseEntity.badRequest().body(error);
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ErrorResponse> handleUnreadable(HttpMessageNotReadableException ex) {
-        String detail = ex.getMostSpecificCause() != null ? ex.getMostSpecificCause().getMessage() : ex.getMessage();
+    public ResponseEntity<ErrorResponse> handleUnreadable(
+            HttpMessageNotReadableException ex, HttpServletRequest request) {
+
+        String detail = ex.getMostSpecificCause() != null ?
+                ex.getMostSpecificCause().getMessage() : ex.getMessage();
         log.debug("Malformed request body: {}", detail);
-        
-        ErrorResponse error = ErrorResponse.withDetail(400, "Malformed request body", 
-                                                      ErrorResponse.ErrorCode.MALFORMED_REQUEST, detail);
+
+        ErrorResponse error = ErrorResponse.of(400, "Malformed request body", request.getRequestURI());
         return ResponseEntity.badRequest().body(error);
     }
 
     @ExceptionHandler(MissingRequestCookieException.class)
-    public ResponseEntity<ErrorResponse> handleMissingCookie(MissingRequestCookieException ex) {
+    public ResponseEntity<ErrorResponse> handleMissingCookie(
+            MissingRequestCookieException ex, HttpServletRequest request) {
+
         String message = "Missing cookie: " + ex.getCookieName();
         log.debug(message);
-        
-        ErrorResponse error = ErrorResponse.withParameter(400, message, 
-                                                         ErrorResponse.ErrorCode.MISSING_COOKIE, ex.getCookieName());
+
+        ErrorResponse error = ErrorResponse.of(400, message, request.getRequestURI());
         return ResponseEntity.badRequest().body(error);
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
-    public ResponseEntity<ErrorResponse> handleMissingParameter(MissingServletRequestParameterException ex) {
+    public ResponseEntity<ErrorResponse> handleMissingParameter(
+            MissingServletRequestParameterException ex, HttpServletRequest request) {
+
         String message = "Missing parameter: " + ex.getParameterName();
         log.debug(message);
-        
-        ErrorResponse error = ErrorResponse.withParameter(400, message, 
-                                                         ErrorResponse.ErrorCode.MISSING_COOKIE, ex.getParameterName());
+
+        ErrorResponse error = ErrorResponse.of(400, message, request.getRequestURI());
         return ResponseEntity.badRequest().body(error);
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
-        String message = "Invalid value '" + ex.getValue() + "' for parameter '" + ex.getName() + "'";
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(
+            MethodArgumentTypeMismatchException ex, HttpServletRequest request) {
+
+        String message = String.format("Invalid value '%s' for parameter '%s'",
+                ex.getValue(), ex.getName());
         log.debug(message);
-        
-        ErrorResponse error = ErrorResponse.withParameter(400, message, 
-                                                         ErrorResponse.ErrorCode.VALIDATION_FAILED, ex.getName());
+
+        ErrorResponse error = ErrorResponse.of(400, message, request.getRequestURI());
         return ResponseEntity.badRequest().body(error);
     }
 
     @ExceptionHandler(HandlerMethodValidationException.class)
-    public ResponseEntity<ErrorResponse> handleHandlerMethodValidation(HandlerMethodValidationException ex) {
-        // Собираем все сообщения об ошибках валидации
+    public ResponseEntity<ErrorResponse> handleHandlerMethodValidation(
+            HandlerMethodValidationException ex, HttpServletRequest request) {
+
         String allErrors = ex.getAllErrors().stream()
-                .map(error -> error.getDefaultMessage() != null ? error.getDefaultMessage() : "Validation failed")
+                .map(error -> error.getDefaultMessage() != null ?
+                        error.getDefaultMessage() : "Validation failed")
                 .collect(Collectors.joining("; "));
-        
+
         log.debug("Handler method validation failed: {}", allErrors);
-        
-        ErrorResponse error = ErrorResponse.withDetail(400, "Parameter validation failed", 
-                                                      ErrorResponse.ErrorCode.VALIDATION_FAILED, allErrors);
+
+        ErrorResponse error = ErrorResponse.of(400, "Parameter validation failed",
+                request.getRequestURI());
         return ResponseEntity.badRequest().body(error);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleUnexpected(Exception ex) {
+    public ResponseEntity<ErrorResponse> handleUnexpected(
+            Exception ex, HttpServletRequest request) {
+
         log.error("Unexpected error", ex);
-        
-        ErrorResponse error = ErrorResponse.of(500, "Internal server error", ErrorResponse.ErrorCode.INTERNAL_ERROR);
+
+        ErrorResponse error = ErrorResponse.of(500, "Internal server error",
+                request.getRequestURI());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
 }
