@@ -24,7 +24,7 @@ public class UserSession {
     private Long id;
 
     @Column(name = "session_id", unique = true, nullable = false)
-    private UUID sessionId;
+    private String sessionId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

@@ -6,11 +6,12 @@ spring:
 
   # Data Source Configuration
   datasource:
-    url: jdbc:postgresql://localhost:5432/your_database_name
-    username: ${DB_USERNAME:your_username}
-    password: ${DB_PASSWORD:your_password}
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:navvrks9}
     driver-class-name: org.postgresql.Driver
     hikari:
+      auto-commit: false
       maximum-pool-size: 20
       minimum-idle: 5
       connection-timeout: 30000
@@ -34,7 +35,7 @@ spring:
           order_inserts: true
           order_updates: true
         connection:
-          provider_disables_autocommit: true
+          provider_disables_autocommit: false
     database-platform: org.hibernate.dialect.PostgreSQLDialect
 
 # Server Configuration

@@ -1,13 +1,15 @@
 package ru.mellingerie.users.dto;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Data
+@Getter
+@Setter
 @Builder
 public class UserDeviceRequestDto {
 
@@ -26,6 +28,8 @@ public class UserDeviceRequestDto {
     public enum DeviceTypeRequestDto {
         IOS,
         ANDROID,
-        WEB
+        WEB,
+        TABLET,
+        OTHER
     }
 }
