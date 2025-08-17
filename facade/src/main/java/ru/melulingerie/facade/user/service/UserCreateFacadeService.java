@@ -3,8 +3,6 @@ package ru.melulingerie.facade.user.service;
 import ru.melulingerie.facade.user.dto.UserCreateFacadeRequestDto;
 import ru.melulingerie.facade.user.dto.UserCreateFacadeResponseDto;
 
-
-
 /**
  * Фасадный сервис-оркестратор для создания гостевого пользователя
  * (делегирует доменному модулю users создание пользователя/сессии/устройства

@@ -24,8 +24,8 @@ public class UserCreateService {
 
     @Transactional
     public UserCreateResponseDto createGuestUser(@NonNull UserCreateRequestDto request) {
-        return userSessionQueryService.findBySessionId(request.getSessionId())
-                .map(existingSession -> handleExistingSession(existingSession))
+        return userSessionQueryService.findBySessionId(request.sessionId())
+                .map(this::handleExistingSession)
                 .orElseGet(() -> createNewUserWithSessionAndDevice(request));
     }
 
@@ -39,8 +39,7 @@ public class UserCreateService {
 
     private UserCreateResponseDto createNewUserWithSessionAndDevice(UserCreateRequestDto request) {
         User newUser = createAndSaveUser();
-        userSessionCreateService.createUserSession(request.getSessionId(), newUser,request.getDeviceInfo(),
-                extractIpAddress(request.getDeviceInfo()));
+        userSessionCreateService.createUserSession(request.sessionId(), newUser, request.deviceInfo());
 
         log.info("Created new user with ID: {}", newUser.getId());
         return buildUserResponse(newUser);
@@ -59,14 +58,10 @@ public class UserCreateService {
         //Long cartId = cartService.getCartForUser(user.getId()).getId();
         //Long wishlistId = wishlistService.getWishlistForUser(user.getId()).getId();
 
-        return UserCreateResponseDto.builder()
-                .userId(user.getId())
-                .cartId(123L)
-                .wishlistId(123L)
-                .build();
-    }
-
-    private String extractIpAddress(UserCreateRequestDto.DeviceInfoDto deviceInfo) {
-        return deviceInfo != null ? deviceInfo.getIpAddress() : null;
+        return new UserCreateResponseDto(
+                user.getId(),
+                123L,
+                123L
+        );
     }
 }

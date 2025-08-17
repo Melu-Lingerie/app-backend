@@ -29,7 +29,7 @@ public class UserController implements UserResource {
         //TODO убрать try и сделать эксепшен хэндлер
         try {
             UserCreateFacadeResponseDto response = userCreateFacadeService.createGuestUser(request, sessionId);
-            log.info("Гостевой пользователь успешно создан с ID: {}", response.getUserId());
+            log.info("Гостевой пользователь успешно создан с ID: {}", response.userId());
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             log.warn("Некорректные данные запроса: {}", e.getMessage());

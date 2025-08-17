@@ -11,8 +11,6 @@ import ru.melulingerie.facade.user.dto.UserCreateFacadeRequestDto;
 import ru.melulingerie.facade.user.dto.UserCreateFacadeResponseDto;
 import ru.melulingerie.facade.user.mapper.UserFacadeMapper;
 
-
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -43,9 +41,9 @@ public class UserCreateFacadeServiceImpl implements UserCreateFacadeService {
 
         log.info(
                 "Гостевой пользователь создан успешно. userId: {}, cartId: {}, wishlistId: {}",
-                facadeResponse.getUserId(),
-                facadeResponse.getCartId(),
-                facadeResponse.getWishlistId()
+                facadeResponse.userId(),
+                facadeResponse.cartId(),
+                facadeResponse.wishlistId()
         );
 
         return facadeResponse;

@@ -26,14 +26,14 @@ public class UserDeviceCreateService {
 
         UserDevice userDevice = UserDevice.builder()
                 .user(user)
-                .deviceType(mapDeviceInfoToDeviceType(deviceInfo.getDeviceType()))
-                .deviceName(deviceInfo.getDeviceName())
-                .osVersion(deviceInfo.getOsVersion())
-                .browserName(deviceInfo.getBrowserName())
-                .browserVersion(deviceInfo.getBrowserVersion())
-                .screenWidth(deviceInfo.getScreenWidth())
-                .screenHeight(deviceInfo.getScreenHeight())
-                .screenDensity(deviceInfo.getScreenDensity())
+                .deviceType(mapDeviceInfoToDeviceType(deviceInfo.deviceType()))
+                .deviceName(deviceInfo.deviceName())
+                .osVersion(deviceInfo.osVersion())
+                .browserName(deviceInfo.browserName())
+                .browserVersion(deviceInfo.browserVersion())
+                .screenWidth(deviceInfo.screenWidth())
+                .screenHeight(deviceInfo.screenHeight())
+                .screenDensity(deviceInfo.screenDensity())
                 .lastSeenAt(LocalDateTime.now())
                 .build();
 

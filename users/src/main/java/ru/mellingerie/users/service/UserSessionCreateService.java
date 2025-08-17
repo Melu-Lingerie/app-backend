@@ -14,7 +14,7 @@ import ru.mellingerie.users.repository.UserSessionRepository;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.UUID;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -25,7 +25,7 @@ public class UserSessionCreateService {
     private final UserDeviceCreateService userDeviceCreateService;
 
     @Transactional
-    public UserSession createUserSession(String sessionId, User user, UserCreateRequestDto.DeviceInfoDto deviceInfo, String ipAddress) {
+    public void createUserSession(String sessionId, User user, UserCreateRequestDto.DeviceInfoDto deviceInfo) {
 
         // Создать новое устройство для пользователя
         UserDevice userDevice = null;
@@ -41,17 +41,16 @@ public class UserSessionCreateService {
                 .status(SessionStatus.ACTIVE)
                 .build();
 
-        if (StringUtils.isNotBlank(ipAddress)) {
+        if (Objects.nonNull(deviceInfo) && StringUtils.isNotBlank(deviceInfo.ipAddress())) {
             try {
-                InetAddress inetAddress = InetAddress.getByName(ipAddress);
+                InetAddress inetAddress = InetAddress.getByName(deviceInfo.ipAddress());
                 userSession.setIpAddress(inetAddress);
             } catch (UnknownHostException e) {
-                log.warn("Не удалось распарсить IP-адрес '{}': {}", ipAddress, e.getMessage());
+                log.warn("Не удалось распарсить IP-адрес '{}': {}", deviceInfo.ipAddress(), e.getMessage());
             }
         }
 
         UserSession savedSession = userSessionRepository.save(userSession);
         log.info("Создана сессия пользователя с ID: {} для userId: {}", savedSession.getId(), user.getId());
-        return savedSession;
     }
 }

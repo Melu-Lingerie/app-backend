@@ -2,61 +2,30 @@ package ru.melulingerie.facade.user.dto;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import ru.mellingerie.users.entity.DeviceType;
 
 import java.math.BigDecimal;
-import java.net.Inet4Address;
 
-@Getter
-@Setter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class UserCreateFacadeRequestDto {
-
-    @Size(max = 100)
-    private String sessionId;
+public record UserCreateFacadeRequestDto(
+    @NotBlank(message = "Session ID не может быть пустым")
+    @Size(max = 100, message = "Session ID не может превышать 100 символов")
+    @Pattern(regexp = "^[a-fA-F0-9-]{36}$", message = "Session ID должен быть в формате UUID")
+    String sessionId,
 
     @Valid
     @NotNull
-    private DeviceInfoDto deviceInfo;
+    DeviceInfoDto deviceInfo
+) {
 
-    @Getter
-    @Setter
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class DeviceInfoDto {
-
-        @NotNull
-        private DeviceType deviceType;
-
-        private String ipAddress;
-
-        @Size(max = 100)
-        private String deviceName;
-
-        @Size(max = 50)
-        private String osVersion;
-
-        @Size(max = 50)
-        private String browserName;
-
-        @Size(max = 50)
-        private String browserVersion;
-
-        @Positive
-        private Integer screenWidth;
-
-        @Positive
-        private Integer screenHeight;
-        //TODO  inclusive?
-        @DecimalMin(value = "0.0", inclusive = false)
-        private BigDecimal screenDensity;
-    }
+    public static record DeviceInfoDto(
+        @NotNull DeviceType deviceType,
+        String ipAddress,
+        @Size(max = 100) String deviceName,
+        @Size(max = 50) String osVersion,
+        @Size(max = 50) String browserName,
+        @Size(max = 50) String browserVersion,
+        @Positive Integer screenWidth,
+        @Positive Integer screenHeight,
+        @DecimalMin(value = "0.0", inclusive = false) BigDecimal screenDensity
+    ) {}
 }
