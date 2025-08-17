@@ -31,8 +31,8 @@ public class UserCreateService {
 
     private UserCreateResponseDto handleExistingSession(UserSession existingSession) {
         User user = existingSession.getUser();
-        log.debug("Using existing session {} for user {}",
-                existingSession.getId(), user.getId());
+        log.info("У пользователя userId: {}, уже существует сессия с id: {}",
+                user.getId(), existingSession.getId());
 
         return buildUserResponse(user);
     }
@@ -41,7 +41,7 @@ public class UserCreateService {
         User newUser = createAndSaveUser();
         userSessionCreateService.createUserSession(request.sessionId(), newUser, request.deviceInfo());
 
-        log.info("Created new user with ID: {}", newUser.getId());
+        log.info("Создание нового юзера с ID: {}", newUser.getId());
         return buildUserResponse(newUser);
     }
 

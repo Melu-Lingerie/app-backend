@@ -9,7 +9,7 @@ public record UserCreateRequestDto(
         DeviceInfoDto deviceInfo
 ) {
 
-    public static record DeviceInfoDto(
+    public record DeviceInfoDto(
             String ipAddress,
             DeviceType deviceType,
             String deviceName,
@@ -19,5 +19,6 @@ public record UserCreateRequestDto(
             Integer screenWidth,
             Integer screenHeight,
             BigDecimal screenDensity
-    ) { }
+    ) {
+    }
 }

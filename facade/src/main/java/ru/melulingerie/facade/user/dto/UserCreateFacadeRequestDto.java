@@ -7,17 +7,12 @@ import ru.mellingerie.users.entity.DeviceType;
 import java.math.BigDecimal;
 
 public record UserCreateFacadeRequestDto(
-    @NotBlank(message = "Session ID не может быть пустым")
-    @Size(max = 100, message = "Session ID не может превышать 100 символов")
-    @Pattern(regexp = "^[a-fA-F0-9-]{36}$", message = "Session ID должен быть в формате UUID")
-    String sessionId,
-
     @Valid
     @NotNull
     DeviceInfoDto deviceInfo
 ) {
 
-    public static record DeviceInfoDto(
+    public record DeviceInfoDto(
         @NotNull DeviceType deviceType,
         String ipAddress,
         @Size(max = 100) String deviceName,

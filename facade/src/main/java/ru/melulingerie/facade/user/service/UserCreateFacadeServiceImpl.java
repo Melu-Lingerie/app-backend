@@ -39,13 +39,6 @@ public class UserCreateFacadeServiceImpl implements UserCreateFacadeService {
         UserCreateFacadeResponseDto facadeResponse =
                 userFacadeMapper.usersDtoToFacadeDto(usersResponse);
 
-        log.info(
-                "Гостевой пользователь создан успешно. userId: {}, cartId: {}, wishlistId: {}",
-                facadeResponse.userId(),
-                facadeResponse.cartId(),
-                facadeResponse.wishlistId()
-        );
-
         return facadeResponse;
     }
 }
