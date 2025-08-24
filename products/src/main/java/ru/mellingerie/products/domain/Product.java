@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "products")
@@ -37,7 +38,10 @@ public class Product {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private Category category;
-    
+
+    @Column(name = "set_id")
+    private UUID setId;
+
     @Column(name = "sku", length = 50, unique = true)
     private String sku;
     
@@ -60,28 +64,11 @@ public class Product {
     private List<ProductVariant> variants;
     
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<ProductImage> images;
-    
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ProductReview> reviews;
-    
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<ProductPrice> prices;
     
     @ManyToMany(mappedBy = "products")
     private List<Collection> collections;
-    
-    @ManyToMany(mappedBy = "products")
-    private List<StylingRecommendation> stylingRecommendations;
-    
-    @ManyToMany
-    @JoinTable(
-        name = "product_filter_values",
-        joinColumns = @JoinColumn(name = "product_id"),
-        inverseJoinColumns = @JoinColumn(name = "filter_value_id")
-    )
-    private List<FilterValue> filterValues;
-    
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

@@ -27,9 +27,6 @@ public class ProductVariant {
     @Column(name = "color_name", length = 50)
     private String colorName;
     
-    @Column(name = "color_hex", length = 7)
-    private String colorHex;
-    
     @Column(name = "size", length = 10)
     private String size;
     

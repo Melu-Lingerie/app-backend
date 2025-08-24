@@ -5,7 +5,7 @@ import lombok.Builder;
 import java.util.UUID;
 
 @Builder
-public record MediaFacadeRequestDto(
+public record  MediaFacadeRequestDto(
         CustomMultipartFileFacadeDto file,
         UUID requestId,
         int sortOrder,
