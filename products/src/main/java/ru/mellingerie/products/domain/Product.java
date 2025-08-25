@@ -56,6 +56,9 @@ public class Product {
     
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "main_media_id")
+    private Long mainMediaId;
     
     @Column(name = "is_active")
     private Boolean isActive = true;

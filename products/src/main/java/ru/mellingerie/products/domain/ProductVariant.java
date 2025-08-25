@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Entity
 @Table(name = "product_variants")
@@ -39,4 +40,10 @@ public class ProductVariant {
     
     @Column(name = "is_available")
     private Boolean isAvailable = true;
+
+    @Column(name = "order")
+    private Integer order;
+
+    @OneToMany(mappedBy = "productVariant", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ProductVariantMedia> productVariantMedia;
 } 
