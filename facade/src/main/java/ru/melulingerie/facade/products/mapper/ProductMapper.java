@@ -4,8 +4,8 @@ import org.mapstruct.Mapper;
 import ru.mellingerie.products.dto.request.ProductFilterRequestDto;
 import ru.mellingerie.products.dto.response.ProductItemResponseDto;
 import ru.melulingerie.facade.config.MapStructConfig;
-import ru.melulingerie.facade.products.dto.ProductCatalogRequestDto;
-import ru.melulingerie.facade.products.dto.ProductCatalogResponseDto;
+import ru.melulingerie.facade.products.dto.request.ProductCatalogRequestDto;
+import ru.melulingerie.facade.products.dto.response.ProductCatalogResponseDto;
 
 @Mapper(config = MapStructConfig.class)
 public interface ProductMapper {

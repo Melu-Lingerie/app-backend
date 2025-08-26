@@ -4,17 +4,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
-import ru.mellingerie.media.api.MediaApi;
+import ru.mellingerie.products.dto.ProductInfoDto;
 import ru.mellingerie.products.dto.request.ProductFilterRequestDto;
 import ru.mellingerie.products.dto.response.ProductItemResponseDto;
 import ru.mellingerie.products.service.ProductService;
-import ru.melulingerie.facade.products.dto.ProductCatalogRequestDto;
-import ru.melulingerie.facade.products.dto.ProductCatalogResponseDto;
+import ru.melulingerie.facade.products.dto.response.ProductCardResponseDto;
+import ru.melulingerie.facade.products.dto.request.ProductCatalogRequestDto;
+import ru.melulingerie.facade.products.dto.response.ProductCatalogResponseDto;
 import ru.melulingerie.facade.products.mapper.ProductMapper;
 import ru.melulingerie.facade.products.service.ProductFacadeService;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -50,6 +50,28 @@ public class ProductFacadeServiceImpl implements ProductFacadeService {
                         response.price()
                         //todo mediaInfoById.get(response.mainMediaId())
                         )
+        );
+    }
+
+    @Override
+    public ProductCardResponseDto getProductCardInfo(Long productId) {
+        ProductInfoDto productInfoDto = productService.getProductInfo(productId);
+
+
+
+        return new ProductCardResponseDto(
+                productInfoDto.name(),
+                productInfoDto.articleNumber(),
+                productInfoDto.price(),
+                productInfoDto.colors(),
+                productInfoDto.sizes(),
+                productInfoDto.collectionId(),
+                productInfoDto.categoryId(),
+                productInfoDto.description(),
+                productInfoDto.structure(),
+                productInfoDto.sizeOnModel(),
+                //review
+                //media
         );
     }
 }

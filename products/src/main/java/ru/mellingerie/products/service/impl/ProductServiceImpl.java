@@ -1,17 +1,20 @@
 package ru.mellingerie.products.service.impl;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.mellingerie.products.domain.Product;
+import ru.mellingerie.products.dto.ProductInfoDto;
 import ru.mellingerie.products.repository.ProductRepository;
 import ru.mellingerie.products.service.ProductService;
 import ru.mellingerie.products.dto.request.ProductFilterRequestDto;
 import ru.mellingerie.products.dto.response.ProductItemResponseDto;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -38,6 +41,31 @@ public class ProductServiceImpl implements ProductService {
                         entity.getMainMediaId(),
                         availableColorsForEachProducts.get(entity.getId())
                 )
+        );
+    }
+
+    @Override
+    public ProductInfoDto getProductInfo(Long productId, String color) {
+        Product product = productRepository
+                .findById(productId)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Product was not found by given externalId = %s", productId)));
+
+
+
+        product.getReviews();
+
+        return new ProductInfoDto(
+                product.getName(),
+                product.getArticleNumber(),
+                product.getBasePrice(),
+                availableColorsForEachProducts.values(),
+                availableSizesForEachProducts.values(),
+                /*collectionId*/,
+                /*categoryId*/,
+                product.getDescription(),
+                product.getMaterial(),
+                /*sizeOnModel*/,
+                /*review*/
         );
     }
 }

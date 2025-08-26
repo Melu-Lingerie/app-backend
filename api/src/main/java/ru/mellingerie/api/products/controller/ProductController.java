@@ -6,9 +6,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.RestController;
 import ru.mellingerie.api.products.resource.ProductResource;
+import ru.melulingerie.facade.products.dto.response.ProductCardResponseDto;
 import ru.melulingerie.facade.products.service.ProductFacadeService;
-import ru.melulingerie.facade.products.dto.ProductCatalogRequestDto;
-import ru.melulingerie.facade.products.dto.ProductCatalogResponseDto;
+import ru.melulingerie.facade.products.dto.request.ProductCatalogRequestDto;
+import ru.melulingerie.facade.products.dto.response.ProductCatalogResponseDto;
 
 import java.math.BigDecimal;
 import java.util.Set;
@@ -41,5 +42,10 @@ public class ProductController implements ProductResource {
                 .build();
 
         return productFacadeService.getPageOfProducts(productCatalogRequestDto);
+    }
+
+    @Override
+    public ProductCardResponseDto getProductCardInfo(Long productId) {
+        return productFacadeService.getProductCardInfo(productId);
     }
 }

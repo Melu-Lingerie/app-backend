@@ -1,4 +1,4 @@
-package ru.melulingerie.facade.products.dto;
+package ru.melulingerie.facade.products.dto.request;
 
 import lombok.Builder;
 import org.springframework.data.domain.Pageable;

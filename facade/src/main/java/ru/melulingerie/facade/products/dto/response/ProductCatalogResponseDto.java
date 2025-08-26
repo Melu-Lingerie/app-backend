@@ -1,4 +1,4 @@
-package ru.melulingerie.facade.products.dto;
+package ru.melulingerie.facade.products.dto.response;
 
 import java.math.BigDecimal;
 

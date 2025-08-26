@@ -25,6 +25,9 @@ public class Product {
     
     @Column(name = "name", nullable = false, length = 255)
     private String name;
+
+    @Column(name = "article_number", nullable = false, length = 255)
+    private String articleNumber;
     
     @Column(name = "slug", nullable = false, length = 255, unique = true)
     private String slug;
