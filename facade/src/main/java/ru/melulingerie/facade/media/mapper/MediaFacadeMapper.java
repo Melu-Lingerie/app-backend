@@ -13,11 +13,9 @@ import ru.mellingerie.media.dto.*;
 public interface MediaFacadeMapper {
 
     @Mapping(target = "file", source = "file", qualifiedByName = "mapFile")
-    @Mapping(target = "entityType", source = "entityType", qualifiedByName = "mapEntityType")
     MediaRequestDto toMediaRequestDto(MediaFacadeRequestDto facadeRequest);
 
     MediaApiResponseDto toMediaApiResponseDto(MediaResponseDto coreResponse);
-
     @Named("mapFile")
     default CustomMultipartFile mapFile(CustomMultipartFileFacadeDto facadeFile) {
         if (facadeFile == null) {
