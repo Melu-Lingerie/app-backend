@@ -1,13 +1,11 @@
 package ru.mellingerie.products.domain;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -65,18 +63,21 @@ public class Product {
     
     @Column(name = "is_active")
     private Boolean isActive = true;
-    
+
+    @ToString.Exclude
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<ProductVariant> variants = new ArrayList<>();
+
+    @ToString.Exclude
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<ProductVariant> variants;
-    
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<ProductReview> reviews;
+    private List<ProductReview> reviews = new ArrayList<>();
 
     @Column(name = "score")
     private Float score;
-    
+
+    @ToString.Exclude
     @ManyToMany(mappedBy = "products")
-    private List<Collection> collections;
+    private List<Collection> collections = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {

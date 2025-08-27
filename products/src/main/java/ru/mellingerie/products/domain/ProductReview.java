@@ -9,7 +9,11 @@ import lombok.AllArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "product_reviews")
+@Table(name = "product_reviews",
+        indexes = {
+                @Index(name = "ix_reviews_product", columnList = "product_id"),
+                @Index(name = "ix_reviews_rating", columnList = "rating")
+        })
 @Getter
 @Setter
 @NoArgsConstructor

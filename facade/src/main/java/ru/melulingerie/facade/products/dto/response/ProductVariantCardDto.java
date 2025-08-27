@@ -13,7 +13,7 @@ public record ProductVariantCardDto(
         Integer stockQuantity,
         BigDecimal additionalPrice,
         Boolean isAvailable,
-        Integer order,
+        Integer sortOrder,
         List<ProductVariantMediaCardDto> productVariantMedia
 ) {
     public ProductVariantCardDto (ProductVariantDto dto, Map<Long, String> mediaInfo) {
@@ -24,7 +24,7 @@ public record ProductVariantCardDto(
                 dto.stockQuantity(),
                 dto.additionalPrice(),
                 dto.isAvailable(),
-                dto.order(),
+                dto.sortOrder(),
                 dto.productVariantMedia().stream().map(media -> new ProductVariantMediaCardDto(media, mediaInfo.get(media.mediaId()))).toList()
         );
     }

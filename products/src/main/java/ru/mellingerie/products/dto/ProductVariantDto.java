@@ -12,7 +12,7 @@ public record ProductVariantDto(
         Integer stockQuantity,
         BigDecimal additionalPrice,
         Boolean isAvailable,
-        Integer order,
+        Integer sortOrder,
         List<ProductVariantMediaDto> productVariantMedia
 ) {
 
@@ -24,7 +24,7 @@ public record ProductVariantDto(
                 productVariant.getStockQuantity(),
                 productVariant.getAdditionalPrice(),
                 productVariant.getIsAvailable(),
-                productVariant.getOrder(),
+                productVariant.getSortOrder(),
                 productVariant.getProductVariantMedia().stream().map(ProductVariantMediaDto::new).toList()
         );
     }

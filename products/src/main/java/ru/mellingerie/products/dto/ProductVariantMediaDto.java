@@ -4,9 +4,9 @@ import ru.mellingerie.products.domain.ProductVariantMedia;
 
 public record ProductVariantMediaDto(
         Long mediaId,
-        Integer order
+        Integer sortOrder
 ) {
     public ProductVariantMediaDto(ProductVariantMedia productVariantMedia) {
-        this(productVariantMedia.getMediaId(), productVariantMedia.getOrder());
+         this(productVariantMedia.getMediaId(), productVariantMedia.getSortOrder());
     }
 }

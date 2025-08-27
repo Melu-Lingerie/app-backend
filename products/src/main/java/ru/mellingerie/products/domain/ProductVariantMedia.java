@@ -7,7 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "product_variant_media")
+@Table(name = "product_variant_media",
+        indexes = @Index(name = "ix_pvm_variant", columnList = "product_variant_id"))
 @Getter
 @Setter
 @NoArgsConstructor
@@ -18,13 +19,13 @@ public class ProductVariantMedia {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
     
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY,  optional = false)
     @JoinColumn(name = "product_variant_id", nullable = false)
     private ProductVariant productVariant;
     
     @Column(name = "media_id")
     private Long mediaId;
 
-    @Column(name = "order")
-    private Integer order;
+    @Column(name = "sort_order")
+    private Integer sortOrder;
 } 

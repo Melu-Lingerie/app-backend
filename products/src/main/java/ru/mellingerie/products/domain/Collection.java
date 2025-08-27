@@ -1,11 +1,9 @@
 package ru.mellingerie.products.domain;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -19,7 +17,7 @@ public class Collection {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
-    
+
     @Column(name = "name", nullable = false, length = 100)
     private String name;
     
@@ -38,14 +36,6 @@ public class Collection {
     @Column(name = "sort_order")
     private Integer sortOrder = 0;
     
-    @ManyToMany
-    @JoinTable(
-        name = "collection_products",
-        joinColumns = @JoinColumn(name = "collection_id"),
-        inverseJoinColumns = @JoinColumn(name = "product_id")
-    )
-    private List<Product> products;
-    
-    @OneToMany(mappedBy = "collection", cascade = CascadeType.ALL)
-    private List<CollectionProduct> collectionProducts;
+    @OneToMany(mappedBy = "collection", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CollectionProduct> collectionProducts = new ArrayList<>();
 } 

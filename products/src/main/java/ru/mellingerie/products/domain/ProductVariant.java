@@ -7,14 +7,19 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "product_variants")
+@Table(name = "product_variants",
+        indexes = {
+                @Index(name = "ix_product_variants_product", columnList = "product_id"),
+                @Index(name = "ix_product_variants_color", columnList = "color_name"),
+                @Index(name = "ix_product_variants_size", columnList = "size")
+        })
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class ProductVariant {
     
     @Id
@@ -41,9 +46,9 @@ public class ProductVariant {
     @Column(name = "is_available")
     private Boolean isAvailable = true;
 
-    @Column(name = "order")
-    private Integer order;
+    @Column(name = "sort_order")
+    private Integer sortOrder;
 
-    @OneToMany(mappedBy = "productVariant", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<ProductVariantMedia> productVariantMedia;
+    @OneToMany(mappedBy = "productVariant", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<ProductVariantMedia> productVariantMedia = new ArrayList<>();
 } 
