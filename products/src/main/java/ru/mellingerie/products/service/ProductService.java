@@ -8,9 +8,7 @@ import ru.mellingerie.products.dto.response.ProductItemResponseDto;
 
 public interface ProductService {
 
-    @Transactional(readOnly = true)
     Page<ProductItemResponseDto> getPageOfProducts(ProductFilterRequestDto productFilterRequestDto);
 
-    @Transactional(readOnly = true)
-    ProductInfoDto getProductInfo(Long productId, String color);
+    ProductInfoDto getProductInfo(Long productId);
 }

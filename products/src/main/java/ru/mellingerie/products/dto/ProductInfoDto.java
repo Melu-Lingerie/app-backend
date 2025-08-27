@@ -1,20 +1,31 @@
 package ru.mellingerie.products.dto;
 
+import ru.mellingerie.products.domain.Product;
+
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Set;
 
 public record ProductInfoDto(
+        Long productId,
         String name,
         String articleNumber,
         BigDecimal price,
-        Set<String> colors,
-        Set<String> sizes,
-        Long collectionId,
-        Long categoryId,
         String description,
         String structure,
-        String sizeOnModel,
-        List<ProductReviewDto> productReviewDtoList
+        Float score,
+        List<ProductVariantDto> productVariants
 ) {
+    
+    public ProductInfoDto (Product product){
+        this(
+                product.getId(), 
+                product.getName(),
+                product.getArticleNumber(),
+                product.getBasePrice(),
+                product.getDescription(), 
+                product.getMaterial(),
+                product.getScore(),
+                product.getVariants().stream().map(ProductVariantDto::new).toList()
+        );
+    }
 }

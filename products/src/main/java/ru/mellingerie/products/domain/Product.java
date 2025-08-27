@@ -71,6 +71,9 @@ public class Product {
     
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ProductReview> reviews;
+
+    @Column(name = "score")
+    private Float score;
     
     @ManyToMany(mappedBy = "products")
     private List<Collection> collections;

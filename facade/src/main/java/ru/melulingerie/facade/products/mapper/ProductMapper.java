@@ -14,4 +14,6 @@ public interface ProductMapper {
 
     ProductCatalogResponseDto toProductCatalogResponseDto(ProductItemResponseDto productItemResponseDto);
 
+
+
 }

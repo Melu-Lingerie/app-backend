@@ -28,6 +28,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductVariantService productVariantService;
 
     @Override
+    @Transactional(readOnly = true)
     public Page<ProductItemResponseDto> getPageOfProducts(ProductFilterRequestDto productFilterRequestDto) {
         Page<Product> productsByParams = productRepository.findByParams(productFilterRequestDto);
         Set<Long> productIds = productsByParams.getContent().stream().map(Product::getId).collect(Collectors.toSet());
@@ -45,27 +46,12 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductInfoDto getProductInfo(Long productId, String color) {
+    @Transactional(readOnly = true)
+    public ProductInfoDto getProductInfo(Long productId) {
         Product product = productRepository
                 .findById(productId)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Product was not found by given externalId = %s", productId)));
 
-
-
-        product.getReviews();
-
-        return new ProductInfoDto(
-                product.getName(),
-                product.getArticleNumber(),
-                product.getBasePrice(),
-                availableColorsForEachProducts.values(),
-                availableSizesForEachProducts.values(),
-                /*collectionId*/,
-                /*categoryId*/,
-                product.getDescription(),
-                product.getMaterial(),
-                /*sizeOnModel*/,
-                /*review*/
-        );
+        return new ProductInfoDto(product);
     }
 }

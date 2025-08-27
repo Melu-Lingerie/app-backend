@@ -2,50 +2,35 @@ package ru.melulingerie.facade.products.dto.response;
 
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
+import ru.mellingerie.products.dto.ProductInfoDto;
+import ru.mellingerie.products.dto.ProductVariantDto;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-@Schema(name = "ProductCardResponse", description = "Карточка товара для витрины каталога")
+@Schema(name = "ProductCardResponse", description = "Карточка товара")
 public record ProductCardResponseDto(
-
-        @Schema(description = "Название товара", example = "Бюстгальтер Push-Up 'Aurora'")
+        Long productId,
         String name,
-
-        @Schema(description = "Артикул/идентификатор товара в каталоге", example = "BR-2025-AUR-001")
         String articleNumber,
-
-        @Schema(description = "Цена текущей продажи в валюте магазина", example = "3990.00")
         BigDecimal price,
-
-        @ArraySchema(arraySchema = @Schema(description = "Доступные цвета для выбора"),
-                schema = @Schema(description = "Название цвета", example = "Black"))
-        Set<String> colors,
-
-        @ArraySchema(arraySchema = @Schema(description = "Доступные размеры для выбора"),
-                schema = @Schema(description = "Размер", example = "M"))
-        Set<String> sizes,
-
-        @Schema(description = "Идентификатор коллекции, к которой относится товар", example = "12")
-        Long collectionId,
-
-        @Schema(description = "Идентификатор категории товара", example = "5")
-        Long categoryId,
-
-        @Schema(description = "Краткое описание товара", example = "Мягкая чашка, съемные вкладыши, регулируемые бретели")
         String description,
-
-        @Schema(description = "Состав материалов", example = "Полиамид 80%, Эластан 20%")
         String structure,
-
-        @Schema(description = "Размер изделия на модели", example = "S")
-        String sizeOnModel,
-
-        // оплату/доставку обычно описывают на уровне эндпоинта/ответов, потому как это не свойство товара
-        @ArraySchema(arraySchema = @Schema(description = "Отзывы покупателей по товару"),
-                schema = @Schema(implementation = ProductReviewResponseDto.class))
-        List<ProductReviewResponseDto> productReviewDtoList
-
-        // медиа лучше оформить отдельным полем (например, List<String> mediaUrls) с @ArraySchema
-) {}
+        Float score,
+        List<ProductVariantCardDto> productVariants
+) {
+    public ProductCardResponseDto(ProductInfoDto dto, Map<Long, String> mediaInfo) {
+        this(
+                dto.productId(),
+                dto.name(),
+                dto.articleNumber(),
+                dto.price(),
+                dto.description(),
+                dto.structure(),
+                dto.score(),
+                dto.productVariants().stream().map(variant -> new ProductVariantCardDto(variant, mediaInfo)).toList()
+        );
+    }
+}

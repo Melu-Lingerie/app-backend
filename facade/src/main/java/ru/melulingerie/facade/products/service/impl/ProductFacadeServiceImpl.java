@@ -14,6 +14,7 @@ import ru.melulingerie.facade.products.dto.response.ProductCatalogResponseDto;
 import ru.melulingerie.facade.products.mapper.ProductMapper;
 import ru.melulingerie.facade.products.service.ProductFacadeService;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -27,9 +28,7 @@ public class ProductFacadeServiceImpl implements ProductFacadeService {
 
     @Override
     public Page<ProductCatalogResponseDto> getPageOfProducts(ProductCatalogRequestDto request) {
-
         ProductFilterRequestDto productFilterRequestDto = productMapper.toProductFilterRequestDto(request);
-
         Page<ProductItemResponseDto> pageOfProducts = productService.getPageOfProducts(productFilterRequestDto);
 
         Map<Long/*productId*/,Long/*mediaId*/> mainMediaIds = pageOfProducts.getContent()
@@ -56,22 +55,8 @@ public class ProductFacadeServiceImpl implements ProductFacadeService {
     @Override
     public ProductCardResponseDto getProductCardInfo(Long productId) {
         ProductInfoDto productInfoDto = productService.getProductInfo(productId);
-
-
-
-        return new ProductCardResponseDto(
-                productInfoDto.name(),
-                productInfoDto.articleNumber(),
-                productInfoDto.price(),
-                productInfoDto.colors(),
-                productInfoDto.sizes(),
-                productInfoDto.collectionId(),
-                productInfoDto.categoryId(),
-                productInfoDto.description(),
-                productInfoDto.structure(),
-                productInfoDto.sizeOnModel(),
-                //review
-                //media
-        );
+        //todo поход в медиа сервис за ссылками
+        Map<Long/*mediaId*/, String/*url*/> mediaInfo = new HashMap<>();
+        return new ProductCardResponseDto(productInfoDto, mediaInfo);
     }
 }

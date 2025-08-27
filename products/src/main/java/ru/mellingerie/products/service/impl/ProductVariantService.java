@@ -3,7 +3,6 @@ package ru.mellingerie.products.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.mellingerie.products.projection.ProductIdColorProjection;
-import ru.mellingerie.products.projection.ProductIdSizeProjection;
 import ru.mellingerie.products.repository.ProductVariantRepository;
 
 import java.util.*;
@@ -23,20 +22,6 @@ public class ProductVariantService {
             result.computeIfAbsent(projection.getProductId(), v -> new HashSet<>())
                     .add(projection.getColorName());
         }
-
-        return result;
-    }
-
-    public Map<Long, Set<String>> findAvailableSizesForEachProducts(Set<Long> productIds) {
-        Map<Long, Set<String>> result = new HashMap<>();
-
-        List<ProductIdSizeProjection> sizesByProductIds = productVariantRepository.findSizesByProductIds(productIds, true);
-
-        for(ProductIdSizeProjection projection : sizesByProductIds) {
-            result.computeIfAbsent(projection.getProductId(), v -> new HashSet<>())
-                    .add(projection.getSize());
-        }
-
         return result;
     }
 }

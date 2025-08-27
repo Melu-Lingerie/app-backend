@@ -5,5 +5,5 @@ import ru.mellingerie.products.domain.ProductReview;
 
 public interface ProductReviewRepository extends JpaRepository<ProductReview, Long> {
 
-    find
+
 }
