@@ -28,7 +28,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("WishlistItemAddServiceImpl Tests")
-class WishlistItemAddServiceImplTest {
+class WishlistItemAddServiceTest {
 
     @Mock
     private WishlistRepository wishlistRepository;

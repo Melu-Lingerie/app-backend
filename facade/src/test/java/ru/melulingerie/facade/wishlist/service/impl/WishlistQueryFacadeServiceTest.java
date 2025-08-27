@@ -23,7 +23,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("WishlistQueryFacadeServiceImpl Tests")
-class WishlistQueryFacadeServiceImplTest {
+class WishlistQueryFacadeServiceTest {
 
     @Mock
     private WishlistGetService wishlistGetService;

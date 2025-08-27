@@ -3,6 +3,7 @@ package ru.melulingerie.service.impl;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import ru.melulingerie.dto.WishlistAddItemRequestDto;
@@ -25,13 +26,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class WishlistAddItemServiceImpl implements WishlistAddItemService {
 
-    private static final int MAX_ITEMS = 200;
+    @Value("${wishlist.max-items:200}")
+    private int MAX_ITEMS;
 
     private final WishlistValidator wishlistValidator;
     private final WishlistRepository wishlistRepository;
     private final WishlistItemRepository wishlistItemRepository;
 
-    //TODO реализовать кешериование
+    //TODO реализовать кеширование
     @Override
     @Transactional(rollbackOn = Exception.class)
     public WishlistAddItemResponseDto addWishlistItem(Long wishlistId, WishlistAddItemRequestDto request) {

@@ -16,7 +16,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("WishlistClearFacadeServiceImpl Tests")
-class WishlistClearFacadeServiceImplTest {
+class WishlistClearFacadeServiceTest {
 
     @Mock
     private WishlistClearService wishlistClearService;

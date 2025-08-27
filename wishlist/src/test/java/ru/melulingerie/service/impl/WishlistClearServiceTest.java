@@ -22,7 +22,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("WishlistClearServiceImpl Tests")
-class WishlistClearServiceImplTest {
+class WishlistClearServiceTest {
 
     @Mock
     private WishlistRepository wishlistRepository;
