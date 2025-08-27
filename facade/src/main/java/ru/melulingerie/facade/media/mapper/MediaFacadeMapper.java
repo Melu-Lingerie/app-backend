@@ -16,7 +16,6 @@ public interface MediaFacadeMapper {
     MediaRequestDto toMediaRequestDto(MediaFacadeRequestDto facadeRequest);
 
     MediaApiResponseDto toMediaApiResponseDto(MediaResponseDto coreResponse);
-
     @Named("mapFile")
     default CustomMultipartFile mapFile(CustomMultipartFileFacadeDto facadeFile) {
         if (facadeFile == null) {
