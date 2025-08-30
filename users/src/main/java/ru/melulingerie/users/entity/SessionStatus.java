@@ -1,0 +1,7 @@
+package ru.melulingerie.users.entity;
+
+public enum SessionStatus {
+    ACTIVE,
+    LOGGED_OUT,
+    EXPIRED
+} 

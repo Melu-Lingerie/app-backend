@@ -48,3 +48,4 @@ Thumbs.db
 /users/gradlew
 /users/gradlew.bat
 .cursor/rules
+/gradlew.bat
