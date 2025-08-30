@@ -1,7 +1,7 @@
 package ru.melulingerie.facade.products.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import ru.mellingerie.products.dto.ProductVariantMediaDto;
+import ru.melulingerie.products.dto.ProductVariantMediaDto;
 
 @Schema(name = "ProductVariantMediaCardDto", description = "Медиа-файл варианта товара")
 public record ProductVariantMediaCardDto(

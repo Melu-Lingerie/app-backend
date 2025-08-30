@@ -2,8 +2,10 @@ package ru.melulingerie.facade.products.dto.request;
 
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Max;
 import lombok.Builder;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 
 import java.math.BigDecimal;
 import java.util.Set;
@@ -12,10 +14,14 @@ import java.util.Set;
 @Builder
 public record ProductCatalogRequestDto(
 
+        @Schema(description = "Имя товара", example = "Трусы")
+        String name,
+
         @Schema(description = "Минимальная цена фильтра", example = "990.00")
         BigDecimal minPrice,
 
         @Schema(description = "Максимальная цена фильтра", example = "9990.00")
+        @Max(Integer.MAX_VALUE)
         BigDecimal maxPrice,
 
         @ArraySchema(arraySchema = @Schema(description = "Набор идентификаторов категорий"),
@@ -36,7 +42,7 @@ public record ProductCatalogRequestDto(
 
         @Schema(description = "Параметры пагинации и сортировки (page, size, sort)",
                 implementation = Pageable.class)
+        @PageableDefault(page = 0, size = 20, sort = "createdAt")
         Pageable pageable
-
 ) {}
 

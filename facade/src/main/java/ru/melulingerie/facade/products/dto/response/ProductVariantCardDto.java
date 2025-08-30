@@ -2,7 +2,7 @@ package ru.melulingerie.facade.products.dto.response;
 
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
-import ru.mellingerie.products.dto.ProductVariantDto;
+import ru.melulingerie.products.dto.ProductVariantDto;
 
 import java.math.BigDecimal;
 import java.util.List;

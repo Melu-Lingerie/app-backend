@@ -1,8 +1,8 @@
 package ru.melulingerie.facade.user.mapper;
 
 import org.mapstruct.Mapper;
-import ru.mellingerie.users.dto.UserCreateRequestDto;
-import ru.mellingerie.users.dto.UserCreateResponseDto;
+import ru.melulingerie.users.dto.UserCreateRequestDto;
+import ru.melulingerie.users.dto.UserCreateResponseDto;
 import ru.melulingerie.facade.user.dto.UserCreateFacadeRequestDto;
 import ru.melulingerie.facade.user.dto.UserCreateFacadeResponseDto;
 

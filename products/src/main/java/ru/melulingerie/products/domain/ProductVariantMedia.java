@@ -1,0 +1,32 @@
+package ru.melulingerie.products.domain;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Entity
+@Table(name = "product_variant_media",
+        indexes = @Index(name = "ix_pvm_variant", columnList = "product_variant_id"))
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class ProductVariantMedia {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "product_variant_media_id_seq")
+    @SequenceGenerator(name = "product_variant_media_id_seq", sequenceName = "product_variant_media_id_seq", allocationSize = 10)
+    private Long id;
+    
+    @ManyToOne(fetch = FetchType.LAZY,  optional = false)
+    @JoinColumn(name = "product_variant_id", nullable = false)
+    private ProductVariant productVariant;
+    
+    @Column(name = "media_id")
+    private Long mediaId;
+
+    @Column(name = "sort_order")
+    private Integer sortOrder;
+} 

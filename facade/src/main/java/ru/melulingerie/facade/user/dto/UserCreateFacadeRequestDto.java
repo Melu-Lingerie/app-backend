@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
-import ru.mellingerie.users.entity.DeviceType;
+import ru.melulingerie.users.entity.DeviceType;
 
 import java.math.BigDecimal;
 import java.util.UUID;

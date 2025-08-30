@@ -1,13 +1,12 @@
 package ru.melulingerie.facade.products.service.impl;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
-import ru.mellingerie.products.dto.ProductInfoDto;
-import ru.mellingerie.products.dto.request.ProductFilterRequestDto;
-import ru.mellingerie.products.dto.response.ProductItemResponseDto;
-import ru.mellingerie.products.service.ProductService;
+import ru.melulingerie.products.dto.ProductInfoDto;
+import ru.melulingerie.products.dto.request.ProductFilterRequestDto;
+import ru.melulingerie.products.dto.response.ProductItemResponseDto;
+import ru.melulingerie.products.service.ProductService;
 import ru.melulingerie.facade.products.dto.response.ProductCardResponseDto;
 import ru.melulingerie.facade.products.dto.request.ProductCatalogRequestDto;
 import ru.melulingerie.facade.products.dto.response.ProductCatalogResponseDto;
@@ -18,7 +17,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ProductFacadeServiceImpl implements ProductFacadeService {
