@@ -1,6 +1,7 @@
 package ru.melulingerie.products.repository;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -13,9 +14,10 @@ import java.util.List;
 
 public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
 
-    default Page<Product> findByParams(ProductFilterRequestDto requestDto) {
+    default Page<Product> findByParams(ProductFilterRequestDto requestDto, Pageable pageable) {
         Specification<Product> specification = Specification
-                .where(activeEq(requestDto.isActive()))
+                .<Product>unrestricted()
+                .and(activeEq(requestDto.isActive()))
                 .and(nameContains(requestDto.name()))
                 .and(priceGte(requestDto.minPrice()))
                 .and(priceLte(requestDto.maxPrice()))
@@ -23,7 +25,7 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
                 .and(sizeIn(requestDto.sizes()))
                 .and(onlyAvailableVariants(requestDto.onlyAvailableVariants()));
 
-        return this.findAll(specification, requestDto.pageable());
+        return this.findAll(specification, pageable);
     }
 
     // ---------- БАЗОВЫЕ ФИЛЬТРЫ ПО ПРОДУКТУ ----------

@@ -1,4 +1,4 @@
-//package ru.mellingerie.bootstrap;
+//package ru.melulingerie.bootstrap;
 //
 //import org.junit.jupiter.api.Test;
 //import org.springframework.boot.test.context.SpringBootTest;

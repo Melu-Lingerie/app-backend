@@ -2,6 +2,7 @@ package ru.melulingerie.facade.products.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.melulingerie.products.dto.ProductInfoDto;
 import ru.melulingerie.products.dto.request.ProductFilterRequestDto;
@@ -25,9 +26,9 @@ public class ProductFacadeServiceImpl implements ProductFacadeService {
     private final ProductService productService;
 
     @Override
-    public Page<ProductCatalogResponseDto> getPageOfProducts(ProductCatalogRequestDto request) {
+    public Page<ProductCatalogResponseDto> getPageOfProducts(ProductCatalogRequestDto request, Pageable pageable) {
         ProductFilterRequestDto productFilterRequestDto = productMapper.toProductFilterRequestDto(request);
-        Page<ProductItemResponseDto> pageOfProducts = productService.getPageOfProducts(productFilterRequestDto);
+        Page<ProductItemResponseDto> pageOfProducts = productService.getPageOfProducts(productFilterRequestDto, pageable);
 
         Map<Long/*productId*/,Long/*mediaId*/> mainMediaIds = pageOfProducts.getContent()
                 .stream()

@@ -4,9 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
-import ru.melulingerie.facade.wishlist.mocks.UserService;
 import ru.melulingerie.facade.wishlist.service.WishlistCreateFacadeService;
 import ru.melulingerie.service.WishlistCreateService;
+import ru.melulingerie.users.service.UserCreateService;
 
 /**
  * Фасадный сервис для создания wishlist
@@ -17,7 +17,7 @@ import ru.melulingerie.service.WishlistCreateService;
 public class WishlistCreateFacadeServiceImpl implements WishlistCreateFacadeService {
 
     private final WishlistCreateService wishlistCreateService;
-    private final UserService userService;
+    private final UserCreateService userCreateService;
     private final TransactionTemplate transactionTemplate;
 
     @Override
@@ -28,7 +28,7 @@ public class WishlistCreateFacadeServiceImpl implements WishlistCreateFacadeServ
     }
 
     private void validateUserExists(Long userId) {
-        userService.getUserById(userId).orElseThrow(() -> {
+        userCreateService.getUserById(userId).orElseThrow(() -> {
             log.warn("User not found for userId: {}", userId);
             return new IllegalArgumentException("User not found with id: " + userId);
         });

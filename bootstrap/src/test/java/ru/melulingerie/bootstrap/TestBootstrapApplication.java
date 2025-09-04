@@ -1,4 +1,4 @@
-package ru.mellingerie.bootstrap;
+package ru.melulingerie.bootstrap;
 
 import org.springframework.boot.SpringApplication;
 

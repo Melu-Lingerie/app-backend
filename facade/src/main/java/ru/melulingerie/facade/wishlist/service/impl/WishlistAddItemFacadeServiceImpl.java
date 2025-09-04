@@ -9,8 +9,8 @@ import ru.melulingerie.dto.WishlistAddItemResponseDto;
 import ru.melulingerie.facade.wishlist.dto.WishlistAddFacadeRequestDto;
 import ru.melulingerie.facade.wishlist.dto.WishlistAddFacadeResponseDto;
 import ru.melulingerie.facade.wishlist.mapper.WishlistMapper;
-import ru.melulingerie.facade.wishlist.mocks.ProductService;
 import ru.melulingerie.facade.wishlist.service.WishlistAddItemFacadeService;
+import ru.melulingerie.products.service.ProductService;
 import ru.melulingerie.service.WishlistAddItemService;
 import ru.melulingerie.service.WishlistCreateService;
 

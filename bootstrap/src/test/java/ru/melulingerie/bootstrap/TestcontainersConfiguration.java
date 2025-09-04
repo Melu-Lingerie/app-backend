@@ -1,4 +1,4 @@
-package ru.mellingerie.bootstrap;
+package ru.melulingerie.bootstrap;
 
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
