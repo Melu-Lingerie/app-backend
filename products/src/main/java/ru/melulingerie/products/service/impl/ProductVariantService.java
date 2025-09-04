@@ -1,7 +1,10 @@
 package ru.melulingerie.products.service.impl;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.melulingerie.products.domain.ProductVariant;
+import ru.melulingerie.products.dto.ProductVariantDto;
 import ru.melulingerie.products.projection.ProductIdColorProjection;
 import ru.melulingerie.products.repository.ProductVariantRepository;
 
@@ -18,10 +21,19 @@ public class ProductVariantService {
 
         List<ProductIdColorProjection> productColors = productVariantRepository.findColorsByProductIds(productIds, true);
 
-        for(ProductIdColorProjection projection : productColors) {
+        for (ProductIdColorProjection projection : productColors) {
             result.computeIfAbsent(projection.getProductId(), v -> new HashSet<>())
                     .add(projection.getColorName());
         }
         return result;
+    }
+
+    public ProductVariant getVariantById(Long variantId) {
+        return productVariantRepository.findById(variantId)
+                .orElseThrow(
+                        () -> new EntityNotFoundException(
+                                String.format("ProductVariant was not found by given externalId = %s", variantId)
+                        )
+                );
     }
 }

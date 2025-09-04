@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.melulingerie.products.domain.Product;
 import ru.melulingerie.products.domain.ProductVariant;
 import ru.melulingerie.products.dto.ProductInfoDto;
+import ru.melulingerie.products.dto.ProductVariantDto;
 import ru.melulingerie.products.repository.ProductRepository;
 import ru.melulingerie.products.service.ProductService;
 import ru.melulingerie.products.dto.request.ProductFilterRequestDto;
@@ -49,7 +50,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
-    public ProductInfoDto getProductInfo(Long productId) {
+    public ProductInfoDto getProductInfoById(Long productId) {
         Product product = productRepository
                 .findById(productId)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Product was not found by given externalId = %s", productId)));
@@ -57,13 +58,10 @@ public class ProductServiceImpl implements ProductService {
         return new ProductInfoDto(product);
     }
 
-    @Override
-    public Optional<Product> getProductById(Long productId) {
-        return Optional.empty();
-    }
 
     @Override
-    public Optional<ProductVariant> getProductVariantById(Long variantId) {
-        return Optional.empty();
+    public ProductVariantDto getProductVariantById(Long variantId) {
+        ProductVariant productVariant = productVariantService.getVariantById(variantId);
+        return new ProductVariantDto(productVariant);
     }
 }

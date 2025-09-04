@@ -14,7 +14,8 @@ public record ProductCatalogResponseDto(
         String name,
 
         @Schema(description = "Итоговая цена", example = "3990.00")
-        BigDecimal price
+        BigDecimal price,
 
-        // TODO: добавить поле URL изображения главной карточки при появлении
+
+        String s3url
 ) {}

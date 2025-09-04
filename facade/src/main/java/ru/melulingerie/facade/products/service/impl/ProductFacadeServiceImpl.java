@@ -4,15 +4,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import ru.melulingerie.facade.media.dto.MediaGetInfoFacadeResponseDto;
+import ru.melulingerie.facade.media.service.MediaGetFacadeService;
+import ru.melulingerie.facade.products.dto.request.ProductCatalogRequestDto;
+import ru.melulingerie.facade.products.dto.response.ProductCardResponseDto;
+import ru.melulingerie.facade.products.dto.response.ProductCatalogResponseDto;
+import ru.melulingerie.facade.products.mapper.ProductMapper;
+import ru.melulingerie.facade.products.service.ProductFacadeService;
 import ru.melulingerie.products.dto.ProductInfoDto;
 import ru.melulingerie.products.dto.request.ProductFilterRequestDto;
 import ru.melulingerie.products.dto.response.ProductItemResponseDto;
 import ru.melulingerie.products.service.ProductService;
-import ru.melulingerie.facade.products.dto.response.ProductCardResponseDto;
-import ru.melulingerie.facade.products.dto.request.ProductCatalogRequestDto;
-import ru.melulingerie.facade.products.dto.response.ProductCatalogResponseDto;
-import ru.melulingerie.facade.products.mapper.ProductMapper;
-import ru.melulingerie.facade.products.service.ProductFacadeService;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +26,7 @@ public class ProductFacadeServiceImpl implements ProductFacadeService {
 
     private final ProductMapper productMapper;
     private final ProductService productService;
+    private final MediaGetFacadeService mediaGetFacadeService;
 
     @Override
     public Page<ProductCatalogResponseDto> getPageOfProducts(ProductCatalogRequestDto request, Pageable pageable) {
@@ -37,23 +40,21 @@ public class ProductFacadeServiceImpl implements ProductFacadeService {
                         ProductItemResponseDto::mainMediaId
                 ));
 
-        //todo добавить поход в mediaService за фотографиями
-        //todo Map<Long/*mediaId*/, MediaInfo> mediaInfoById = mediaService.getMediaByIds(mainMediaIds.values());
+        Map<Long, MediaGetInfoFacadeResponseDto> mediaByIds = mediaGetFacadeService.getMediaByIds(mainMediaIds.values());
 
-        //временно для проверки работоспособности
         return pageOfProducts.map(response ->
                 new ProductCatalogResponseDto(
                         response.productId(),
                         response.name(),
-                        response.price()
-                        //todo mediaInfoById.get(response.mainMediaId())
+                        response.price(),
+                        mediaByIds.get(mainMediaIds.get(response.productId())).s3Url()
                         )
         );
     }
 
     @Override
     public ProductCardResponseDto getProductCardInfo(Long productId) {
-        ProductInfoDto productInfoDto = productService.getProductInfo(productId);
+        ProductInfoDto productInfoDto = productService.getProductInfoById(productId);
         //todo поход в медиа сервис за ссылками
         Map<Long/*mediaId*/, String/*url*/> mediaInfo = new HashMap<>();
         return new ProductCardResponseDto(productInfoDto, mediaInfo);
