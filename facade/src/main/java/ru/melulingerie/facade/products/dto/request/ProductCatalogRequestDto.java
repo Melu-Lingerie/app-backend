@@ -4,8 +4,6 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import lombok.Builder;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 
 import java.math.BigDecimal;
 import java.util.Set;
@@ -38,11 +36,6 @@ public record ProductCatalogRequestDto(
 
         @ArraySchema(arraySchema = @Schema(description = "Набор доступных цветов"),
                 schema = @Schema(description = "Название цвета", example = "Black"))
-        Set<String> colors,
-
-        @Schema(description = "Параметры пагинации и сортировки (page, size, sort)",
-                implementation = Pageable.class)
-        @PageableDefault(page = 0, size = 20, sort = "createdAt")
-        Pageable pageable
+        Set<String> colors
 ) {}
 

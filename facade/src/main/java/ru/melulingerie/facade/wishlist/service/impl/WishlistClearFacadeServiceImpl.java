@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
-import ru.melulingerie.facade.wishlist.mocks.UserService;
 import ru.melulingerie.facade.wishlist.service.WishlistClearFacadeService;
 import ru.melulingerie.service.WishlistClearService;
 

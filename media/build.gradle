@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.5.4'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'java-library'
 }
 
 group = 'ru.melulingerie'
@@ -26,7 +27,7 @@ repositories {
 dependencies {
 
     // --- Project modules ---
-    implementation project (':media:internal')
+    api project (':media:internal')
 
     // --- Spring ---
     implementation 'org.springframework.boot:spring-boot-starter-validation'

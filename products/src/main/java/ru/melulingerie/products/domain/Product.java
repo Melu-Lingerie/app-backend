@@ -77,8 +77,8 @@ public class Product {
     private Float score;
 
     @ToString.Exclude
-    @ManyToMany(mappedBy = "products")
-    private List<Collection> collections = new ArrayList<>();
+    @OneToMany(mappedBy = "product")
+    private List<CollectionProduct> collections = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {

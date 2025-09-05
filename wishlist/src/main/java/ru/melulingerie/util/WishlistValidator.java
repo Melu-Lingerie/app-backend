@@ -7,8 +7,8 @@ import ru.melulingerie.dto.WishlistAddItemRequestDto;
 import ru.melulingerie.exception.AggregatedValidationException;
 import ru.melulingerie.exception.ValidationErrors;
 import ru.melulingerie.exception.WishlistExceptions;
-import ru.melulingerie.wishlist.domain.Wishlist;
-import ru.melulingerie.wishlist.domain.WishlistItem;
+import ru.melulingerie.domain.Wishlist;
+import ru.melulingerie.domain.WishlistItem;
 
 @Slf4j
 @Service

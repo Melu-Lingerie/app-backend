@@ -7,8 +7,8 @@ import ru.melulingerie.dto.WishlistGetResponseDto;
 import ru.melulingerie.dto.WishlistItemGetResponseDto;
 import ru.melulingerie.service.WishlistGetService;
 import ru.melulingerie.util.WishlistValidator;
-import ru.melulingerie.wishlist.domain.WishlistItem;
-import ru.melulingerie.wishlist.repository.WishlistRepository;
+import ru.melulingerie.domain.WishlistItem;
+import ru.melulingerie.repository.WishlistRepository;
 
 import java.util.List;
 import java.util.Optional;

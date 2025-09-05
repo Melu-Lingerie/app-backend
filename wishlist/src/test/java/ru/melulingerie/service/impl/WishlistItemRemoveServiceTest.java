@@ -9,10 +9,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.melulingerie.exception.WishlistExceptions;
 import ru.melulingerie.util.WishlistValidator;
-import ru.melulingerie.wishlist.domain.Wishlist;
-import ru.melulingerie.wishlist.domain.WishlistItem;
-import ru.melulingerie.wishlist.repository.WishlistItemRepository;
-import ru.melulingerie.wishlist.repository.WishlistRepository;
+import ru.melulingerie.domain.Wishlist;
+import ru.melulingerie.domain.WishlistItem;
+import ru.melulingerie.repository.WishlistItemRepository;
+import ru.melulingerie.repository.WishlistRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;

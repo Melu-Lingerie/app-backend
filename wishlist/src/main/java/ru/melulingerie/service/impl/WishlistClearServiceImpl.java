@@ -6,9 +6,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.melulingerie.service.WishlistClearService;
 import ru.melulingerie.util.WishlistValidator;
-import ru.melulingerie.wishlist.domain.Wishlist;
-import ru.melulingerie.wishlist.repository.WishlistItemRepository;
-import ru.melulingerie.wishlist.repository.WishlistRepository;
+import ru.melulingerie.domain.Wishlist;
+import ru.melulingerie.repository.WishlistItemRepository;
+import ru.melulingerie.repository.WishlistRepository;
 
 /**
  * Доменный сервис для очистки wishlist

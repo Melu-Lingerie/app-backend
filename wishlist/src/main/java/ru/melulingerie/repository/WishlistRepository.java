@@ -1,9 +1,9 @@
-package ru.melulingerie.wishlist.repository;
+package ru.melulingerie.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import ru.melulingerie.wishlist.domain.Wishlist;
+import ru.melulingerie.domain.Wishlist;
 
 import java.util.Optional;
 
