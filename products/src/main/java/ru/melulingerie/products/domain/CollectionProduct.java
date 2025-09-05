@@ -25,5 +25,5 @@ public class CollectionProduct {
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("productId")
     @JoinColumn(name = "product_id")
-    private Product products;
+    private Product product;
 } 
