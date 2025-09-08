@@ -11,6 +11,7 @@ import ru.melulingerie.products.dto.request.ProductFilterRequestDto;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
 
@@ -22,6 +23,7 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
                 .and(priceGte(requestDto.minPrice()))
                 .and(priceLte(requestDto.maxPrice()))
                 .and(colorIn(requestDto.colors()))
+                .and(categoryIn(requestDto.categories()))
                 .and(sizeIn(requestDto.sizes()))
                 .and(onlyAvailableVariants(requestDto.onlyAvailableVariants()));
 
@@ -29,6 +31,12 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     }
 
     // ---------- БАЗОВЫЕ ФИЛЬТРЫ ПО ПРОДУКТУ ----------
+
+    static Specification<Product> categoryIn(Set<Long> categoryIds) {
+        return categoryIds == null || categoryIds.isEmpty()
+                ? null
+                : (root, cq, cb) -> root.get("category").get("id").in(categoryIds);
+    }
 
     static Specification<Product> nameContains(String q) {
         if (q == null || q.isBlank()) return null;
