@@ -403,9 +403,9 @@ info:
     Creates or resolves a guest user (role=GUEST, status=UNREGISTERED), binds a device,
     creates a session, and ensures a cart and wishlist exist. Idempotent by `sessionId`.
 servers:
-  - url: https://api.mellingerie.ru
+  - url: https://api.melulingerie.ru
     description: Production
-  - url: https://staging.api.mellingerie.ru
+  - url: https://staging.api.melulingerie.ru
     description: Staging
 
 paths:

@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.5.4'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'java-library'
 }
 
 group = 'ru.melulingerie'
@@ -19,7 +20,7 @@ repositories {
 
 dependencies {
 
-    implementation project (':wishlist:internal')
+    api project (':wishlist:internal')
 
     // --- Spring ---
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'

@@ -13,9 +13,9 @@ import ru.melulingerie.dto.WishlistAddItemResponseDto;
 import ru.melulingerie.facade.wishlist.dto.WishlistAddFacadeRequestDto;
 import ru.melulingerie.facade.wishlist.dto.WishlistAddFacadeResponseDto;
 import ru.melulingerie.facade.wishlist.mapper.WishlistMapper;
-import ru.melulingerie.facade.wishlist.mocks.ProductService;
-import ru.melulingerie.facade.wishlist.mocks.entity.Product;
-import ru.melulingerie.facade.wishlist.mocks.entity.ProductVariant;
+import ru.melulingerie.products.domain.Product;
+import ru.melulingerie.products.domain.ProductVariant;
+import ru.melulingerie.products.service.ProductService;
 import ru.melulingerie.service.WishlistAddItemService;
 
 import java.util.Optional;
@@ -66,7 +66,7 @@ class WishlistItemAddFacadeServiceTest {
 
         productVariant = new ProductVariant();
         productVariant.setId(VARIANT_ID);
-        productVariant.setName("Test Variant");
+        productVariant.getProduct().setName("Test Variant");
 
         facadeRequest = new WishlistAddFacadeRequestDto(PRODUCT_ID, VARIANT_ID);
         domainRequest = new WishlistAddItemRequestDto(PRODUCT_ID, VARIANT_ID);

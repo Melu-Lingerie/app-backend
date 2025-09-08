@@ -13,6 +13,8 @@ import ru.melulingerie.users.entity.UserSession;
 import ru.melulingerie.users.entity.UserStatus;
 import ru.melulingerie.users.repository.UserRepository;
 
+import java.util.Optional;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -58,5 +60,9 @@ public class UserCreateService {
                 .build();
 
         return userRepository.save(newUser);
+    }
+
+    public Optional<User> getUserById(Long userId) {
+        return Optional.empty();
     }
 }

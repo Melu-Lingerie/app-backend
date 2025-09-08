@@ -5,8 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.melulingerie.service.WishlistCreateService;
 import ru.melulingerie.util.WishlistValidator;
-import ru.melulingerie.wishlist.domain.Wishlist;
-import ru.melulingerie.wishlist.repository.WishlistRepository;
+import ru.melulingerie.domain.Wishlist;
+import ru.melulingerie.repository.WishlistRepository;
 
 /**
  * Доменный сервис для создания wishlist

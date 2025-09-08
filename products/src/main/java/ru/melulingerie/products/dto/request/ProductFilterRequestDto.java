@@ -16,7 +16,6 @@ public record ProductFilterRequestDto(
         Set<String> sizesOfBraWIthCups,
         Set<String> colors,
         Boolean isActive,
-        Boolean onlyAvailableVariants,
-        Pageable pageable
+        Boolean onlyAvailableVariants
 ) {
 }

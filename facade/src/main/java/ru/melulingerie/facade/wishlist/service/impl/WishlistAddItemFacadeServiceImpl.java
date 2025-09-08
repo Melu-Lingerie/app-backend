@@ -9,10 +9,9 @@ import ru.melulingerie.dto.WishlistAddItemResponseDto;
 import ru.melulingerie.facade.wishlist.dto.WishlistAddFacadeRequestDto;
 import ru.melulingerie.facade.wishlist.dto.WishlistAddFacadeResponseDto;
 import ru.melulingerie.facade.wishlist.mapper.WishlistMapper;
-import ru.melulingerie.facade.wishlist.mocks.ProductService;
 import ru.melulingerie.facade.wishlist.service.WishlistAddItemFacadeService;
+import ru.melulingerie.products.service.ProductService;
 import ru.melulingerie.service.WishlistAddItemService;
-import ru.melulingerie.service.WishlistCreateService;
 
 /**
  * Фасадный сервис для добавления элементов в wishlist
@@ -42,16 +41,10 @@ public class WishlistAddItemFacadeServiceImpl implements WishlistAddItemFacadeSe
     }
 
     private void validateProductExists(Long productId) {
-        productService.getProductById(productId).orElseThrow(() -> {
-            log.warn("Product not found for productId: {}", productId);
-            return new IllegalArgumentException("Product not found with id: " + productId);
-        });
+        productService.getProductInfoById(productId);
     }
 
     private void validateProductVariantExists(Long variantId) {
-        productService.getProductVariantById(variantId).orElseThrow(() -> {
-            log.warn("Product variant not found for variantId: {}", variantId);
-            return new IllegalArgumentException("Product variant not found with id: " + variantId);
-        });
+        productService.getProductVariantById(variantId);
     }
 }

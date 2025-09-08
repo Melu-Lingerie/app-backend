@@ -1,4 +1,4 @@
-package ru.melulingerie.wishlist.domain;
+package ru.melulingerie.domain;
 
 import jakarta.persistence.*;
 import lombok.Getter;

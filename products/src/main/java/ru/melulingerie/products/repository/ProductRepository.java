@@ -1,6 +1,7 @@
 package ru.melulingerie.products.repository;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -10,23 +11,32 @@ import ru.melulingerie.products.dto.request.ProductFilterRequestDto;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
 
-    default Page<Product> findByParams(ProductFilterRequestDto requestDto) {
+    default Page<Product> findByParams(ProductFilterRequestDto requestDto, Pageable pageable) {
         Specification<Product> specification = Specification
-                .where(activeEq(requestDto.isActive()))
+                .<Product>unrestricted()
+                .and(activeEq(requestDto.isActive()))
                 .and(nameContains(requestDto.name()))
                 .and(priceGte(requestDto.minPrice()))
                 .and(priceLte(requestDto.maxPrice()))
                 .and(colorIn(requestDto.colors()))
+                .and(categoryIn(requestDto.categories()))
                 .and(sizeIn(requestDto.sizes()))
                 .and(onlyAvailableVariants(requestDto.onlyAvailableVariants()));
 
-        return this.findAll(specification, requestDto.pageable());
+        return this.findAll(specification, pageable);
     }
 
     // ---------- БАЗОВЫЕ ФИЛЬТРЫ ПО ПРОДУКТУ ----------
+
+    static Specification<Product> categoryIn(Set<Long> categoryIds) {
+        return categoryIds == null || categoryIds.isEmpty()
+                ? null
+                : (root, cq, cb) -> root.get("category").get("id").in(categoryIds);
+    }
 
     static Specification<Product> nameContains(String q) {
         if (q == null || q.isBlank()) return null;

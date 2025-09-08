@@ -10,6 +10,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotNull;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -42,7 +44,8 @@ public interface ProductResource {
                     description = "Фильтры каталога и параметры пагинации. Параметры разворачиваются в query автоматически.",
                     required = false
             )
-            @ParameterObject ProductCatalogRequestDto productCatalogRequestDto
+            @ParameterObject ProductCatalogRequestDto productCatalogRequestDto,
+            Pageable pageable
     );
 
     @Operation(
@@ -66,7 +69,7 @@ public interface ProductResource {
                     description = "Идентификатор товара",
                     example = "1001"
             )
-            @PathVariable @NotNull Long productId
+            @PathVariable Long productId
     );
 }
 
