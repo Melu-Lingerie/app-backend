@@ -14,14 +14,40 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.melulingerie.facade.cart.dto.CartAddFacadeRequestDto;
 import ru.melulingerie.facade.cart.dto.CartAddFacadeResponseDto;
+import ru.melulingerie.facade.cart.dto.CartCreateFacadeResponseDto;
 import ru.melulingerie.facade.cart.dto.CartGetFacadeResponseDto;
 import ru.melulingerie.facade.cart.dto.CartUpdateQuantityFacadeRequestDto;
 
 import java.util.List;
 
 @Tag(name = "Cart", description = "Операции с корзиной покупок")
-@RequestMapping("/api/v1/cart/{cartId}")
+@RequestMapping("/api/v1/cart")
 public interface CartResource {
+
+    @Operation(
+            summary = "Создать корзину",
+            description = "Создает новую корзину для пользователя",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "201",
+                            description = "Корзина успешно создана",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = CartCreateFacadeResponseDto.class))
+                    ),
+                    @ApiResponse(responseCode = "400", description = "Некорректные данные запроса"),
+                    @ApiResponse(responseCode = "409", description = "У пользователя уже есть активная корзина")
+            }
+    )
+    @PostMapping
+    ResponseEntity<CartCreateFacadeResponseDto> createCart(
+            @Parameter(
+                    in = ParameterIn.HEADER,
+                    description = "ID пользователя для которого создается корзина",
+                    required = true,
+                    example = "1001"
+            )
+            @RequestHeader("X-User-Id") @NotNull Long userId
+    );
 
     @Operation(
             summary = "Получить содержимое корзины",
@@ -37,7 +63,7 @@ public interface CartResource {
                     @ApiResponse(responseCode = "400", description = "Некорректный ID корзины")
             }
     )
-    @GetMapping
+    @GetMapping("/{cartId}")
     ResponseEntity<CartGetFacadeResponseDto> getCart(
             @Parameter(
                     in = ParameterIn.PATH,
@@ -45,7 +71,15 @@ public interface CartResource {
                     example = "1001",
                     required = true
             )
-            @PathVariable("cartId") @NotNull Long cartId
+            @PathVariable("cartId") @NotNull Long cartId,
+            
+            @Parameter(
+                    in = ParameterIn.HEADER,
+                    description = "ID пользователя",
+                    required = true,
+                    example = "1001"
+            )
+            @RequestHeader("X-User-Id") @NotNull Long userId
     );
 
     @Operation(
@@ -63,7 +97,7 @@ public interface CartResource {
                     @ApiResponse(responseCode = "409", description = "Корзина заполнена или превышен лимит количества")
             }
     )
-    @PostMapping("/items")
+    @PostMapping("/{cartId}/items")
     ResponseEntity<CartAddFacadeResponseDto> addItemToCart(
             @Parameter(
                     in = ParameterIn.PATH,
@@ -77,7 +111,15 @@ public interface CartResource {
                     description = "Данные товара для добавления в корзину",
                     required = true
             )
-            @RequestBody @Valid CartAddFacadeRequestDto request
+            @RequestBody @Valid CartAddFacadeRequestDto request,
+            
+            @Parameter(
+                    in = ParameterIn.HEADER,
+                    description = "ID пользователя",
+                    required = true,
+                    example = "1001"
+            )
+            @RequestHeader("X-User-Id") @NotNull Long userId
     );
 
     @Operation(
@@ -89,7 +131,7 @@ public interface CartResource {
                     @ApiResponse(responseCode = "404", description = "Корзина или товар не найдены")
             }
     )
-    @PutMapping("/items/{itemId}/quantity")
+    @PutMapping("/{cartId}/items/{itemId}/quantity")
     ResponseEntity<Void> updateItemQuantity(
             @Parameter(
                     in = ParameterIn.PATH,
@@ -111,7 +153,15 @@ public interface CartResource {
                     description = "Новое количество товара",
                     required = true
             )
-            @RequestBody @Valid CartUpdateQuantityFacadeRequestDto request
+            @RequestBody @Valid CartUpdateQuantityFacadeRequestDto request,
+            
+            @Parameter(
+                    in = ParameterIn.HEADER,
+                    description = "ID пользователя",
+                    required = true,
+                    example = "1001"
+            )
+            @RequestHeader("X-User-Id") @NotNull Long userId
     );
 
     @Operation(
@@ -123,7 +173,7 @@ public interface CartResource {
                     @ApiResponse(responseCode = "404", description = "Корзина не найдена")
             }
     )
-    @DeleteMapping("/items")
+    @DeleteMapping("/{cartId}/items")
     ResponseEntity<Void> removeItemsFromCart(
             @Parameter(
                     in = ParameterIn.PATH,
@@ -137,7 +187,15 @@ public interface CartResource {
                     description = "Список идентификаторов товаров для удаления",
                     required = true
             )
-            @RequestBody @NotEmpty List<@NotNull Long> itemIds
+            @RequestBody @NotEmpty List<@NotNull Long> itemIds,
+            
+            @Parameter(
+                    in = ParameterIn.HEADER,
+                    description = "ID пользователя",
+                    required = true,
+                    example = "1001"
+            )
+            @RequestHeader("X-User-Id") @NotNull Long userId
     );
 
     @Operation(
@@ -153,7 +211,7 @@ public interface CartResource {
                     @ApiResponse(responseCode = "404", description = "Корзина не найдена")
             }
     )
-    @DeleteMapping
+    @DeleteMapping("/{cartId}")
     ResponseEntity<Integer> clearCart(
             @Parameter(
                     in = ParameterIn.PATH,
@@ -161,6 +219,14 @@ public interface CartResource {
                     example = "1001",
                     required = true
             )
-            @PathVariable("cartId") @NotNull Long cartId
+            @PathVariable("cartId") @NotNull Long cartId,
+            
+            @Parameter(
+                    in = ParameterIn.HEADER,
+                    description = "ID пользователя",
+                    required = true,
+                    example = "1001"
+            )
+            @RequestHeader("X-User-Id") @NotNull Long userId
     );
 }

@@ -29,6 +29,7 @@ dependencies {
     implementation project(':users')
     implementation project(':products')
     implementation project(':wishlist')
+    implementation project(':cart')
 
     // --- Spring ---
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
