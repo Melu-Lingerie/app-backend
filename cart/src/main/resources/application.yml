@@ -1,0 +1,3 @@
+cart:
+  max-items: 100
+  max-quantity-per-item: 99
