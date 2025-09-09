@@ -4,6 +4,7 @@ include 'api'
 include 'users'
 include 'bootstrap'
 include 'products'
+include 'price'
 
 include 'facade'
 
