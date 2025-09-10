@@ -1,0 +1,125 @@
+name: 🚀 Build and Push Docker Image
+
+on:
+  workflow_dispatch:
+    inputs:
+      triggered_by:
+        description: 'Who triggered the deployment'
+        required: false
+        default: 'Manual'
+        type: string
+
+env:
+  DOCKER_USERNAME: dekr0x
+  DOCKER_IMAGE_NAME: melulingerie
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+      image-digest: ${{ steps.build.outputs.digest }}
+      
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          
+      - name: ☕ Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          
+      - name: 📦 Cache Gradle packages
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+            
+      - name: 🔧 Make gradlew executable
+        run: chmod +x ./gradlew
+        
+      - name: 🧪 Run tests
+        run: ./gradlew test
+        
+      - name: 🔨 Build application
+        run: ./gradlew clean build -x test
+        
+      - name: 📋 Build info
+        run: |
+          echo "Build completed at: $(date)"
+          echo "Commit SHA: ${{ github.sha }}"
+          echo "Triggered by: ${{ inputs.triggered_by }}"
+          
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        
+      - name: 🔑 Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          
+      - name: 🏷️ Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest
+            
+      - name: 🏗️ Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          
+      - name: ✅ Build summary
+        run: |
+          echo "## 🚀 Build Completed Successfully" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Image:** \`${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Digest:** \`${{ steps.build.outputs.digest }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Triggered by:** ${{ inputs.triggered_by }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Time:** $(date)" >> $GITHUB_STEP_SUMMARY
+          
+      - name: 🏥 Image security scan
+        uses: docker/scout-action@v1
+        if: always()
+        continue-on-error: true
+        with:
+          command: cves
+          image: ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest
+          only-severities: critical,high
+          
+  notify-completion:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: always()
+    
+    steps:
+      - name: 📢 Workflow completed
+        run: |
+          if [ "${{ needs.build-and-push.result }}" == "success" ]; then
+            echo "✅ Build and push completed successfully"
+            echo "Image: ${{ needs.build-and-push.outputs.image-tag }}"
+          else
+            echo "❌ Build and push failed"
+            exit 1
+          fi
