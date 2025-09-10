@@ -36,7 +36,7 @@ public class FileValidator {
     public void validateFile(CustomMultipartFile file) {
         List<String> errors = new ArrayList<>();
 
-        if (file == null || file.content() == null || file.content().length == 0) {
+        if (file == null || file.inputStream() == null || file.size() == 0) {
             errors.add("Файл не выбран или пустой");
         }
 

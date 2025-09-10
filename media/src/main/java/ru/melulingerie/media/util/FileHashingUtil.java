@@ -3,7 +3,6 @@ package ru.melulingerie.media.util;
 import lombok.experimental.UtilityClass;
 import ru.melulingerie.media.dto.CustomMultipartFile;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.DigestInputStream;
@@ -17,8 +16,7 @@ public class FileHashingUtil {
 
     public String calculateSHA256(CustomMultipartFile file) throws IOException, NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance(HASH_ALGORITHM);
-        try (InputStream is = new ByteArrayInputStream(file.content());
-             DigestInputStream dis = new DigestInputStream(is, md)) {
+        try (DigestInputStream dis = new DigestInputStream(file.inputStream(), md)) {
             while (dis.read() != -1) ;
         }
         return bytesToHex(md.digest());
