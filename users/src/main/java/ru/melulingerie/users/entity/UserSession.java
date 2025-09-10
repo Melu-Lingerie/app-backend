@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.net.InetAddress;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -55,17 +56,33 @@ public class UserSession {
     @PrePersist
     protected void onCreate() {
         LocalDateTime now = LocalDateTime.now();
-        this.lastActivityAt = now;
-        this.expiresAt = now.plusHours(24);
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.lastActivityAt = LocalDateTime.now();
-        this.expiresAt = LocalDateTime.now().plusHours(24);
+        if (lastActivityAt == null) {
+            this.lastActivityAt = now;
+        }
+        if (expiresAt == null) {
+            this.expiresAt = now.plusHours(24);
+        }
     }
 
     public void addDevice(UserDevice device) {
         this.userDevice = device;
+    }
+
+    public void touch(Duration slidingTtl) {
+        LocalDateTime now = LocalDateTime.now();
+        this.lastActivityAt = now;
+        this.expiresAt = now.plus(slidingTtl);
+    }
+
+    public boolean isExpired() {
+        return LocalDateTime.now().isAfter(expiresAt);
+    }
+
+    public boolean isActive() {
+        return status == SessionStatus.ACTIVE && !isExpired();
+    }
+
+    public void close() {
+        this.status = SessionStatus.LOGGED_OUT;
     }
 }

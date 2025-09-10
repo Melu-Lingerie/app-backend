@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.melulingerie.users.dto.UserCreateRequestDto;
 import ru.melulingerie.users.entity.SessionStatus;
+import ru.melulingerie.users.entity.User; 
 import ru.melulingerie.users.entity.UserDevice;
 import ru.melulingerie.users.entity.UserSession;
 import ru.melulingerie.users.repository.UserSessionRepository;
@@ -24,7 +25,7 @@ public class UserSessionCreateService {
 
     @SneakyThrows
     @Transactional
-    public UserSession createUserSession(UUID sessionId, UserCreateRequestDto.DeviceInfoDto deviceInfo) {
+    public UserSession createUserSession(UUID sessionId, User user, UserCreateRequestDto.DeviceInfoDto deviceInfo) {
 
         // Создать новое устройство для пользователя
         UserDevice userDevice = null;
@@ -35,6 +36,7 @@ public class UserSessionCreateService {
         //TODO проверить NPE у InetAddress.getByName(deviceInfo.ipAddress())
         UserSession userSession = UserSession.builder()
                 .sessionId(sessionId)
+                .user(user)
                 .userDevice(userDevice)
                 .status(SessionStatus.ACTIVE)
                 .ipAddress(InetAddress.getByName(deviceInfo.ipAddress()))

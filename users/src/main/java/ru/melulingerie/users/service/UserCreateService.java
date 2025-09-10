@@ -47,7 +47,7 @@ public class UserCreateService {
 
     private Long createNewUserWithSessionAndDevice(UserCreateRequestDto request) {
         User newUser = createAndSaveUser();
-        UserSession userSession = userSessionCreateService.createUserSession(request.sessionId(), request.deviceInfo());
+        UserSession userSession = userSessionCreateService.createUserSession(request.sessionId(), newUser, request.deviceInfo());
         newUser.addUserSession(userSession);
         log.info("Создание нового юзера с ID: {}", newUser.getId());
         return newUser.getId();

@@ -3,12 +3,22 @@ spring:
     name: melu-lingerie
   profiles:
     active: dev
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: leikoplasterr@gmail.com
+    password: 'uotlpkeohedwjtdc'
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+
 
   # Data Source Configuration
   datasource:
-    url: jdbc:postgresql://${DB_ADDRESS}:5432/${DB_NAME}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: navvrks9
     driver-class-name: org.postgresql.Driver
     hikari:
       auto-commit: false
@@ -69,3 +79,17 @@ logging:
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+jwt:
+  secret: ${JWT_SECRET:change_me_to_very_long_256bit_secret_2025}
+  access-token:
+    expiration: 900
+  refresh-token:
+    expiration: 2592000
+
+app:
+  verification:
+    code-ttl-minutes: 15
+    max-attempts: 3
+    resend-cooldown-minutes: 1
+
