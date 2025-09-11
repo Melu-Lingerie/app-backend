@@ -8,6 +8,11 @@ on:
         required: false
         default: 'Manual'
         type: string
+      skip_tests:
+        description: 'Skip tests during build'
+        required: false
+        default: false
+        type: boolean
 
 env:
   DOCKER_USERNAME: dekr0x
@@ -39,16 +44,23 @@ jobs:
           gradle-version: wrapper
           
       - name: 🧪 Run tests
+        if: ${{ !inputs.skip_tests }}
         run: gradle test
         
       - name: 🔨 Build application
-        run: gradle clean build -x test
+        run: |
+          if [ "${{ inputs.skip_tests }}" == "true" ]; then
+            gradle clean build -x test
+          else
+            gradle clean build
+          fi
         
       - name: 📋 Build info
         run: |
           echo "Build completed at: $(date)"
           echo "Commit SHA: ${{ github.sha }}"
           echo "Triggered by: ${{ inputs.triggered_by }}"
+          echo "Tests skipped: ${{ inputs.skip_tests }}"
           
       - name: 🐳 Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -88,6 +100,7 @@ jobs:
           echo "**Image:** \`${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest\`" >> $GITHUB_STEP_SUMMARY
           echo "**Digest:** \`${{ steps.build.outputs.digest }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**Triggered by:** ${{ inputs.triggered_by }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Tests skipped:** ${{ inputs.skip_tests }}" >> $GITHUB_STEP_SUMMARY
           echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**Time:** $(date)" >> $GITHUB_STEP_SUMMARY
           
