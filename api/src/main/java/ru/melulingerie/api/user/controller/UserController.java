@@ -3,6 +3,7 @@ package ru.melulingerie.api.user.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.melulingerie.api.user.resource.UserResource;
@@ -25,5 +26,10 @@ public class UserController implements UserResource {
         log.info("Получен запрос на создание гостевого пользователя с sessionId: {}", sessionId);
         UserCreateFacadeRequestDto requestDto = new UserCreateFacadeRequestDto(sessionId, request.deviceInfo());
         return ResponseEntity.ok(userCreateFacadeService.createGuestUser(requestDto));
+    }
+
+    @GetMapping("test")
+    public String test() {
+        return "Auth test successfully =)";
     }
 }
