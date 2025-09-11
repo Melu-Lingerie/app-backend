@@ -33,24 +33,16 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           
-      - name: 📦 Cache Gradle packages
-        uses: actions/cache@v3
+      - name: 📦 Setup Gradle
+        uses: gradle/gradle-build-action@v3
         with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-            
-      - name: 🔧 Make gradlew executable
-        run: chmod +x ./gradlew
-        
+          gradle-version: wrapper
+          
       - name: 🧪 Run tests
-        run: ./gradlew test
+        run: gradle test
         
       - name: 🔨 Build application
-        run: ./gradlew clean build -x test
+        run: gradle clean build -x test
         
       - name: 📋 Build info
         run: |
