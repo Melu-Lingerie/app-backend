@@ -24,7 +24,7 @@ import ru.melulingerie.auth.service.JwtAuthenticationFilter;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final UserDetailsService userDetailsService; // ваш CustomUserDetailsService
+    private final UserDetailsService userDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter; // фильтр из п.3
 
     @Bean
@@ -36,9 +36,9 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/actuator/**",
-                                "/api/**"
+                                "/api/v1/users/guests/**"
                         ).permitAll()
-//                        .anyRequest().authenticated()
+                        .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
@@ -49,13 +49,13 @@ public class SecurityConfig {
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider p = new DaoAuthenticationProvider();
         p.setUserDetailsService(userDetailsService);
-        p.setPasswordEncoder(passwordEncoder()); // BCrypt — стандарт де-факто
+        p.setPasswordEncoder(passwordEncoder());
         return p;
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(); // рекомендуется Spring Security [20][14]
+        return new BCryptPasswordEncoder();
     }
 
     @Bean

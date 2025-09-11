@@ -13,7 +13,8 @@ import java.util.Optional;
 @Repository
 public interface UserCredentialsRepository extends JpaRepository<UserCredentials, Long> {
 
-    Optional<UserCredentials> findByIdentifierAndIdentityType(String identifier, IdentityType identityType);
+    @Query("SELECT uc FROM UserCredentials uc JOIN FETCH uc.user WHERE uc.identifier = :identifier AND uc.identityType = :identityType")
+    Optional<UserCredentials> findByIdentifierAndIdentityType(@Param("identifier") String identifier, @Param("identityType") IdentityType identityType);
 
     @Query("""
            SELECT uc FROM UserCredentials uc

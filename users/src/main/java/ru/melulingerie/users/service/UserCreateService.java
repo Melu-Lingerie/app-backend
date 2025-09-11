@@ -63,6 +63,6 @@ public class UserCreateService {
     }
 
     public Optional<User> getUserById(Long userId) {
-        return Optional.empty();
+        return userRepository.findById(userId);
     }
 }

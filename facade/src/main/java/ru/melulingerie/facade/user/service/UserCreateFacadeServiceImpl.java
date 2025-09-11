@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.melulingerie.facade.wishlist.service.WishlistCreateFacadeService;
 import ru.melulingerie.users.dto.UserCreateRequestDto;
 import ru.melulingerie.users.dto.UserCreateResponseDto;
 import ru.melulingerie.users.service.UserCreateService;
@@ -18,6 +19,7 @@ public class UserCreateFacadeServiceImpl implements UserCreateFacadeService {
 
     private final UserCreateService userCreateService;
     private final UserFacadeMapper userFacadeMapper;
+    private final WishlistCreateFacadeService wishlistCreateFacadeService;
 
     @Override
     @Transactional
@@ -30,11 +32,10 @@ public class UserCreateFacadeServiceImpl implements UserCreateFacadeService {
 
         //TODO вызвать методы создания-получения корзины и вишлиста
         Long cartId = 123L;
-        Long wishlistId = 123L;
+        Long wishlistId = wishlistCreateFacadeService.createWishlistForUser(userId);
 
         UserCreateResponseDto usersResponse = new UserCreateResponseDto(userId, cartId, wishlistId);
-        UserCreateFacadeResponseDto facadeResponse = userFacadeMapper.usersDtoToFacadeDto(usersResponse);
 
-        return facadeResponse;
+        return userFacadeMapper.usersDtoToFacadeDto(usersResponse);
     }
 }
