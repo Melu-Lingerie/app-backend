@@ -2,30 +2,27 @@ package ru.melulingerie.products.dto;
 
 import ru.melulingerie.products.domain.Product;
 
-import java.math.BigDecimal;
 import java.util.List;
 
-public record ProductInfoDto(
+public record ProductInfoResponseDto(
         Long productId,
         String name,
         String articleNumber,
-        BigDecimal price,
         String description,
         String structure,
         Float score,
-        List<ProductVariantDto> productVariants
+        List<ProductVariantResponseDto> productVariants
 ) {
     
-    public ProductInfoDto (Product product){
+    public ProductInfoResponseDto(Product product) {
         this(
                 product.getId(), 
                 product.getName(),
                 product.getArticleNumber(),
-                product.getBasePrice(),
-                product.getDescription(), 
+                product.getDescription(),
                 product.getMaterial(),
                 product.getScore(),
-                product.getVariants().stream().map(ProductVariantDto::new).toList()
+                product.getVariants().stream().map(ProductVariantResponseDto::new).toList()
         );
     }
 }

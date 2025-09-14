@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import ru.melulingerie.products.domain.ProductVariant;
 import ru.melulingerie.products.projection.ProductIdColorProjection;
+import ru.melulingerie.products.projection.ProductIdPriceIdProjection;
 import ru.melulingerie.products.projection.ProductIdSizeProjection;
 
 import java.util.List;
@@ -29,4 +30,13 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
                   and pv.isAvailable = :isAvailable
             """)
     List<ProductIdSizeProjection> findSizesByProductIds(Set<Long> productIds, boolean b);
+
+    @Query("""
+            select distinct pv.product.id as productId,
+                   pv.priceId as priceId
+            from ProductVariant pv
+            where pv.product.id in :productIds
+                  and pv.isAvailable = :isAvailable
+            """)
+    List<ProductIdPriceIdProjection> findPricesByProductIds(Set<Long> productIds, boolean b);
 }

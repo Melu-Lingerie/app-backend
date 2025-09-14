@@ -25,6 +25,8 @@ repositories {
 
 dependencies {
     // --- Project modules ---
+    implementation project(':query')
+    implementation project(':price')
     implementation project(':media')
     implementation project(':users')
     implementation project(':products')

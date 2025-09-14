@@ -2,11 +2,8 @@ package ru.melulingerie.facade.products.dto.response;
 
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
-import ru.melulingerie.products.dto.ProductInfoDto;
 
-import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 
 @Schema(name = "ProductCardResponse", description = "Карточка товара")
 public record ProductCardResponseDto(
@@ -19,9 +16,6 @@ public record ProductCardResponseDto(
 
         @Schema(description = "Артикул/ID", example = "BR-2025-AUR-001")
         String articleNumber,
-
-        @Schema(description = "Цена", example = "3990.00")
-        BigDecimal price,
 
         @Schema(description = "Описание товара", example = "Мягкая чашка, съемные вкладыши, регулируемые бретели")
         String description,
@@ -37,16 +31,4 @@ public record ProductCardResponseDto(
         List<ProductVariantCardDto> productVariants
 
 ) {
-    public ProductCardResponseDto(ProductInfoDto dto, Map<Long, String> mediaInfo) {
-        this(
-                dto.productId(),
-                dto.name(),
-                dto.articleNumber(),
-                dto.price(),
-                dto.description(),
-                dto.structure(),
-                dto.score(),
-                dto.productVariants().stream().map(variant -> new ProductVariantCardDto(variant, mediaInfo)).toList()
-        );
-    }
 }

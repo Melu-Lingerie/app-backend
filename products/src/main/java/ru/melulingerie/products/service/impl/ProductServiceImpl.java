@@ -9,15 +9,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.melulingerie.products.domain.Product;
 import ru.melulingerie.products.domain.ProductVariant;
-import ru.melulingerie.products.dto.ProductInfoDto;
-import ru.melulingerie.products.dto.ProductVariantDto;
+import ru.melulingerie.products.dto.ProductInfoResponseDto;
+import ru.melulingerie.products.dto.ProductVariantResponseDto;
 import ru.melulingerie.products.repository.ProductRepository;
 import ru.melulingerie.products.service.ProductService;
 import ru.melulingerie.products.dto.request.ProductFilterRequestDto;
 import ru.melulingerie.products.dto.response.ProductItemResponseDto;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -27,7 +26,6 @@ import java.util.stream.Collectors;
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
-
     private final ProductVariantService productVariantService;
 
     @Override
@@ -36,11 +34,12 @@ public class ProductServiceImpl implements ProductService {
         Page<Product> productsByParams = productRepository.findByParams(productFilterRequestDto, pageable);
         Set<Long> productIds = productsByParams.getContent().stream().map(Product::getId).collect(Collectors.toSet());
         Map<Long, Set<String>> availableColorsForEachProducts = productVariantService.findAvailableColorsForEachProducts(productIds);
+        Map<Long, Set<Long>> availablePricesForEachProducts = productVariantService.findAvailablePricesForEachProducts(productIds);
 
         return productsByParams.map(entity ->
                 new ProductItemResponseDto(
                         entity.getId(),
-                        entity.getBasePrice(),
+                        availablePricesForEachProducts.get(entity.getId()),
                         entity.getName(),
                         entity.getMainMediaId(),
                         availableColorsForEachProducts.get(entity.getId())
@@ -50,18 +49,18 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
-    public ProductInfoDto getProductInfoById(Long productId) {
+    public ProductInfoResponseDto getProductInfoById(Long productId) {
         Product product = productRepository
                 .findById(productId)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Product was not found by given externalId = %s", productId)));
 
-        return new ProductInfoDto(product);
+        return new ProductInfoResponseDto(product);
     }
 
-
     @Override
-    public ProductVariantDto getProductVariantById(Long variantId) {
+    @Transactional(readOnly = true)
+    public ProductVariantResponseDto getProductVariantById(Long variantId) {
         ProductVariant productVariant = productVariantService.getVariantById(variantId);
-        return new ProductVariantDto(productVariant);
+        return new ProductVariantResponseDto(productVariant);
     }
 }

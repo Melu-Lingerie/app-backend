@@ -5,7 +5,7 @@ import java.util.Set;
 
 public record ProductItemResponseDto(
         Long productId,
-        BigDecimal price,
+        Set<Long> priceIdsForEachVariant,
         String name,
         Long mainMediaId,
         Set<String> colors

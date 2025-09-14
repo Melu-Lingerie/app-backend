@@ -2,11 +2,9 @@ package ru.melulingerie.facade.products.dto.response;
 
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
-import ru.melulingerie.products.dto.ProductVariantDto;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 
 @Schema(name = "ProductVariantCardDto", description = "Вариант товара для карточки (цвет/размер и атрибуты наличия)")
 public record ProductVariantCardDto(
@@ -24,7 +22,7 @@ public record ProductVariantCardDto(
         Integer stockQuantity,
 
         @Schema(description = "Доплата к базовой цене для данного варианта", example = "200.00")
-        BigDecimal additionalPrice,
+        BigDecimal price,
 
         @Schema(description = "Признак доступности к заказу", example = "true")
         Boolean isAvailable,
@@ -37,19 +35,4 @@ public record ProductVariantCardDto(
         List<ProductVariantMediaCardDto> productVariantMedia
 
 ) {
-    public ProductVariantCardDto(ProductVariantDto dto, Map<Long, String> mediaInfo) {
-        this(
-                dto.id(),
-                dto.colorName(),
-                dto.size(),
-                dto.stockQuantity(),
-                dto.additionalPrice(),
-                dto.isAvailable(),
-                dto.sortOrder(),
-                dto.productVariantMedia()
-                        .stream()
-                        .map(media -> new ProductVariantMediaCardDto(media, mediaInfo.get(media.mediaId())))
-                        .toList()
-        );
-    }
 }

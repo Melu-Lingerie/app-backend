@@ -6,14 +6,11 @@ import ru.melulingerie.products.dto.response.ProductItemResponseDto;
 import ru.melulingerie.facade.config.MapStructConfig;
 import ru.melulingerie.facade.products.dto.request.ProductCatalogRequestDto;
 import ru.melulingerie.facade.products.dto.response.ProductCatalogResponseDto;
+import ru.melulingerie.query.dto.request.ProductCatalogFilterRequestDto;
 
 @Mapper(config = MapStructConfig.class)
 public interface ProductMapper {
 
-    ProductFilterRequestDto toProductFilterRequestDto(ProductCatalogRequestDto productCatalogRequestDto);
-
-    ProductCatalogResponseDto toProductCatalogResponseDto(ProductItemResponseDto productItemResponseDto);
-
-
+    ProductCatalogFilterRequestDto toProductCatalogFilterRequestDto(ProductCatalogRequestDto productCatalogRequestDto);
 
 }

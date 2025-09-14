@@ -34,9 +34,6 @@ public class Product {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
     
-    @Column(name = "base_price", nullable = false, precision = 10, scale = 2)
-    private BigDecimal basePrice;
-    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private Category category;
@@ -64,6 +61,9 @@ public class Product {
     
     @Column(name = "is_active")
     private Boolean isActive = true;
+
+    @Column(name = "price_id", nullable = false)
+    private Long priceId;
 
     @ToString.Exclude
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)

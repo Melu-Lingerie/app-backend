@@ -5,6 +5,7 @@ include 'users'
 include 'bootstrap'
 include 'products'
 include 'price'
+include 'query'
 
 include 'facade'
 
@@ -13,3 +14,5 @@ include 'media:internal'
 include 'wishlist'
 include 'wishlist'
 include 'wishlist:internal'
+include 'query'
+include 'query'
