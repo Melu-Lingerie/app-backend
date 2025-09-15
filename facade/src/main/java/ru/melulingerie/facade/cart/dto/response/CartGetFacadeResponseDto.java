@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 public record CartGetFacadeResponseDto(
-        List<CartItemWithPriceFacadeResponseDto> items,
+        List<CartItemDetailsFacadeResponseDto> items,
         Integer itemsCount,
         BigDecimal totalAmount
 ) {}

@@ -16,8 +16,12 @@ import ru.melulingerie.products.service.ProductService;
 import ru.melulingerie.products.dto.request.ProductFilterRequestDto;
 import ru.melulingerie.products.dto.response.ProductItemResponseDto;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -62,5 +66,20 @@ public class ProductServiceImpl implements ProductService {
     public ProductVariantResponseDto getProductVariantById(Long variantId) {
         ProductVariant productVariant = productVariantService.getVariantById(variantId);
         return new ProductVariantResponseDto(productVariant);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<Long, ProductInfoResponseDto> getProductInfoByIds(Collection<Long> productIds) {
+        if (productIds == null || productIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        List<Product> products = productRepository.findAllById(productIds);
+        return products.stream()
+                .collect(Collectors.toMap(
+                    Product::getId,
+                    product -> new ProductInfoResponseDto(product)
+                ));
     }
 }
