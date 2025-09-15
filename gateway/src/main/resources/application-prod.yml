@@ -1,0 +1,19 @@
+spring:
+  cloud:
+    gateway:
+      routes:
+        # Backend Service Route for Production
+        - id: backend-service
+          uri: ${BACKEND_URL:http://51.250.69.176:8080}
+          predicates:
+            - Path=/api/**
+          filters:
+            - StripPrefix=1
+
+# Logging Configuration for Production
+logging:
+  level:
+    root: WARN
+    org.springframework.cloud.gateway: INFO
+    org.springframework.web.reactive: WARN
+    reactor.netty: WARN

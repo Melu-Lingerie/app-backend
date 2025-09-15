@@ -6,6 +6,7 @@ include 'bootstrap'
 include 'products'
 include 'price'
 include 'query'
+include 'gateway'
 
 include 'facade'
 
