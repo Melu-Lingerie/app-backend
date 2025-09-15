@@ -8,6 +8,7 @@ import ru.melulingerie.products.projection.ProductIdColorProjection;
 import ru.melulingerie.products.projection.ProductIdPriceIdProjection;
 import ru.melulingerie.products.projection.ProductIdSizeProjection;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -20,7 +21,8 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
             where pv.product.id in :productIds
                   and pv.isAvailable = :isAvailable
             """)
-    List<ProductIdColorProjection> findColorsByProductIds(@Param("productIds") Set<Long> productIds, @Param("isAvailable") Boolean isAvailable);
+    List<ProductIdColorProjection> findColorsByProductIds(@Param("productIds") Collection<Long> productIds,
+                                                          @Param("isAvailable") Boolean isAvailable);
 
     @Query("""
             select distinct pv.product.id as productId,
@@ -29,7 +31,8 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
             where pv.product.id in :productIds
                   and pv.isAvailable = :isAvailable
             """)
-    List<ProductIdSizeProjection> findSizesByProductIds(Set<Long> productIds, boolean b);
+    List<ProductIdSizeProjection> findSizesByProductIds(@Param("productIds")Set<Long> productIds,
+                                                        @Param("isAvailable") boolean isAvailable);
 
     @Query("""
             select distinct pv.product.id as productId,
@@ -38,5 +41,6 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
             where pv.product.id in :productIds
                   and pv.isAvailable = :isAvailable
             """)
-    List<ProductIdPriceIdProjection> findPricesByProductIds(Set<Long> productIds, boolean b);
+    List<ProductIdPriceIdProjection> findPricesByProductIds(@Param("productIds")Set<Long> productIds,
+                                                            @Param("isAvailable") boolean isAvailable);
 }

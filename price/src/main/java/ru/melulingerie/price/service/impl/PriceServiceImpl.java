@@ -19,7 +19,7 @@ public class PriceServiceImpl implements PriceService {
     private final PriceRepository priceRepository;
 
     @Override
-    public Map<Long/*priceId*/, PriceQuoteDto> getCurrentPrices(Set<Long> priceIds) {
+    public Map<Long/*priceId*/, PriceQuoteDto> getPricesByIds(Set<Long> priceIds) {
         if (priceIds == null || priceIds.isEmpty()) {
             return Collections.emptyMap();
         }
