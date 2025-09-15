@@ -1,6 +1,7 @@
 package ru.melulingerie.facade.products.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import ru.melulingerie.products.enums.ProductStatus;
 
 import java.math.BigDecimal;
 import java.util.Set;
@@ -22,5 +23,7 @@ public record ProductCatalogResponseDto(
 
         //todo рассмотреть возможность использования енам вместо стринги
         @Schema(description = "Доступные цвета")
-        Set<String> colors
+        Set<String> colors,
+
+        ProductStatus productStatus
 ) {}

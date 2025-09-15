@@ -15,6 +15,7 @@ public class ProductCatalogRowMapper implements RowMapper<ProductCatalogItemResp
         String name = rs.getString("name");
         BigDecimal price = rs.getBigDecimal("price");
         String s3url = rs.getString("s3url");
-        return new ProductCatalogItemResponseDto(productId, name, price, s3url);
+        String productStatus = rs.getString("product_status");
+        return new ProductCatalogItemResponseDto(productId, name, price, s3url, productStatus);
     }
 }

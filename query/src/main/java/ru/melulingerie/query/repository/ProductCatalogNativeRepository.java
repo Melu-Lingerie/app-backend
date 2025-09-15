@@ -36,7 +36,8 @@ public class ProductCatalogNativeRepository {
               p.id           as product_id,
               p.name         as name,
               pr.base_amount as price,
-              m.s3url       as s3url
+              m.s3url       as s3url,
+              p.status as product_status
             from products p
             join prices pr on pr.id = p.price_id
             left join media m on m.id = p.main_media_id
@@ -60,6 +61,10 @@ public class ProductCatalogNativeRepository {
         if (req != null && req.categories() != null && !req.categories().isEmpty()) {
             where.append(" and p.category_id in (:categories) ");
             params.addValue("categories", req.categories()); // безопасный IN со списком [20]
+        }
+        if (req != null && req.productStatus() != null) {
+            where.append(" and p.status = :status ");
+            params.addValue("status", req.productStatus());
         }
         if (req != null && req.sizes() != null && !req.sizes().isEmpty()) {
             where.append("""
@@ -91,6 +96,7 @@ public class ProductCatalogNativeRepository {
                 """);
             params.addValue("colors", req.colors()); // безопасный IN со списком [20]
         }
+
 
         // Белый список сортируемых полей -> SQL-колонки
         Map<String, String> sortWhitelist = Map.of(

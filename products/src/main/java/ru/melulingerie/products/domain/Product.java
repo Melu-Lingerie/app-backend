@@ -2,6 +2,7 @@ package ru.melulingerie.products.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
+import ru.melulingerie.products.enums.ProductStatus;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -58,8 +59,9 @@ public class Product {
     @Column(name = "main_media_id")
     private Long mainMediaId;
     
-    @Column(name = "is_active")
-    private Boolean isActive = true;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private ProductStatus status = ProductStatus.AVAILABLE;
 
     @Column(name = "price_id", nullable = false)
     private Long priceId;

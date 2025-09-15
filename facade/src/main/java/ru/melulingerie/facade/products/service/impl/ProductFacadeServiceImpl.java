@@ -18,6 +18,7 @@ import ru.melulingerie.price.service.PriceService;
 import ru.melulingerie.products.dto.ProductInfoResponseDto;
 import ru.melulingerie.products.dto.ProductVariantMediaResponseDto;
 import ru.melulingerie.products.dto.ProductVariantResponseDto;
+import ru.melulingerie.products.enums.ProductStatus;
 import ru.melulingerie.products.service.ProductService;
 import ru.melulingerie.query.dto.request.ProductCatalogFilterRequestDto;
 import ru.melulingerie.query.dto.response.ProductCatalogItemResponseDto;
@@ -54,7 +55,8 @@ public class ProductFacadeServiceImpl implements ProductFacadeService {
                         item.name(),
                         item.price(),
                         item.s3url(),
-                        availableColorsByProductIds.get(item.productId())
+                        availableColorsByProductIds.get(item.productId()),
+                        ProductStatus.valueOf(item.productStatus())
                 )
         );
     }
