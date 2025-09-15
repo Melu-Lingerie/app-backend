@@ -39,15 +39,14 @@ public class ProductVariant {
     @Column(name = "stock_quantity")
     private Integer stockQuantity = 0;
 
-    //todo возможно заменить на порудукт прайс
-    @Column(name = "additional_price", precision = 10, scale = 2)
-    private BigDecimal additionalPrice = BigDecimal.ZERO;
-    
     @Column(name = "is_available")
     private Boolean isAvailable = true;
 
     @Column(name = "sort_order")
     private Integer sortOrder;
+
+    @Column(name = "price_id", nullable = false)
+    private Long priceId;
 
     @OneToMany(mappedBy = "productVariant", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<ProductVariantMedia> productVariantMedia = new ArrayList<>();

@@ -9,54 +9,97 @@ import ru.melulingerie.facade.media.service.MediaGetFacadeService;
 import ru.melulingerie.facade.products.dto.request.ProductCatalogRequestDto;
 import ru.melulingerie.facade.products.dto.response.ProductCardResponseDto;
 import ru.melulingerie.facade.products.dto.response.ProductCatalogResponseDto;
+import ru.melulingerie.facade.products.dto.response.ProductVariantCardDto;
+import ru.melulingerie.facade.products.dto.response.ProductVariantMediaCardDto;
 import ru.melulingerie.facade.products.mapper.ProductMapper;
 import ru.melulingerie.facade.products.service.ProductFacadeService;
-import ru.melulingerie.products.dto.ProductInfoDto;
-import ru.melulingerie.products.dto.request.ProductFilterRequestDto;
-import ru.melulingerie.products.dto.response.ProductItemResponseDto;
+import ru.melulingerie.price.dto.response.PriceQuoteDto;
+import ru.melulingerie.price.service.PriceService;
+import ru.melulingerie.products.dto.ProductInfoResponseDto;
+import ru.melulingerie.products.dto.ProductVariantMediaResponseDto;
+import ru.melulingerie.products.dto.ProductVariantResponseDto;
 import ru.melulingerie.products.service.ProductService;
+import ru.melulingerie.query.dto.request.ProductCatalogFilterRequestDto;
+import ru.melulingerie.query.dto.response.ProductCatalogItemResponseDto;
+import ru.melulingerie.query.service.ProductCatalogQueryService;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 public class ProductFacadeServiceImpl implements ProductFacadeService {
 
+    private final PriceService priceService;
     private final ProductMapper productMapper;
     private final ProductService productService;
     private final MediaGetFacadeService mediaGetFacadeService;
+    private final ProductCatalogQueryService productCatalogQueryService;
 
     @Override
     public Page<ProductCatalogResponseDto> getPageOfProducts(ProductCatalogRequestDto request, Pageable pageable) {
-        ProductFilterRequestDto productFilterRequestDto = productMapper.toProductFilterRequestDto(request);
-        Page<ProductItemResponseDto> pageOfProducts = productService.getPageOfProducts(productFilterRequestDto, pageable);
 
-        Map<Long/*productId*/,Long/*mediaId*/> mainMediaIds = pageOfProducts.getContent()
-                .stream()
-                .collect(Collectors.toMap(
-                        ProductItemResponseDto::productId,
-                        ProductItemResponseDto::mainMediaId
-                ));
+        ProductCatalogFilterRequestDto productFilterRequestDto = productMapper.toProductCatalogFilterRequestDto(request);
+        Page<ProductCatalogItemResponseDto> pageOfProducts = productCatalogQueryService.getProductCatalogItems(productFilterRequestDto, pageable);
 
-        Map<Long, MediaGetInfoFacadeResponseDto> mediaByIds = mediaGetFacadeService.getMediaByIds(mainMediaIds.values());
-
-        return pageOfProducts.map(response ->
+        return pageOfProducts.map(item ->
                 new ProductCatalogResponseDto(
-                        response.productId(),
-                        response.name(),
-                        response.price(),
-                        mediaByIds.get(mainMediaIds.get(response.productId())).s3Url()
-                        )
+                        item.productId(),
+                        item.name(),
+                        item.price(),
+                        item.s3url()
+                )
         );
     }
 
     @Override
     public ProductCardResponseDto getProductCardInfo(Long productId) {
-        ProductInfoDto productInfoDto = productService.getProductInfoById(productId);
-        //todo поход в медиа сервис за ссылками
-        Map<Long/*mediaId*/, String/*url*/> mediaInfo = new HashMap<>();
-        return new ProductCardResponseDto(productInfoDto, mediaInfo);
+        ProductInfoResponseDto productInfoResponseDto = productService.getProductInfoById(productId);
+
+        Set<Long> mediaIds = new HashSet<>();
+        Set<Long> priceIds = new HashSet<>();
+
+        for (ProductVariantResponseDto pv : productInfoResponseDto.productVariants()) {
+            priceIds.add(pv.priceId());
+            for (ProductVariantMediaResponseDto pvm : pv.productVariantMedia()) {
+                mediaIds.add(pvm.mediaId());
+            }
+        }
+
+        Map<Long/*mediaId*/, MediaGetInfoFacadeResponseDto> mediaByIds = mediaGetFacadeService.getMediaByIds(mediaIds);
+        Map<Long/*priceId*/, PriceQuoteDto> currentPrices = priceService.getCurrentPrices(priceIds);
+
+        List<ProductVariantCardDto> productVariantCardDtos = new ArrayList<>();
+        for (ProductVariantResponseDto productVariant : productInfoResponseDto.productVariants()) {
+            List<ProductVariantMediaCardDto> productVariantMediaCardDtos = new ArrayList<>(productVariant.productVariantMedia().size());
+            for (ProductVariantMediaResponseDto pvm : productVariant.productVariantMedia()) {
+                MediaGetInfoFacadeResponseDto mediaGetInfo = mediaByIds.get(pvm.mediaId());
+                productVariantMediaCardDtos.add(new ProductVariantMediaCardDto(
+                        mediaGetInfo.id(),
+                        pvm.sortOrder(),
+                        mediaGetInfo.s3Url()
+                ));
+            }
+
+            productVariantCardDtos.add(new ProductVariantCardDto(
+                    productVariant.id(),
+                    productVariant.colorName(),
+                    productVariant.size(),
+                    productVariant.stockQuantity(),
+                    currentPrices.get(productVariant.priceId()).price(),
+                    productVariant.isAvailable(),
+                    productVariant.sortOrder(),
+                    productVariantMediaCardDtos
+            ));
+        }
+
+        return new ProductCardResponseDto(
+                productInfoResponseDto.productId(),
+                productInfoResponseDto.name(),
+                productInfoResponseDto.articleNumber(),
+                productInfoResponseDto.description(),
+                productInfoResponseDto.structure(),
+                productInfoResponseDto.score(),
+                productVariantCardDtos
+        );
     }
 }
