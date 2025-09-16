@@ -101,7 +101,7 @@ public class MediaUploadServiceImpl implements MediaUploadService {
     }
 
     private void populateSpecificMetadata(Media media, CustomMultipartFile file) {
-        try (InputStream inputStream = new BufferedInputStream(new ByteArrayInputStream(file.content()))) {
+        try (InputStream inputStream = new BufferedInputStream(new ByteArrayInputStream(file.inputStream().readAllBytes()))) {
             Metadata metadata = ImageMetadataReader.readMetadata(inputStream);
 
             if (media.getMediaType() == MediaType.IMAGE) {
