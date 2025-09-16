@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.util.HashMap;
 import java.util.Map;
-
+//TODO оценить использование всех хэндлеров и подумать над переносом его в бутстрап
 @Slf4j
 @ControllerAdvice
 public class AuthExceptionHandler {

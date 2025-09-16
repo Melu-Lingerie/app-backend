@@ -44,24 +44,23 @@ public class AuthService {
         User user = creds.getUser();
 
         // 2) Проверка статуса/верификации
-        if (user.getStatus() != UserStatus.ACTIVE || !Boolean.TRUE.equals(creds.getIsVerified())) {
+        if (user.getStatus() != UserStatus.ACTIVE || Boolean.FALSE.equals(creds.getIsVerified())) {
             throw new IllegalStateException("Профиль не активирован или email не подтвержден");
         }
 
         // 3) Сверка пароля (BCrypt)
         if (creds.getPasswordHash() == null || !passwordEncoder.matches(dto.getPassword(), creds.getPasswordHash())) {
-            // минимальная обратная связь; счетчики failedLogin добавим позже
+            // TODO счетчики failedLogin добавим позже
             throw new IllegalArgumentException("Неверный email или пароль");
         }
 
-        // 4) Создать и сохранить UserSession — пока без UserDevice
+        // 4) Создать и сохранить UserSession
         UserSession session = UserSession.builder()
                 .sessionId(UUID.randomUUID())
                 .user(user)
                 .status(SessionStatus.ACTIVE)
                 .build();
         session = userSessionRepository.save(session);
-        // Полагаемся на @PrePersist в вашей сущности для выставления lastActivityAt/expiresAt
 
         // 5) Сгенерировать токены
         String access = jwtService.generateAccessToken(user, creds);
@@ -72,7 +71,7 @@ public class AuthService {
                 .token(refresh)
                 .user(user)
                 .userSession(session)            // связываем сессией
-                .expiryDate(LocalDateTime.now().plusSeconds(getRefreshTtlSeconds()))
+                .expiryDate(LocalDateTime.now().plusSeconds(jwtService.getRefreshTtlSeconds()))
                 .build();
         refreshTokenRepository.save(refreshToken);
 
@@ -86,8 +85,8 @@ public class AuthService {
                 .status(user.getStatus())
                 .accessToken(access)
                 .refreshToken(refresh)
-                .accessTokenExpiresIn(getAccessTtlSeconds())
-                .refreshTokenExpiresIn(getRefreshTtlSeconds())
+                .accessTokenExpiresIn(jwtService.getAccessTtlSeconds())
+                .refreshTokenExpiresIn(jwtService.getRefreshTtlSeconds())
                 .build();
     }
 
@@ -96,7 +95,7 @@ public class AuthService {
         RefreshToken oldRt = refreshTokenRepository.findByToken(dto.getRefreshToken())
                 .orElseThrow(() -> new IllegalArgumentException("Неверный refresh token"));
 
-        if (oldRt.getExpiryDate() == null || oldRt.getExpiryDate().isBefore(LocalDateTime.now())) {
+        if (oldRt.isExpired()) {
             // Удалим просроченный токен, чтобы не копился мусор
             refreshTokenRepository.delete(oldRt);
             throw new IllegalStateException("Refresh token истёк");
@@ -126,7 +125,7 @@ public class AuthService {
                 .token(newRefresh)
                 .user(user)
                 .userSession(session)
-                .expiryDate(LocalDateTime.now().plusSeconds(getRefreshTtlSeconds()))
+                .expiryDate(LocalDateTime.now().plusSeconds(jwtService.getRefreshTtlSeconds()))
                 .build();
         refreshTokenRepository.save(newRt);
 
@@ -135,58 +134,61 @@ public class AuthService {
 
         return RefreshResponseDto.builder()
                 .accessToken(newAccess)
-                .accessTokenExpiresIn(getAccessTtlSeconds())
+                .accessTokenExpiresIn(jwtService.getAccessTtlSeconds())
                 .refreshToken(newRefresh)
-                .refreshTokenExpiresIn(getRefreshTtlSeconds())
+                .refreshTokenExpiresIn(jwtService.getRefreshTtlSeconds())
                 .build();
     }
-
+    //TODO подумать над разделением логики для методов изменения юзера и только чтения
     @Transactional
     public void registerUser(RegisterRequestDto dto) {
         log.info("Начинаем регистрацию пользователя с email: {}", dto.getEmail());
-        
+
         // 1. Проверить, что email не занят активным пользователем
         if (credentialsRepository.existsByIdentifierAndIdentityType(dto.getEmail(), IdentityType.EMAIL)) {
             log.warn("Попытка регистрации с уже существующим email: {}", dto.getEmail());
-            throw new IllegalArgumentException("Пользователь с таким email уже существует");
+            //TODO подумать над кодом ошибки , что бы код ошибки говорил о проблеме
+            //TODO подумать надо выводом сообщения и проверкой. т.к. сейчас у пользователя, который не ввел проверочный код возвращается такая ошибка
+            throw new IllegalArgumentException("ПОДУМОЙ");
         }
-        
+        //TODO подумать над удалением старого емэила со статусом PENDING_VERIFICATION , если один и тот же пользователь пытается зарегестрироваться с нового с тем же userId
         // 2. Найти или создать пользователя
-        User user = findOrCreateUserForRegistration(dto);
-        
-        // 3. Обновить данные пользователя  
+        User user = createUser(dto);
+
+        // 3. Обновить данные пользователя
+        //TODO сравнить с макетами поля для регистрации
         updateUserData(user, dto);
-        
+        //TODO нужно ли удалять все коды верификации
         // 4. Очистить старые коды верификации для этого пользователя
         clearPreviousVerificationCodes(user);
-        
+
         // 5. Создать учетные данные (без верификации)
         createUserCredentials(user, dto);
-        
+
         // 6. Отправить код верификации
         emailVerificationService.sendVerificationCode(dto.getEmail(), user);
-        
-        log.info("Регистрация инициирована для пользователя: {}, код отправлен на email: {}", 
+
+        log.info("Регистрация инициирована для пользователя: {}, код отправлен на email: {}",
                 user.getId(), dto.getEmail());
     }
 
-    @Transactional  
+    @Transactional
     public LoginResponseDto verifyEmailAndComplete(VerifyEmailRequestDto dto) {
         log.info("Подтверждение email: {}", dto.getEmail());
-        
+
         // 1. Найти и проверить код верификации
         EmailVerification verification = emailVerificationService.validateCode(dto.getEmail(), dto.getCode());
-        
+
         // 2. Активировать пользователя
         User user = verification.getUser();
         activateUser(user, dto.getEmail());
-        
+        //TODO необходимо хранить коды некоторое время
         // 3. Удалить использованный код
         emailVerificationRepository.delete(verification);
-        
+
         // 4. Автоматически залогинить пользователя
         LoginResponseDto response = createLoginResponse(user, dto.getEmail());
-        
+
         log.info("Email подтвержден и пользователь активирован: {}", user.getId());
         return response;
     }
@@ -194,34 +196,27 @@ public class AuthService {
     @Transactional
     public void resendVerificationCode(String email) {
         log.info("Повторная отправка кода для email: {}", email);
-        
+
         // Найти неподтвержденного пользователя по email
         User user = findUnverifiedUserByEmail(email);
-        
+
         // Отправить новый код
         emailVerificationService.sendVerificationCode(email, user);
     }
+    //TODO подумать над названием
+    private User createUser(RegisterRequestDto dto) {
 
-    private User findOrCreateUserForRegistration(RegisterRequestDto dto) {
-        if (dto.getSessionId() != null) {
-            // Ищем существующего гостевого пользователя по sessionId
-            return userSessionQueryService.findBySessionId(dto.getSessionId())
-                    .map(UserSession::getUser)
-                    .filter(user -> user.getRole() == UserRole.GUEST && 
+        // Ищем существующего гостевого пользователя по sessionId
+        return userSessionQueryService.findBySessionId(dto.getSessionId())
+                .map(UserSession::getUser)
+                .filter(user -> user.getRole() == UserRole.GUEST &&
                         (user.getStatus() == UserStatus.UNREGISTERED || user.getStatus() == UserStatus.PENDING_VERIFICATION))
-                    .orElseThrow(() -> new IllegalArgumentException("Гостевой пользователь не найден или уже зарегистрирован"));
-        } else {
-            // Создаем нового пользователя (fallback для случаев без sessionId)
-            User newUser = User.builder()
-                    .role(UserRole.GUEST)
-                    .status(UserStatus.PENDING_VERIFICATION)
-                    .build();
-            return userRepository.save(newUser);
-        }
+                .orElseThrow(() -> new IllegalArgumentException("Гостевой пользователь не найден или уже зарегистрирован"));
     }
 
     private void updateUserData(User user, RegisterRequestDto dto) {
         user.setFirstName(dto.getFirstName());
+        user.setMiddleName(dto.getMiddleName());
         user.setLastName(dto.getLastName());
         user.setStatus(UserStatus.PENDING_VERIFICATION);
         userRepository.save(user);
@@ -235,14 +230,13 @@ public class AuthService {
                         .user(user)
                         .identityType(IdentityType.EMAIL)
                         .build());
-        
-        // Обновляем данные (независимо от того, новая запись или существующая)
+
         emailCreds.setIdentifier(dto.getEmail());
         emailCreds.setPasswordHash(passwordEncoder.encode(dto.getPassword()));
         emailCreds.setIsVerified(false);
         emailCreds.setFailedLoginCount(0);
         emailCreds.setVerifiedAt(null); // сбрасываем предыдущую верификацию
-        
+
         credentialsRepository.save(emailCreds);
         //TODO пока только по почте
         // Создаем phone credentials если указан телефон
@@ -257,7 +251,7 @@ public class AuthService {
 //            credentialsRepository.save(phoneCreds);
 //        }
     }
-
+    //TODO auth service начинает управлять моделью (UserDetailService), а должен заниматься только аутентификацией
     private void activateUser(User user, String email) {
         // Обновляем статус пользователя
         user.setStatus(UserStatus.ACTIVE);
@@ -268,7 +262,7 @@ public class AuthService {
         UserCredentials emailCreds = credentialsRepository
                 .findByIdentifierAndIdentityType(email, IdentityType.EMAIL)
                 .orElseThrow(() -> new IllegalStateException("Email credentials не найдены"));
-        
+
         emailCreds.setIsVerified(true);
         emailCreds.setVerifiedAt(LocalDateTime.now());
         credentialsRepository.save(emailCreds);
@@ -296,7 +290,7 @@ public class AuthService {
                 .token(refresh)
                 .user(user)
                 .userSession(session)
-                .expiryDate(LocalDateTime.now().plusSeconds(getRefreshTtlSeconds()))
+                .expiryDate(LocalDateTime.now().plusSeconds(jwtService.getRefreshTtlSeconds()))
                 .build();
         refreshTokenRepository.save(refreshToken);
 
@@ -309,8 +303,8 @@ public class AuthService {
                 .status(user.getStatus())
                 .accessToken(access)
                 .refreshToken(refresh)
-                .accessTokenExpiresIn(getAccessTtlSeconds())
-                .refreshTokenExpiresIn(getRefreshTtlSeconds())
+                .accessTokenExpiresIn(jwtService.getAccessTtlSeconds())
+                .refreshTokenExpiresIn(jwtService.getRefreshTtlSeconds())
                 .build();
     }
 
@@ -332,13 +326,4 @@ public class AuthService {
         emailVerificationRepository.deleteByUserId(user.getId());
     }
 
-    // Вытягиваем TTL из уже настроенного application.yml через JwtService
-    private long getAccessTtlSeconds() {
-        // временно парсим из exp токена, позже можно инжектить из настроек
-        // или держать в JwtService паблик-геттеры; пока оставим хардкод
-        return 900L;
-    }
-    private long getRefreshTtlSeconds() {
-        return 2_592_000L;
-    }
 }

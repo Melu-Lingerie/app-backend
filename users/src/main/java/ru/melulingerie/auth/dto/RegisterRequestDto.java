@@ -1,9 +1,6 @@
 package ru.melulingerie.auth.dto;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.util.UUID;
@@ -25,15 +22,20 @@ public class RegisterRequestDto {
     
     @NotBlank(message = "Фамилия обязательна")
     @Size(max = 50, message = "Фамилия не должна превышать 50 символов") 
+    private String middleName;
+
+    //TODO не забыть уточнить про все новые поля у Гриши
+    @NotBlank(message = "Отчество обязательно")
+    @Size(max = 50, message = "Отчество не должно превышать 50 символов")
     private String lastName;
-    
+
     @Pattern(regexp = "\\+7\\d{10}", message = "Телефон должен быть в формате +7XXXXXXXXXX")
     private String phoneNumber;
     
     @NotBlank(message = "Пароль обязателен")
     @Size(min = 8, message = "Пароль должен содержать минимум 8 символов")
     private String password;
-    
-    // SessionId существующего гостевого пользователя (опционально)
+    //TODO заменить на userId
+    @NotNull(message = "SessionId обязателен")
     private UUID sessionId;
 }

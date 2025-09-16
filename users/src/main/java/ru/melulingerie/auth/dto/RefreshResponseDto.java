@@ -10,6 +10,6 @@ import lombok.*;
 public class RefreshResponseDto {
     private String accessToken;
     private Long accessTokenExpiresIn; // сек
-    private String refreshToken;       // новый refresh
+    private String refreshToken;
     private Long refreshTokenExpiresIn;
 }

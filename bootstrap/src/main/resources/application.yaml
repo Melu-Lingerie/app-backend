@@ -32,8 +32,8 @@ spring:
   # JPA & Hibernate Configuration
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: false
+      ddl-auto: create-drop
+    show-sql: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -79,17 +79,18 @@ logging:
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
-
+##TODO какой задать секрет  и в каких единицах здесь установлено значение времени?
 jwt:
   secret: ${JWT_SECRET:change_me_to_very_long_256bit_secret_2025}
-  access-token:
-    expiration: 900
-  refresh-token:
-    expiration: 2592000
+  # Время жизни токенов в секундах
+  access-token-ttl-seconds: 900      # 15 минут
+  refresh-token-ttl-seconds: 2592000 # 30 дней
 
 app:
   verification:
     code-ttl-minutes: 15
     max-attempts: 3
     resend-cooldown-minutes: 1
+    ##TODO ссделать 72 часа
+    cleanup-interval-ms: 3600000  # 1 час в миллисекундах
 

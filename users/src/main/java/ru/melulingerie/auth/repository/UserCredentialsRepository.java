@@ -16,20 +16,6 @@ public interface UserCredentialsRepository extends JpaRepository<UserCredentials
     @Query("SELECT uc FROM UserCredentials uc JOIN FETCH uc.user WHERE uc.identifier = :identifier AND uc.identityType = :identityType")
     Optional<UserCredentials> findByIdentifierAndIdentityType(@Param("identifier") String identifier, @Param("identityType") IdentityType identityType);
 
-    @Query("""
-           SELECT uc FROM UserCredentials uc
-           JOIN FETCH uc.user u
-           WHERE uc.identifier = :email
-             AND uc.identityType = :identityType
-             AND u.status = :status
-             AND uc.isVerified = true
-           """)
-    Optional<UserCredentials> findVerifiedUserByEmailAndStatus(
-            @Param("email") String email,
-            @Param("identityType") IdentityType identityType,
-            @Param("status") UserStatus status
-    );
-
     boolean existsByIdentifierAndIdentityType(String identifier, IdentityType identityType);
     
     Optional<UserCredentials> findByUserAndIdentityType(ru.melulingerie.users.entity.User user, IdentityType identityType);

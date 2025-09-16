@@ -31,7 +31,7 @@ public class RefreshToken {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "session_id")
-    private UserSession userSession; // Ключевая интеграция!
+    private UserSession userSession;
 
     @Column(name = "expiry_date", nullable = false)
     private LocalDateTime expiryDate;
@@ -47,6 +47,6 @@ public class RefreshToken {
     private LocalDateTime createdAt;
 
     public boolean isExpired() {
-        return LocalDateTime.now().isAfter(expiryDate);
+        return expiryDate == null || LocalDateTime.now().isAfter(expiryDate);
     }
 }

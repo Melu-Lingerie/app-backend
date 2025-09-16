@@ -30,12 +30,10 @@ public class JwtService {
     private long refreshTtlSeconds;
 
     private SecretKey key() {
-        // HS256/HS512 ключ не короче 256 bit
         return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
 
     public String extractEmail(String token) {
-        // subject = email (на этапе генерации позже это зафиксируем)
         return extractClaim(token, Claims::getSubject);
     }
 
@@ -50,7 +48,6 @@ public class JwtService {
 
     public boolean isValid(String token) {
         try {
-            // Если распарсили и не истёк — считаем валидным (минимальная проверка)
             extractAllClaims(token);
             return !isTokenExpired(token);
         } catch (JwtException | IllegalArgumentException e) {
@@ -76,7 +73,6 @@ public class JwtService {
         claims.put("userId", user.getId());
         claims.put("role", user.getRole().name());
         claims.put("type", "ACCESS");
-        // Дополнительно можно добавить статус и имя по необходимости
 
         return buildToken(claims, creds.getIdentifier(), accessTtlSeconds);
     }

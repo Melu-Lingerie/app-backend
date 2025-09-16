@@ -21,11 +21,11 @@ public class EmailVerification {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "email_verif_seq")
     @SequenceGenerator(name = "email_verif_seq", sequenceName = "email_verif_id_seq", allocationSize = 10)
     private Long id;
-
+    //TODO подумать насчет привязать верификацию к UserCredentionals и заменить EmailVerification что бы он был универсален для телефона и емэил
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private ru.melulingerie.users.entity.User user;
-
+    //TODO можно удалить и определять по связи с UserCredentionals
     @Column(name = "email", nullable = false, length = 100)
     private String email;
 
