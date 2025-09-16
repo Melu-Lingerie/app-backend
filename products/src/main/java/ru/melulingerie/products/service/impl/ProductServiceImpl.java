@@ -42,22 +42,8 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Map<Long, Set<String>> findAvailableColorsByProductIds(Collection<Long> productIds) {
         return productVariantService.findAvailableColorsForEachProducts(productIds);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Map<Long, ProductInfoResponseDto> getProductInfoByIds(Collection<Long> productIds) {
-        if (productIds == null || productIds.isEmpty()) {
-            return Collections.emptyMap();
-        }
-
-        List<Product> products = productRepository.findAllById(productIds);
-        return products.stream()
-                .collect(Collectors.toMap(
-                    Product::getId,
-                    product -> new ProductInfoResponseDto(product)
-                ));
     }
 }

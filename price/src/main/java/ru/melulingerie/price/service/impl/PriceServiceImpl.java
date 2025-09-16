@@ -1,5 +1,6 @@
 package ru.melulingerie.price.service.impl;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +34,15 @@ public class PriceServiceImpl implements PriceService {
                         )
                 );
 
+    }
+
+    @Override
+    public PriceQuoteDto getPriceById(Long priceId) {
+        Price price = priceRepository.findById(priceId).orElseThrow(
+                () -> new EntityNotFoundException("Price with id " + priceId + " not found")
+        );
+
+        return new PriceQuoteDto(price.getId(), price.getBaseAmount());
     }
 }
 

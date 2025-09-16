@@ -10,4 +10,6 @@ public interface ProductVariantService {
     ProductVariant getVariantById(Long variantId);
 
     Map<Long, Set<String>> findAvailableColorsForEachProducts(Collection<Long> productIds);
+
+    Map<Long, ProductVariant> getVariantsByIds(Collection<Long> variantIds);
 }

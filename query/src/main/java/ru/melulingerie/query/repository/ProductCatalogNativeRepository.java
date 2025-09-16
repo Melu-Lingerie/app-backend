@@ -65,6 +65,9 @@ public class ProductCatalogNativeRepository {
         if (req != null && req.productStatus() != null) {
             where.append(" and p.status = :status ");
             params.addValue("status", req.productStatus());
+        } else {
+            where.append(" and p.status in (:statuses) ");
+            params.addValue("statuses", List.of("AVAILABLE", "NEW", "SOON"));
         }
         if (req != null && req.sizes() != null && !req.sizes().isEmpty()) {
             where.append("""

@@ -7,4 +7,6 @@ import java.util.Set;
 
 public interface PriceService {
     Map<Long, PriceQuoteDto> getPricesByIds(Set<Long> priceIds);
+
+    PriceQuoteDto getPriceById(Long priceId);
 }
