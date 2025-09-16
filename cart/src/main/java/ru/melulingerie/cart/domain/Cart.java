@@ -18,9 +18,7 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @Table(name = "carts", indexes = {
-        @Index(name = "idx_carts_user_updated", columnList = "user_id, updated_at"),
-        @Index(name = "idx_carts_created", columnList = "created_at"),
-        @Index(name = "idx_carts_updated", columnList = "updated_at")
+        @Index(name = "idx_cart_user", columnList = "user_id"),
 })
 public class Cart {
 
