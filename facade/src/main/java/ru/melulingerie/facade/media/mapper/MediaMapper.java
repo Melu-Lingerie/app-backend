@@ -26,7 +26,7 @@ public interface MediaMapper {
             return null;
         }
         return CustomMultipartFile.builder()
-                .content(facadeFile.content())
+                .inputStream(facadeFile.inputStream())
                 .originalFilename(facadeFile.originalFilename())
                 .contentType(facadeFile.contentType())
                 .size(facadeFile.size())

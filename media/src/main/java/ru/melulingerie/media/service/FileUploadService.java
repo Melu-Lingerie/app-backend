@@ -12,7 +12,6 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.ObjectCannedACL;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
-import java.io.ByteArrayInputStream;
 
 @Service
 @Slf4j
@@ -39,7 +38,7 @@ public class FileUploadService {
                 .acl(ObjectCannedACL.PUBLIC_READ)
                 .build();
 
-        s3Client.putObject(request, RequestBody.fromInputStream(new ByteArrayInputStream(file.content()), file.size()));
+        s3Client.putObject(request, RequestBody.fromInputStream(file.inputStream(), file.size()));
 
         String url = String.format(publicUrlTemplate, bucketName, key);
         log.info("File {} uploaded to S3. URL: {}", file.originalFilename(), url);

@@ -14,4 +14,9 @@ public interface ProductService {
     ProductVariantResponseDto getProductVariantById(Long variantId);
 
     Map<Long, Set<String>> findAvailableColorsByProductIds(Collection<Long> productIds);
+
+    /**
+     * Получение информации о продуктах по списку ID (batch операция)
+     */
+    Map<Long, ProductInfoResponseDto> getProductInfoByIds(Collection<Long> productIds);
 }

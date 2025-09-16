@@ -43,4 +43,14 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
             """)
     List<ProductIdPriceIdProjection> findPricesByProductIds(@Param("productIds")Set<Long> productIds,
                                                             @Param("isAvailable") boolean isAvailable);
+
+    /**
+     * Получение вариантов продуктов с eager загрузкой связанных продуктов одним запросом
+     */
+    @Query("""
+            select pv from ProductVariant pv
+            join fetch pv.product p
+            where pv.id in :variantIds
+            """)
+    List<ProductVariant> findAllByIdWithProduct(@Param("variantIds") Collection<Long> variantIds);
 }

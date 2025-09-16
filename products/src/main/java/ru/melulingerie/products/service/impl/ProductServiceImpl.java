@@ -13,9 +13,8 @@ import ru.melulingerie.products.repository.ProductRepository;
 import ru.melulingerie.products.service.ProductService;
 import ru.melulingerie.products.service.ProductVariantService;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -45,5 +44,20 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Map<Long, Set<String>> findAvailableColorsByProductIds(Collection<Long> productIds) {
         return productVariantService.findAvailableColorsForEachProducts(productIds);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<Long, ProductInfoResponseDto> getProductInfoByIds(Collection<Long> productIds) {
+        if (productIds == null || productIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        List<Product> products = productRepository.findAllById(productIds);
+        return products.stream()
+                .collect(Collectors.toMap(
+                    Product::getId,
+                    product -> new ProductInfoResponseDto(product)
+                ));
     }
 }
