@@ -8,6 +8,7 @@ import ru.melulingerie.products.projection.ProductIdColorProjection;
 import ru.melulingerie.products.projection.ProductIdPriceIdProjection;
 import ru.melulingerie.products.projection.ProductIdSizeProjection;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -39,4 +40,14 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
                   and pv.isAvailable = :isAvailable
             """)
     List<ProductIdPriceIdProjection> findPricesByProductIds(Set<Long> productIds, boolean b);
+
+    /**
+     * Получение вариантов продуктов с eager загрузкой связанных продуктов одним запросом
+     */
+    @Query("""
+            select pv from ProductVariant pv
+            join fetch pv.product p
+            where pv.id in :variantIds
+            """)
+    List<ProductVariant> findAllByIdWithProduct(@Param("variantIds") Collection<Long> variantIds);
 }

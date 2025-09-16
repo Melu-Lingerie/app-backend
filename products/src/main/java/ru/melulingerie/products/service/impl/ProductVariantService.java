@@ -9,6 +9,8 @@ import ru.melulingerie.products.projection.ProductIdPriceIdProjection;
 import ru.melulingerie.products.repository.ProductVariantRepository;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -47,5 +49,21 @@ public class ProductVariantService {
                                 String.format("ProductVariant was not found by given externalId = %s", variantId)
                         )
                 );
+    }
+
+    /**
+     * Получение вариантов продуктов по списку ID с eager загрузкой связанных продуктов (batch операция)
+     */
+    public Map<Long, ProductVariant> getVariantsByIds(Collection<Long> variantIds) {
+        if (variantIds == null || variantIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        List<ProductVariant> variants = productVariantRepository.findAllByIdWithProduct(variantIds);
+        return variants.stream()
+                .collect(Collectors.toMap(
+                    ProductVariant::getId,
+                    Function.identity()
+                ));
     }
 }
