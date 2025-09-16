@@ -12,6 +12,7 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
 
     Optional<RefreshToken> findByToken(String token);
 
+    //TODO нужны буду для реализации метода logOut
     void deleteByUserId(Long userId);
 
     void deleteByUserSessionSessionId(UUID sessionId);

@@ -34,7 +34,7 @@ public class EmailVerificationService {
     public void sendVerificationCode(String email, User user) {
         // Проверяем, не слишком ли часто запрашивается код
         checkResendCooldown(email);
-
+        //TODO дублирование удаления старых кодов
         // Деактивируем старые коды для этого пользователя
         repository.deleteByUserId(user.getId());
 
@@ -63,19 +63,21 @@ public class EmailVerificationService {
 
         if (verification.isExpired()) {
             log.warn("Попытка использования истекшего кода для email: {}", email);
+            //TODO подумать над ошибкой IllegalStateException
             throw new IllegalStateException("Код верификации истек");
         }
-
+        //TODO е
         if (verification.getAttempts() >= maxAttempts) {
             log.warn("Превышено количество попыток для email: {}", email);
             throw new IllegalStateException("Превышено количество попыток ввода кода");
         }
 
-        // Увеличиваем счетчик попыток
-        verification.setAttempts(verification.getAttempts() + 1);
-        repository.save(verification);
-
+        // Проверяем правильность кода
         if (!verification.getCode().equals(code)) {
+            //TODO не увеличивается счетчик , из-за транзакции подумать как исправить
+            // Увеличиваем счетчик попыток ТОЛЬКО для неправильного кода
+            verification.setAttempts(verification.getAttempts() + 1);
+            repository.save(verification);
             log.warn("Неверный код для email: {}, попытка: {}", email, verification.getAttempts());
             throw new IllegalArgumentException("Неверный код подтверждения");
         }

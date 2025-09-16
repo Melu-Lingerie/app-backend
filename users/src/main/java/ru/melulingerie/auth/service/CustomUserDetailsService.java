@@ -85,6 +85,7 @@ public class CustomUserDetailsService implements UserDetailsService {
             return user;
         }
 
+        //TODO нужен будет для метода /profile
         public UserCredentials getUserCredentials() {
             return userCredentials;
         }

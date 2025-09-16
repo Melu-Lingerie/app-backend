@@ -13,7 +13,7 @@ public class SchedulingConfig {
 
     private final EmailVerificationService emailVerificationService;
 
-    @Scheduled(fixedRate = 3600000) // каждый час
+    @Scheduled(fixedRateString = "${app.verification.cleanup-interval-ms}")
     public void cleanupExpiredVerificationCodes() {
         log.debug("Запуск очистки истекших кодов верификации");
         emailVerificationService.cleanupExpiredCodes();
