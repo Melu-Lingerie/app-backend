@@ -21,7 +21,7 @@ public class FileUploadService {
     private final S3Client s3Client;
     private final FileKeyGenerator fileKeyGenerator;
 
-    @Value("${yandex.storage.bucket-name}")
+    @Value("${YANDEX_BUCKET_NAME}")
     private String bucketName;
 
     @Value("${yandex.storage.public-url-template:https://%s.storage.yandexcloud.net/%s}")
