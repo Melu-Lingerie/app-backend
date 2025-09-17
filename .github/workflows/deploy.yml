@@ -132,8 +132,12 @@ jobs:
             echo "📦 Pulling latest image..."
             docker pull ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest
 
-            # Stop and remove old container
-            echo "⏹️ Stopping old container..."
+            # Stop and remove old containers using port 8080
+            echo "⏹️ Stopping containers on port 8080..."
+            docker ps -q --filter "publish=8080" | xargs -r docker stop 2>/dev/null || true
+            docker ps -aq --filter "publish=8080" | xargs -r docker rm 2>/dev/null || true
+
+            # Also try to stop by name if it exists
             docker stop ${{ env.DOCKER_IMAGE_NAME }} 2>/dev/null || true
             docker rm ${{ env.DOCKER_IMAGE_NAME }} 2>/dev/null || true
 
