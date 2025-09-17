@@ -130,7 +130,7 @@ jobs:
 
             # Pull latest image
             echo "📦 Pulling latest image..."
-            docker pull ${{ env.DOCKER_IMAGE_NAME }}:latest
+            docker pull ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest
 
             # Stop and remove old container
             echo "⏹️ Stopping old container..."
@@ -151,7 +151,7 @@ jobs:
               -e YANDEX_ACCESS_KEY=${{ secrets.YANDEX_ACCESS_KEY }} \
               -e YANDEX_SECRET_KEY=${{ secrets.YANDEX_SECRET_KEY }} \
               -e YANDEX_BUCKET_NAME=${{ secrets.YANDEX_BUCKET_NAME }} \
-              ${{ env.DOCKER_IMAGE_NAME }}:latest
+              ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest
 
             # Wait for health check
             echo "🏥 Waiting for application to start..."
