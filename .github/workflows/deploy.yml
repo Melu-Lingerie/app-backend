@@ -113,17 +113,76 @@ jobs:
           image: ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest
           only-severities: critical,high
           
-  notify-completion:
+  deploy-to-server:
     runs-on: ubuntu-latest
     needs: build-and-push
+    if: ${{ needs.build-and-push.result == 'success' }}
+
+    steps:
+      - name: 🚀 Deploy to server
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: 51.250.69.176
+          username: vlad
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            echo "🔄 Starting deployment..."
+
+            # Pull latest image
+            echo "📦 Pulling latest image..."
+            docker pull ${{ env.DOCKER_IMAGE_NAME }}:latest
+
+            # Stop and remove old container
+            echo "⏹️ Stopping old container..."
+            docker stop ${{ env.DOCKER_IMAGE_NAME }} 2>/dev/null || true
+            docker rm ${{ env.DOCKER_IMAGE_NAME }} 2>/dev/null || true
+
+            # Start new container
+            echo "▶️ Starting new container..."
+            docker run -d \
+              --name ${{ env.DOCKER_IMAGE_NAME }} \
+              --restart unless-stopped \
+              -p 8080:8080 \
+              -e SPRING_PROFILES_ACTIVE=prod \
+              -e DB_ADDRESS=172.17.0.1 \
+              -e DB_NAME=${{ secrets.DB_NAME }} \
+              -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
+              -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+              -e YANDEX_ACCESS_KEY=${{ secrets.YANDEX_ACCESS_KEY }} \
+              -e YANDEX_SECRET_KEY=${{ secrets.YANDEX_SECRET_KEY }} \
+              -e YANDEX_BUCKET_NAME=${{ secrets.YANDEX_BUCKET_NAME }} \
+              ${{ env.DOCKER_IMAGE_NAME }}:latest
+
+            # Wait for health check
+            echo "🏥 Waiting for application to start..."
+            sleep 15
+
+            # Check if container is running
+            if docker ps --filter "name=${{ env.DOCKER_IMAGE_NAME }}" --filter "status=running" | grep -q ${{ env.DOCKER_IMAGE_NAME }}; then
+              echo "✅ Deployment successful!"
+              echo "🌐 Application is running on http://51.250.69.176:8080"
+            else
+              echo "❌ Deployment failed - container not running"
+              docker logs ${{ env.DOCKER_IMAGE_NAME }} --tail 20
+              exit 1
+            fi
+
+  notify-completion:
+    runs-on: ubuntu-latest
+    needs: [build-and-push, deploy-to-server]
     if: always()
-    
+
     steps:
       - name: 📢 Workflow completed
         run: |
-          if [ "${{ needs.build-and-push.result }}" == "success" ]; then
-            echo "✅ Build and push completed successfully"
-            echo "Image: ${{ needs.build-and-push.outputs.image-tag }}"
+          if [ "${{ needs.build-and-push.result }}" == "success" ] && [ "${{ needs.deploy-to-server.result }}" == "success" ]; then
+            echo "✅ Build, push and deployment completed successfully"
+            echo "🌐 Application: http://51.250.69.176:8080"
+            echo "🐳 Image: ${{ needs.build-and-push.outputs.image-tag }}"
+          elif [ "${{ needs.build-and-push.result }}" == "success" ] && [ "${{ needs.deploy-to-server.result }}" != "success" ]; then
+            echo "⚠️ Build and push successful, but deployment failed"
+            echo "🐳 Image: ${{ needs.build-and-push.outputs.image-tag }}"
+            exit 1
           else
             echo "❌ Build and push failed"
             exit 1
