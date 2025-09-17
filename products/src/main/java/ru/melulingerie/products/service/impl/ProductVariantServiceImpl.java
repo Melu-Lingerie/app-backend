@@ -7,6 +7,7 @@ import ru.melulingerie.products.domain.ProductVariant;
 import ru.melulingerie.products.projection.ProductIdColorProjection;
 import ru.melulingerie.products.projection.ProductIdPriceIdProjection;
 import ru.melulingerie.products.repository.ProductVariantRepository;
+import ru.melulingerie.products.service.ProductVariantService;
 
 import java.util.*;
 import java.util.function.Function;
@@ -14,11 +15,22 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class ProductVariantService {
+public class ProductVariantServiceImpl implements ProductVariantService {
 
     private final ProductVariantRepository productVariantRepository;
 
-    public Map<Long/*productId*/, Set<String/*colors*/>> findAvailableColorsForEachProducts(Set<Long> productIds) {
+    @Override
+    public ProductVariant getVariantById(Long variantId) {
+        return productVariantRepository.findById(variantId)
+                .orElseThrow(
+                        () -> new EntityNotFoundException(
+                                String.format("ProductVariant was not found by given externalId = %s", variantId)
+                        )
+                );
+    }
+
+    @Override
+    public Map<Long/*productId*/, Set<String/*colors*/>> findAvailableColorsForEachProducts(Collection<Long> productIds) {
         Map<Long, Set<String>> result = new HashMap<>();
 
         List<ProductIdColorProjection> productColors = productVariantRepository.findColorsByProductIds(productIds, true);
@@ -40,15 +52,6 @@ public class ProductVariantService {
                     .add(projection.getPriceId());
         }
         return result;
-    }
-
-    public ProductVariant getVariantById(Long variantId) {
-        return productVariantRepository.findById(variantId)
-                .orElseThrow(
-                        () -> new EntityNotFoundException(
-                                String.format("ProductVariant was not found by given externalId = %s", variantId)
-                        )
-                );
     }
 
     /**

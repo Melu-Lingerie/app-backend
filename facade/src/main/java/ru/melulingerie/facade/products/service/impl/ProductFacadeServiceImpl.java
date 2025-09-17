@@ -18,12 +18,14 @@ import ru.melulingerie.price.service.PriceService;
 import ru.melulingerie.products.dto.ProductInfoResponseDto;
 import ru.melulingerie.products.dto.ProductVariantMediaResponseDto;
 import ru.melulingerie.products.dto.ProductVariantResponseDto;
+import ru.melulingerie.products.enums.ProductStatus;
 import ru.melulingerie.products.service.ProductService;
 import ru.melulingerie.query.dto.request.ProductCatalogFilterRequestDto;
 import ru.melulingerie.query.dto.response.ProductCatalogItemResponseDto;
 import ru.melulingerie.query.service.ProductCatalogQueryService;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -41,12 +43,20 @@ public class ProductFacadeServiceImpl implements ProductFacadeService {
         ProductCatalogFilterRequestDto productFilterRequestDto = productMapper.toProductCatalogFilterRequestDto(request);
         Page<ProductCatalogItemResponseDto> pageOfProducts = productCatalogQueryService.getProductCatalogItems(productFilterRequestDto, pageable);
 
+        Set<Long> productIds = pageOfProducts.getContent()
+                .stream()
+                .map(ProductCatalogItemResponseDto::productId)
+                .collect(Collectors.toSet());
+        Map<Long, Set<String>> availableColorsByProductIds = productService.findAvailableColorsByProductIds(productIds);
+
         return pageOfProducts.map(item ->
                 new ProductCatalogResponseDto(
                         item.productId(),
                         item.name(),
                         item.price(),
-                        item.s3url()
+                        item.s3url(),
+                        availableColorsByProductIds.get(item.productId()),
+                        ProductStatus.valueOf(item.productStatus())
                 )
         );
     }
@@ -66,7 +76,7 @@ public class ProductFacadeServiceImpl implements ProductFacadeService {
         }
 
         Map<Long/*mediaId*/, MediaGetInfoFacadeResponseDto> mediaByIds = mediaGetFacadeService.getMediaByIds(mediaIds);
-        Map<Long/*priceId*/, PriceQuoteDto> currentPrices = priceService.getCurrentPrices(priceIds);
+        Map<Long/*priceId*/, PriceQuoteDto> currentPrices = priceService.getPricesByIds(priceIds);
 
         List<ProductVariantCardDto> productVariantCardDtos = new ArrayList<>();
         for (ProductVariantResponseDto productVariant : productInfoResponseDto.productVariants()) {

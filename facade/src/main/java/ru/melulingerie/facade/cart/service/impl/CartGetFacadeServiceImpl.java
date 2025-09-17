@@ -15,7 +15,7 @@ import ru.melulingerie.price.dto.response.PriceQuoteDto;
 import ru.melulingerie.price.service.PriceService;
 import ru.melulingerie.products.domain.ProductVariant;
 import ru.melulingerie.products.domain.ProductVariantMedia;
-import ru.melulingerie.products.service.impl.ProductVariantService;
+import ru.melulingerie.products.service.ProductVariantService;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -80,7 +80,7 @@ public class CartGetFacadeServiceImpl implements CartGetFacadeService {
         Set<Long> priceIds = variantMap.values().stream()
                 .map(ProductVariant::getPriceId)
                 .collect(Collectors.toSet());
-        Map<Long, PriceQuoteDto> priceMap = priceService.getCurrentPrices(priceIds);
+        Map<Long, PriceQuoteDto> priceMap = priceService.getPricesByIds(priceIds);
 
         Set<Long> mediaIds = variantMap.values().stream()
                 .flatMap(variant -> Optional.ofNullable(variant.getProductVariantMedia())

@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import lombok.Builder;
+import ru.melulingerie.products.enums.ProductStatus;
 
 import java.math.BigDecimal;
 import java.util.Set;
@@ -36,6 +37,9 @@ public record ProductCatalogRequestDto(
 
         @ArraySchema(arraySchema = @Schema(description = "Набор доступных цветов"),
                 schema = @Schema(description = "Название цвета", example = "Black"))
-        Set<String> colors
+        Set<String> colors,
+
+        @Schema(description = "запрашиваемый статус продукта")
+        ProductStatus productStatus
 ) {}
 

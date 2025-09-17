@@ -15,7 +15,7 @@ import ru.melulingerie.cart.service.CartAddItemService;
 import ru.melulingerie.cart.service.CartGetService;
 import ru.melulingerie.cart.dto.response.CartGetResponseDto;
 import ru.melulingerie.price.service.PriceService;
-import ru.melulingerie.products.service.impl.ProductVariantService;
+import ru.melulingerie.products.service.ProductVariantService;
 
 import java.math.BigDecimal;
 import java.util.Set;
@@ -45,8 +45,7 @@ public class CartAddItemFacadeServiceImpl implements CartAddItemFacadeService {
         
         // Рассчитываем цену товара
         Long priceId = productVariantService.getVariantById(request.variantId()).getPriceId();
-        BigDecimal unitPrice = priceService.getCurrentPrices(Set.of(priceId))
-                .get(priceId)
+        BigDecimal unitPrice = priceService.getPriceById(priceId)
                 .price();
         BigDecimal itemTotalPrice = unitPrice.multiply(BigDecimal.valueOf(response.finalQuantity()));
         
@@ -77,8 +76,7 @@ public class CartAddItemFacadeServiceImpl implements CartAddItemFacadeService {
         BigDecimal totalAmount = cartData.items().stream()
                 .map(item -> {
                     Long itemPriceId = productVariantService.getVariantById(item.variantId()).getPriceId();
-                    BigDecimal itemUnitPrice = priceService.getCurrentPrices(Set.of(itemPriceId))
-                            .get(itemPriceId)
+                    BigDecimal itemUnitPrice = priceService.getPriceById(itemPriceId)
                             .price();
                     return itemUnitPrice.multiply(BigDecimal.valueOf(item.quantity()));
                 })

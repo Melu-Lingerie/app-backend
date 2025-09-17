@@ -6,6 +6,7 @@ public record ProductCatalogItemResponseDto(
         Long productId,
         String name,
         BigDecimal price,
-        String s3url
+        String s3url,
+        String productStatus
 ) {
 }

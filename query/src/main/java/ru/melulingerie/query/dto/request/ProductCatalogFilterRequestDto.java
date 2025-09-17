@@ -11,7 +11,6 @@ public record ProductCatalogFilterRequestDto(
         Set<String> sizes,
         Set<String> sizesOfBraWithCups,
         Set<String> colors,
-        Boolean isActive,
-        Boolean onlyAvailableVariants
+        String productStatus
 ) {
 }
