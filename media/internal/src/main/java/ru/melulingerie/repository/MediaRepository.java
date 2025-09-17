@@ -39,6 +39,8 @@ public interface MediaRepository extends JpaRepository<Media, Long> {
      * @return Список медиа-файлов.
      */
     @Query("SELECT m FROM Media m " +
+            " LEFT JOIN FETCH m.image" +
+            " LEFT JOIN FETCH m.video " +
             "WHERE m.id IN :ids AND m.isActive = true AND m.isDeleted = false")
     List<Media> findByIdInAndIsActiveTrueAndIsDeletedFalse(@Param("ids") Collection<Long> ids);
 }
