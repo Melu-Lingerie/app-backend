@@ -1,4 +1,4 @@
-name: 🚀 Build and Push Docker Image
+name: Build and Deploy Application
 
 on:
   workflow_dispatch:
@@ -27,27 +27,27 @@ jobs:
       image-digest: ${{ steps.build.outputs.digest }}
       
     steps:
-      - name: 📥 Checkout code
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
           
-      - name: ☕ Set up JDK 21
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
           
-      - name: 📦 Setup Gradle
+      - name: Setup Gradle
         uses: gradle/gradle-build-action@v3
         with:
           gradle-version: wrapper
           
-      - name: 🧪 Run tests
+      - name: Run tests
         if: ${{ !inputs.skip_tests }}
         run: gradle test
         
-      - name: 🔨 Build application
+      - name: Build application
         run: |
           if [ "${{ inputs.skip_tests }}" == "true" ]; then
             gradle clean build -x test
@@ -55,23 +55,23 @@ jobs:
             gradle clean build
           fi
         
-      - name: 📋 Build info
+      - name: Build info
         run: |
           echo "Build completed at: $(date)"
           echo "Commit SHA: ${{ github.sha }}"
           echo "Triggered by: ${{ inputs.triggered_by }}"
           echo "Tests skipped: ${{ inputs.skip_tests }}"
           
-      - name: 🐳 Set up Docker Buildx
+      - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         
-      - name: 🔑 Log in to Docker Hub
+      - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ env.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
           
-      - name: 🏷️ Extract metadata
+      - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
@@ -81,7 +81,7 @@ jobs:
             type=sha,prefix={{branch}}-
             type=raw,value=latest
             
-      - name: 🏗️ Build and push Docker image
+      - name: Build and push Docker image
         id: build
         uses: docker/build-push-action@v5
         with:
@@ -93,9 +93,9 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           
-      - name: ✅ Build summary
+      - name: Build summary
         run: |
-          echo "## 🚀 Build Completed Successfully" >> $GITHUB_STEP_SUMMARY
+          echo "## Build Completed Successfully" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Image:** \`${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest\`" >> $GITHUB_STEP_SUMMARY
           echo "**Digest:** \`${{ steps.build.outputs.digest }}\`" >> $GITHUB_STEP_SUMMARY
@@ -104,7 +104,7 @@ jobs:
           echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**Time:** $(date)" >> $GITHUB_STEP_SUMMARY
           
-      - name: 🏥 Image security scan
+      - name: Image security scan
         uses: docker/scout-action@v1
         if: always()
         continue-on-error: true
@@ -119,21 +119,21 @@ jobs:
     if: ${{ needs.build-and-push.result == 'success' }}
 
     steps:
-      - name: 🚀 Deploy to server
+      - name: Deploy to server
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: 51.250.69.176
           username: vlad
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            echo "🔄 Starting deployment..."
+            echo "Starting deployment..."
 
             # Pull latest image
-            echo "📦 Pulling latest image..."
+            echo "Pulling latest image..."
             docker pull ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest
 
             # Stop and remove old containers using port 8080
-            echo "⏹️ Stopping containers on port 8080..."
+            echo "Stopping containers on port 8080..."
             docker ps -q --filter "publish=8080" | xargs -r docker stop 2>/dev/null || true
             docker ps -aq --filter "publish=8080" | xargs -r docker rm 2>/dev/null || true
 
@@ -142,7 +142,7 @@ jobs:
             docker rm ${{ env.DOCKER_IMAGE_NAME }} 2>/dev/null || true
 
             # Start new container
-            echo "▶️ Starting new container..."
+            echo "Starting new container..."
             docker run -d \
               --name ${{ env.DOCKER_IMAGE_NAME }} \
               --restart unless-stopped \
@@ -155,18 +155,20 @@ jobs:
               -e YANDEX_ACCESS_KEY=${{ secrets.YANDEX_ACCESS_KEY }} \
               -e YANDEX_SECRET_KEY=${{ secrets.YANDEX_SECRET_KEY }} \
               -e YANDEX_BUCKET_NAME=${{ secrets.YANDEX_BUCKET_NAME }} \
+              -e YANDEX_ENDPOINT=https://storage.yandexcloud.net \
+              -e YANDEX_REGION=ru-central1 \
               ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest
 
             # Wait for health check
-            echo "🏥 Waiting for application to start..."
+            echo "Waiting for application to start..."
             sleep 15
 
             # Check if container is running
             if docker ps --filter "name=${{ env.DOCKER_IMAGE_NAME }}" --filter "status=running" | grep -q ${{ env.DOCKER_IMAGE_NAME }}; then
-              echo "✅ Deployment successful!"
-              echo "🌐 Application is running on http://51.250.69.176:8080"
+              echo "Deployment successful!"
+              echo "Application is running on http://51.250.69.176:8080"
             else
-              echo "❌ Deployment failed - container not running"
+              echo "Deployment failed - container not running"
               docker logs ${{ env.DOCKER_IMAGE_NAME }} --tail 20
               exit 1
             fi
@@ -177,17 +179,17 @@ jobs:
     if: always()
 
     steps:
-      - name: 📢 Workflow completed
+      - name: Workflow completed
         run: |
           if [ "${{ needs.build-and-push.result }}" == "success" ] && [ "${{ needs.deploy-to-server.result }}" == "success" ]; then
-            echo "✅ Build, push and deployment completed successfully"
-            echo "🌐 Application: http://51.250.69.176:8080"
-            echo "🐳 Image: ${{ needs.build-and-push.outputs.image-tag }}"
+            echo "Build, push and deployment completed successfully"
+            echo "Application: http://51.250.69.176:8080"
+            echo "Image: ${{ needs.build-and-push.outputs.image-tag }}"
           elif [ "${{ needs.build-and-push.result }}" == "success" ] && [ "${{ needs.deploy-to-server.result }}" != "success" ]; then
-            echo "⚠️ Build and push successful, but deployment failed"
-            echo "🐳 Image: ${{ needs.build-and-push.outputs.image-tag }}"
+            echo "Build and push successful, but deployment failed"
+            echo "Image: ${{ needs.build-and-push.outputs.image-tag }}"
             exit 1
           else
-            echo "❌ Build and push failed"
+            echo "Build and push failed"
             exit 1
           fi

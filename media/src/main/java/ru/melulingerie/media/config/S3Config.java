@@ -15,10 +15,10 @@ public class S3Config {
 
     @Bean
     public S3Client s3Client(
-            @Value("${yandex.storage.access-key}") final String accessKey,
-            @Value("${yandex.storage.secret-key}") final String secretKey,
-            @Value("${yandex.storage.endpoint}") final String endpoint,
-            @Value("${yandex.storage.region}") final String region
+            @Value("${YANDEX_ACCESS_KEY}") final String accessKey,
+            @Value("${YANDEX_SECRET_KEY}") final String secretKey,
+            @Value("${YANDEX_ENDPOINT}") final String endpoint,
+            @Value("${YANDEX_REGION}") final String region
     ) {
         return S3Client.builder()
                 .endpointOverride(URI.create(endpoint))
