@@ -29,7 +29,7 @@ public class Category {
     @JoinColumn(name = "parent_id")
     private Category parent;
     
-    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Category> children = new ArrayList<>();
     
     @Column(name = "sort_order")
