@@ -51,7 +51,6 @@ public class WishlistGetServiceImpl implements WishlistGetService {
         return new WishlistItemGetResponseDto(
                 wishlistItem.getId(),
                 wishlistItem.getProductId(),
-                wishlistItem.getVariantId(),
                 wishlistItem.getAddedAt()
         );
     }

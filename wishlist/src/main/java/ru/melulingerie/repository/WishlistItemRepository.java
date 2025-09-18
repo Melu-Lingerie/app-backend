@@ -15,11 +15,9 @@ public interface WishlistItemRepository extends JpaRepository<WishlistItem, Long
 
     @Query("select wi from WishlistItem wi " +
             "where wi.wishlist.id = :wishlistId " +
-            "and wi.productId = :productId " +
-            "and wi.variantId = :variantId")
+            "and wi.productId = :productId")
     Optional<WishlistItem> findDuplicate(@Param("wishlistId") Long wishlistId,
-                                         @Param("productId") Long productId,
-                                         @Param("variantId") Long variantId);
+                                         @Param("productId") Long productId);
 
     @Query("select wi from WishlistItem wi where wi.wishlist.id = :wishlistId order by wi.addedAt desc")
     List<WishlistItem> findAllByWishlistId(@Param("wishlistId") Long wishlistId);

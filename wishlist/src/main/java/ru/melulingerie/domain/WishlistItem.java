@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "wishlist_items", indexes = {
         @Index(name = "idx_wishlist_items_wishlist", columnList = "wishlist_id"),
-        @Index(name = "idx_wishlist_items_unique", columnList = "wishlist_id, product_id, variant_id", unique = true)
+        @Index(name = "idx_wishlist_items_unique", columnList = "wishlist_id, product_id", unique = true)
 })
 public class WishlistItem {
 
@@ -30,9 +30,6 @@ public class WishlistItem {
 
     @Column(name = "product_id", nullable = false)
     private Long productId;
-
-    @Column(name = "variant_id", nullable = false)
-    private Long variantId;
 
     @Column(name = "added_at", nullable = false)
     private LocalDateTime addedAt;
