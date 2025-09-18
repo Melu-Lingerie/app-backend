@@ -45,7 +45,6 @@ class WishlistItemAddServiceTest {
     private static final Long WISHLIST_ID = 100L;
     private static final Long USER_ID = 1L;
     private static final Long PRODUCT_ID = 10L;
-    private static final Long VARIANT_ID = 20L;
     private static final Long ITEM_ID = 1L;
     private static final int MAX_ITEMS = 200;
 
@@ -54,17 +53,21 @@ class WishlistItemAddServiceTest {
     private WishlistItem savedItem;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
+        // Set the MAX_ITEMS field using reflection
+        java.lang.reflect.Field maxItemsField = WishlistAddItemServiceImpl.class.getDeclaredField("MAX_ITEMS");
+        maxItemsField.setAccessible(true);
+        maxItemsField.set(wishlistItemAddService, MAX_ITEMS);
+
         wishlist = new Wishlist();
         wishlist.setId(WISHLIST_ID);
         wishlist.setUserId(USER_ID);
 
-        validRequest = new WishlistAddItemRequestDto(PRODUCT_ID, VARIANT_ID);
+        validRequest = new WishlistAddItemRequestDto(PRODUCT_ID);
 
         savedItem = new WishlistItem();
         savedItem.setId(ITEM_ID);
         savedItem.setProductId(PRODUCT_ID);
-        savedItem.setVariantId(VARIANT_ID);
         savedItem.setWishlist(wishlist);
         savedItem.setAddedAt(LocalDateTime.now());
     }
@@ -99,7 +102,6 @@ class WishlistItemAddServiceTest {
         WishlistItem capturedItem = itemCaptor.getValue();
         assertThat(capturedItem.getWishlist()).isEqualTo(wishlist);
         assertThat(capturedItem.getProductId()).isEqualTo(PRODUCT_ID);
-        assertThat(capturedItem.getVariantId()).isEqualTo(VARIANT_ID);
         assertThat(capturedItem.getAddedAt()).isNotNull();
     }
 
@@ -144,15 +146,12 @@ class WishlistItemAddServiceTest {
         // Given
         WishlistItem existingItem1 = new WishlistItem();
         existingItem1.setProductId(11L);
-        existingItem1.setVariantId(21L);
-        
+
         WishlistItem existingItem2 = new WishlistItem();
         existingItem2.setProductId(12L);
-        existingItem2.setVariantId(22L);
-        
+
         WishlistItem existingItem3 = new WishlistItem();
         existingItem3.setProductId(13L);
-        existingItem3.setVariantId(23L);
         
         wishlist.setWishlistItems(List.of(existingItem1, existingItem2, existingItem3));
         when(wishlistRepository.findByIdWithAllItems(WISHLIST_ID)).thenReturn(Optional.of(wishlist));
@@ -177,7 +176,6 @@ class WishlistItemAddServiceTest {
         // Given
         WishlistItem duplicateItem = new WishlistItem();
         duplicateItem.setProductId(PRODUCT_ID);
-        duplicateItem.setVariantId(VARIANT_ID);
         
         wishlist.setWishlistItems(List.of(duplicateItem));
         when(wishlistRepository.findByIdWithAllItems(WISHLIST_ID)).thenReturn(Optional.of(wishlist));
@@ -270,7 +268,6 @@ class WishlistItemAddServiceTest {
         for (int i = 0; i < 199; i++) {
             WishlistItem item = new WishlistItem();
             item.setProductId((long) (i + 100));
-            item.setVariantId((long) (i + 200));
             manyItems.add(item);
         }
         wishlist.setWishlistItems(manyItems);

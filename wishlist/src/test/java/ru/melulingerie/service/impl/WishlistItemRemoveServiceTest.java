@@ -60,21 +60,18 @@ class WishlistItemRemoveServiceTest {
         wishlistItem1 = new WishlistItem();
         wishlistItem1.setId(ITEM_ID_1);
         wishlistItem1.setProductId(10L);
-        wishlistItem1.setVariantId(20L);
         wishlistItem1.setWishlist(wishlist);
         wishlistItem1.setAddedAt(LocalDateTime.now());
 
         wishlistItem2 = new WishlistItem();
         wishlistItem2.setId(ITEM_ID_2);
         wishlistItem2.setProductId(11L);
-        wishlistItem2.setVariantId(21L);
         wishlistItem2.setWishlist(wishlist);
         wishlistItem2.setAddedAt(LocalDateTime.now());
 
         wishlistItem3 = new WishlistItem();
         wishlistItem3.setId(ITEM_ID_3);
         wishlistItem3.setProductId(12L);
-        wishlistItem3.setVariantId(22L);
         wishlistItem3.setWishlist(wishlist);
         wishlistItem3.setAddedAt(LocalDateTime.now());
         
