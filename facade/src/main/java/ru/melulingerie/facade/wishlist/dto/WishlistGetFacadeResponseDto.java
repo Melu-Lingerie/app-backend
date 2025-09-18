@@ -6,7 +6,6 @@ import ru.melulingerie.dto.WishlistItemGetResponseDto;
 
 import java.util.List;
 
-public record WishlistGetFacadeResponseDto(List<WishlistItemGetFacadeResponseDto> items, Integer itemsCount) {}
 @Schema(
         name = "WishlistGetFacadeResponseDto",
         description = "Ответ на получение списка желаний: элементы и их количество"
@@ -16,7 +15,7 @@ public record WishlistGetFacadeResponseDto(
         @Schema(requiredMode = Schema.RequiredMode.REQUIRED)
         @ArraySchema(
                 arraySchema = @Schema(
-                        description = "Список элементов в вишлисте",
+                        description = "Список элементов в списке желаний",
                         requiredMode = Schema.RequiredMode.REQUIRED
                 ),
                 schema = @Schema(
