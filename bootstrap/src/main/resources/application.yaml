@@ -40,7 +40,7 @@ spring:
 
 # Server Configuration
 server:
-  port: 8080
+  port: ${TOMCAT_PORT}
   shutdown: graceful
 
 # Management & Actuator
