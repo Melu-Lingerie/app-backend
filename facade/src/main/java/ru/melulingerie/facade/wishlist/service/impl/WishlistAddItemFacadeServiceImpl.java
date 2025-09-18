@@ -29,22 +29,17 @@ public class WishlistAddItemFacadeServiceImpl implements WishlistAddItemFacadeSe
     @Override
     public WishlistAddFacadeResponseDto addItemToWishlist(Long wishlistId, WishlistAddFacadeRequestDto request) {
         validateProductExists(request.productId());
-        validateProductVariantExists(request.variantId());
-        
+
         WishlistAddItemRequestDto domainRequest = wishlistMapper.toModuleRequestDto(request);
-        
+
         WishlistAddItemResponseDto response = transactionTemplate.execute(status ->
                 wishlistAddItemService.addWishlistItem(wishlistId, domainRequest)
         );
-        
+
         return wishlistMapper.toFacadeResponseDto(response);
     }
 
     private void validateProductExists(Long productId) {
         productService.getProductInfoById(productId);
-    }
-
-    private void validateProductVariantExists(Long variantId) {
-        productService.getProductVariantById(variantId);
     }
 }

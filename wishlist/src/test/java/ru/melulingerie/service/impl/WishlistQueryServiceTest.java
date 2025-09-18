@@ -52,14 +52,12 @@ class WishlistQueryServiceTest {
         wishlistItem1 = new WishlistItem();
         wishlistItem1.setId(1L);
         wishlistItem1.setProductId(10L);
-        wishlistItem1.setVariantId(20L);
         wishlistItem1.setAddedAt(LocalDateTime.now().minusDays(1));
         wishlistItem1.setWishlist(wishlist);
 
         wishlistItem2 = new WishlistItem();
         wishlistItem2.setId(2L);
         wishlistItem2.setProductId(11L);
-        wishlistItem2.setVariantId(21L);
         wishlistItem2.setAddedAt(LocalDateTime.now());
         wishlistItem2.setWishlist(wishlist);
     }
@@ -85,7 +83,6 @@ class WishlistQueryServiceTest {
         WishlistItemGetResponseDto firstItem = result.items().get(0);
         assertThat(firstItem.id()).isEqualTo(1L);
         assertThat(firstItem.productId()).isEqualTo(10L);
-        assertThat(firstItem.variantId()).isEqualTo(20L);
         assertThat(firstItem.addedAt()).isEqualTo(wishlistItem1.getAddedAt());
 
         verify(validationService).validatePositiveIdOrThrow(WISHLIST_ID);
@@ -200,7 +197,6 @@ class WishlistQueryServiceTest {
         WishlistItemGetResponseDto item = result.items().get(0);
         assertThat(item.id()).isEqualTo(1L);
         assertThat(item.productId()).isEqualTo(10L);
-        assertThat(item.variantId()).isEqualTo(20L);
 
         verify(validationService).validatePositiveIdOrThrow(WISHLIST_ID);
         verify(wishlistRepository).findByIdWithItems(WISHLIST_ID);
@@ -257,7 +253,6 @@ class WishlistQueryServiceTest {
         WishlistItem specificItem = new WishlistItem();
         specificItem.setId(999L);
         specificItem.setProductId(123L);
-        specificItem.setVariantId(456L);
         specificItem.setAddedAt(specificTime);
         specificItem.setWishlist(wishlist);
         
@@ -273,7 +268,6 @@ class WishlistQueryServiceTest {
         
         assertThat(item.id()).isEqualTo(999L);
         assertThat(item.productId()).isEqualTo(123L);
-        assertThat(item.variantId()).isEqualTo(456L);
         assertThat(item.addedAt()).isEqualTo(specificTime);
     }
 }

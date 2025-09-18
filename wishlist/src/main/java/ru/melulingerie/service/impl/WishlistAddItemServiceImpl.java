@@ -46,8 +46,7 @@ public class WishlistAddItemServiceImpl implements WishlistAddItemService {
         List<WishlistItem> items = wishlist.getWishlistItems();
 
         boolean duplicate = items.stream()
-                .anyMatch(wishlistItem -> wishlistItem.getProductId().equals(request.productId())
-                        && wishlistItem.getVariantId().equals(request.variantId()));
+                .anyMatch(wishlistItem -> wishlistItem.getProductId().equals(request.productId()));
 
         wishlistValidator.validateAddWishlist(wishlist.getUserId(), request, wishlist,
                 items.size(), MAX_ITEMS, duplicate);
@@ -64,13 +63,12 @@ public class WishlistAddItemServiceImpl implements WishlistAddItemService {
     }
 
     private WishlistItem mapToEntity(WishlistAddItemRequestDto request, Wishlist wishlist) {
-        log.debug("Creating wishlist item for wishlistId: {}, productId: {}, variantId: {}",
-                wishlist.getId(), request.productId(), request.variantId());
+        log.debug("Creating wishlist item for wishlistId: {}, productId: {}",
+                wishlist.getId(), request.productId());
 
         WishlistItem item = new WishlistItem();
         item.setWishlist(wishlist);
         item.setProductId(request.productId());
-        item.setVariantId(request.variantId());
         item.setAddedAt(LocalDateTime.now());
         return item;
     }

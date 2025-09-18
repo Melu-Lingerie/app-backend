@@ -28,39 +28,38 @@ public class WishlistValidator {
 
     public void validateCapacityNotExceededOrCollect(int currentCount, int maxItems, ValidationErrors errors) {
         if (currentCount >= maxItems) {
-            errors.add("Превышена максимальная вместимость списка желаний: " + maxItems);
+            errors.add("Превышена максимальная вместимость списка избранных товаров: " + maxItems);
         }
     }
 
-    public void validateDuplicateAbsentOrCollect(boolean duplicateExists, Long productId, Long variantId, ValidationErrors errors) {
+    public void validateDuplicateAbsentOrCollect(boolean duplicateExists, Long productId, ValidationErrors errors) {
         if (duplicateExists) {
-            errors.add("Дублирующийся товар в списке желаний (productId=" + productId + ", variantId=" + variantId + ")");
+            errors.add("Дублирующийся товар в списке избранных товаров (productId=" + productId + ")");
         }
     }
 
     public void requireOwnedByWishlistOrCollect(WishlistItem item, Long wishlistId, Long itemId, ValidationErrors errors) {
         if (item == null) {
-            errors.add("Элемент списка желаний не найден: id=" + itemId);
+            errors.add("Элемент списка избранных товаров не найден: id=" + itemId);
             return;
         }
         if (item.getWishlist() == null || !item.getWishlist().getId().equals(wishlistId)) {
-            errors.add("Элемент id=" + itemId + " не принадлежит списку желаний id=" + wishlistId);
+            errors.add("Элемент id=" + itemId + " не принадлежит списку избранных товаров id=" + wishlistId);
         }
     }
 
     public void validateWishlistExistsOrCollect(Wishlist wishlist, Long userId, ValidationErrors errors) {
         if (wishlist == null) {
-            errors.add("Список желаний пользователя не найден: userId=" + userId);
+            errors.add("Список избранных товаров пользователя не найден: userId=" + userId);
         }
     }
 
     public void validateAddToWishlistRequestOrCollect(WishlistAddItemRequestDto request, ValidationErrors errors) {
         if (request == null) {
-            errors.add("Запрос на добавление в список желаний не может быть null");
+            errors.add("Запрос на добавление в список избранных товаров не может быть null");
             return;
         }
         validatePositiveIdOrCollect(request.productId(), errors);
-        validatePositiveIdOrCollect(request.variantId(), errors);
     }
 
     public void throwIfHasErrors(ValidationErrors errors) {
@@ -90,7 +89,7 @@ public class WishlistValidator {
 
         if (!errors.hasErrors()) {
             validateCapacityNotExceededOrCollect(currentCount, maxItems, errors);
-            validateDuplicateAbsentOrCollect(duplicateExists, request.productId(), request.variantId(), errors);
+            validateDuplicateAbsentOrCollect(duplicateExists, request.productId(), errors);
         }
 
         throwIfHasErrors(errors);
