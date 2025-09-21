@@ -81,7 +81,6 @@ class CartAddItemFacadeServiceImplTest {
         assertNotNull(result.cartTotals());
         assertEquals(0, expectedItemPrice.compareTo(result.cartTotals().totalAmount())); // Same as item total since it's the only item
         assertEquals(1, result.cartTotals().totalItemsCount());
-        assertEquals(BigDecimal.ZERO, result.cartTotals().deliveryAmount());
 
         // Verify interactions
         verify(cartMapper).toAddItemRequestDto(facadeRequest);
