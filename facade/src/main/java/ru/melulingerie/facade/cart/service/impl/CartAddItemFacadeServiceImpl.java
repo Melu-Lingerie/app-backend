@@ -5,20 +5,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.melulingerie.cart.dto.request.CartAddItemRequestDto;
 import ru.melulingerie.cart.dto.response.CartAddItemResponseDto;
-import ru.melulingerie.facade.cart.dto.request.CartAddFacadeRequestDto;
-import ru.melulingerie.facade.cart.dto.response.CartAddFacadeResponseDto;
-import ru.melulingerie.facade.cart.dto.CartOperationType;
-import ru.melulingerie.facade.cart.dto.CartTotalsDto;
-import ru.melulingerie.facade.cart.mapper.CartMapper;
-import ru.melulingerie.facade.cart.service.CartAddItemFacadeService;
+import ru.melulingerie.cart.dto.response.CartGetResponseDto;
 import ru.melulingerie.cart.service.CartAddItemService;
 import ru.melulingerie.cart.service.CartGetService;
-import ru.melulingerie.cart.dto.response.CartGetResponseDto;
+import ru.melulingerie.facade.cart.dto.CartOperationType;
+import ru.melulingerie.facade.cart.dto.CartTotalsDto;
+import ru.melulingerie.facade.cart.dto.request.CartAddFacadeRequestDto;
+import ru.melulingerie.facade.cart.dto.response.CartAddFacadeResponseDto;
+import ru.melulingerie.facade.cart.mapper.CartMapper;
+import ru.melulingerie.facade.cart.service.CartAddItemFacadeService;
 import ru.melulingerie.price.service.PriceService;
 import ru.melulingerie.products.service.ProductVariantService;
 
 import java.math.BigDecimal;
-import java.util.Set;
 
 @Slf4j
 @Service

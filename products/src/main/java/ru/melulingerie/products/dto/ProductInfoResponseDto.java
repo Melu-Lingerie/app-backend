@@ -12,6 +12,7 @@ public record ProductInfoResponseDto(
         String description,
         String structure,
         Float score,
+        String care,
         List<ProductVariantResponseDto> productVariants
 ) {
     
@@ -24,6 +25,7 @@ public record ProductInfoResponseDto(
                 product.getDescription(),
                 product.getMaterial(),
                 product.getScore(),
+                product.getCareInstructions(),
                 product.getVariants().stream().map(ProductVariantResponseDto::new).toList()
         );
     }

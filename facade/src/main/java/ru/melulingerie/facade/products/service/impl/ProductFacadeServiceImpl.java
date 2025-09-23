@@ -109,6 +109,7 @@ public class ProductFacadeServiceImpl implements ProductFacadeService {
                 productInfoResponseDto.description(),
                 productInfoResponseDto.structure(),
                 productInfoResponseDto.score(),
+                productInfoResponseDto.care(),
                 productInfoResponseDto.categoryId(),
                 productVariantCardDtos
         );

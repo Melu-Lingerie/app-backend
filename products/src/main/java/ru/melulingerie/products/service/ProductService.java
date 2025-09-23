@@ -4,6 +4,7 @@ import ru.melulingerie.products.dto.ProductInfoResponseDto;
 import ru.melulingerie.products.dto.ProductVariantResponseDto;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -15,4 +16,5 @@ public interface ProductService {
 
     Map<Long, Set<String>> findAvailableColorsByProductIds(Collection<Long> productIds);
 
+    Map<Long, Long> getCategoryIdByProductIds(List<Long> productIds);
 }
