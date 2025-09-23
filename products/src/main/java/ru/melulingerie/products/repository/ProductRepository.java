@@ -11,10 +11,11 @@ import java.util.List;
 
 public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
 
-    @Query("""
-            select product.id as productId, 
-                   product.category.id as categryId
-            from Product product
-            """)
+    @Query(value = """
+            select p.id as productId,
+                   p.category_id as categoryId
+            from products p
+            """,
+    nativeQuery = true)
     List<ProductIdCategoryIdProjection> findCategoryIdByProductIds(Collection<Long> productIds);
 }
