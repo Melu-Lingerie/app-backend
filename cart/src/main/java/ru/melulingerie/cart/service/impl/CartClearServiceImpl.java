@@ -30,9 +30,10 @@ public class CartClearServiceImpl implements CartClearService {
                 .orElseThrow(() -> new IllegalArgumentException("Cart not found with id: " + cartId));
 
         int deletedCount = cart.getCartItems().size();
-        
+
         if (deletedCount > 0) {
             cartItemRepository.deleteAll(cart.getCartItems());
+            cart.getCartItems().clear();
             cartRepository.save(cart);
         }
 

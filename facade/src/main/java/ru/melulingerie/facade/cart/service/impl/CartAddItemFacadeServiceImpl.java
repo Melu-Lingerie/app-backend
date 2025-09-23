@@ -85,6 +85,6 @@ public class CartAddItemFacadeServiceImpl implements CartAddItemFacadeService {
         // Доставка пока бесплатная
         BigDecimal deliveryAmount = BigDecimal.ZERO;
         
-        return new CartTotalsDto(totalAmount, cartData.itemsCount(), deliveryAmount);
+        return new CartTotalsDto(totalAmount, cartData.itemsCount());
     }
 }
