@@ -15,6 +15,7 @@ import ru.melulingerie.price.dto.response.PriceQuoteDto;
 import ru.melulingerie.price.service.PriceService;
 import ru.melulingerie.products.domain.ProductVariant;
 import ru.melulingerie.products.domain.ProductVariantMedia;
+import ru.melulingerie.products.service.ProductService;
 import ru.melulingerie.products.service.ProductVariantService;
 
 import java.math.BigDecimal;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 public class CartGetFacadeServiceImpl implements CartGetFacadeService {
 
     private final PriceService priceService;
+    private final ProductService productService;
     private final CartGetService cartGetService;
     private final MediaGetService mediaGetService;
     private final ProductVariantService productVariantService;
@@ -44,8 +46,13 @@ public class CartGetFacadeServiceImpl implements CartGetFacadeService {
         try {
             CartGetResponseDto cartData = cartGetService.getCart(cartId);
 
-            List<CartItemDetailsFacadeResponseDto> enrichedItems = enrichCartItems(cartData.items());
+            List<Long> productIds = cartData.items().stream().map(CartItemGetResponseDto::productId).toList();
+            Map<Long/*productId*/, Long/*categoryId*/> categoryIdByProductIds = productService.getCategoryIdByProductIds(productIds);
+
+            List<CartItemDetailsFacadeResponseDto> enrichedItems = enrichCartItems(cartData.items(), categoryIdByProductIds);
             BigDecimal totalAmount = calculateCartTotalAmount(enrichedItems);
+
+
 
             log.debug("Successfully enriched cart {} with {} items, total: {}",
                     cartId, enrichedItems.size(), totalAmount);
@@ -64,7 +71,8 @@ public class CartGetFacadeServiceImpl implements CartGetFacadeService {
     /**
      * Обогащает список товаров корзины полной информацией с использованием batch-операций
      */
-    private List<CartItemDetailsFacadeResponseDto> enrichCartItems(List<CartItemGetResponseDto> items) {
+    private List<CartItemDetailsFacadeResponseDto> enrichCartItems(List<CartItemGetResponseDto> items,
+                                                                   Map<Long/*productId*/, Long/*categoryId*/> categoryIdByProductIds) {
         if (items.isEmpty()) {
             return Collections.emptyList();
         }
@@ -96,7 +104,8 @@ public class CartGetFacadeServiceImpl implements CartGetFacadeService {
                         item,
                         variantMap,
                         priceMap,
-                        mediaUrlMap
+                        mediaUrlMap,
+                        categoryIdByProductIds.get(item.productId())
                 ))
                 .toList();
     }
@@ -108,7 +117,8 @@ public class CartGetFacadeServiceImpl implements CartGetFacadeService {
             CartItemGetResponseDto item,
             Map<Long, ProductVariant> variantMap,
             Map<Long, PriceQuoteDto> priceMap,
-            Map<Long, String> mediaUrlMap) {
+            Map<Long, String> mediaUrlMap,
+            Long categoryId) {
 
         ProductVariant variant = variantMap.get(item.variantId());
 
@@ -126,7 +136,7 @@ public class CartGetFacadeServiceImpl implements CartGetFacadeService {
                 .map(mediaUrlMap::get)
                 .orElse("");
 
-        return createEnrichedCartItem(item, variant, unitPrice, itemTotal, imageUrl);
+        return createEnrichedCartItem(item, variant, unitPrice, itemTotal, imageUrl, categoryId);
     }
 
     /**
@@ -203,11 +213,13 @@ public class CartGetFacadeServiceImpl implements CartGetFacadeService {
             ProductVariant variant,
             BigDecimal unitPrice,
             BigDecimal totalPrice,
-            String imageUrl) {
+            String imageUrl,
+            Long categoryId) {
 
         return new CartItemDetailsFacadeResponseDto(
                 item.itemId(),
                 item.productId(),
+                categoryId,
                 item.variantId(),
                 item.quantity(),
                 unitPrice,

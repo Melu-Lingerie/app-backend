@@ -26,6 +26,13 @@ public record CartItemDetailsFacadeResponseDto(
         Long productId,
 
         @Schema(
+                description = "Идентификатор категории",
+                example = "12345",
+                requiredMode = Schema.RequiredMode.REQUIRED
+        )
+        Long categoryId,
+
+        @Schema(
                 description = "Идентификатор варианта товара (цвет/размер)",
                 example = "98765",
                 requiredMode = Schema.RequiredMode.REQUIRED

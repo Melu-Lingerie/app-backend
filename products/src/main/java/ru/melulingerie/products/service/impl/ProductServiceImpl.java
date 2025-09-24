@@ -9,6 +9,7 @@ import ru.melulingerie.products.domain.Product;
 import ru.melulingerie.products.domain.ProductVariant;
 import ru.melulingerie.products.dto.ProductInfoResponseDto;
 import ru.melulingerie.products.dto.ProductVariantResponseDto;
+import ru.melulingerie.products.projection.ProductIdCategoryIdProjection;
 import ru.melulingerie.products.repository.ProductRepository;
 import ru.melulingerie.products.service.ProductService;
 import ru.melulingerie.products.service.ProductVariantService;
@@ -46,4 +47,16 @@ public class ProductServiceImpl implements ProductService {
     public Map<Long, Set<String>> findAvailableColorsByProductIds(Collection<Long> productIds) {
         return productVariantService.findAvailableColorsForEachProducts(productIds);
     }
+
+    @Override
+    public Map<Long/*productId*/, Long/*categoryId*/> getCategoryIdByProductIds(List<Long> productIds) {
+        return productRepository.findCategoryIdByProductIds(productIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        ProductIdCategoryIdProjection::getProductId,
+                        ProductIdCategoryIdProjection::getCategoryId)
+                );
+    }
+
+
 }

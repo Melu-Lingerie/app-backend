@@ -51,6 +51,13 @@ public record ProductCardResponseDto(
         Float score,
 
         @Schema(
+                description = "Описания способов ухода за изделием",
+                example = "Только бережная стирка",
+                requiredMode = Schema.RequiredMode.REQUIRED
+        )
+        String care,
+
+        @Schema(
                 description = "ID категории товара",
                 example = "101",
                 requiredMode = Schema.RequiredMode.REQUIRED
