@@ -1,0 +1,103 @@
+### Create Payment - Minimal Card Payment (Required fields only)
+POST http://localhost:8080/api/payments
+Content-Type: application/json
+
+{
+  "orderId": "123e4567-e89b-12d3-a456-426614174000",
+  "amount": 100.00,
+  "paymentMethod": "CARD",
+  "description": "Test payment",
+  "returnUrl": "https://example.com/return",
+  "idempotenceKey": "123e4567-e89b-12d3-a456-426614174001"
+}
+
+### Create Payment - Card Payment with YooKassa test amount
+POST http://localhost:8080/api/payments
+Content-Type: application/json
+
+{
+  "orderId": "123e4567-e89b-12d3-a456-426614174000",
+  "amount": 2.00,
+  "paymentMethod": "CARD",
+  "description": "Test payment",
+  "returnUrl": "https://www.example.com/return",
+  "idempotenceKey": "123e4567-e89b-12d3-a456-426614174001"
+}
+
+### Create Payment - SBP Payment
+POST http://localhost:8080/api/payments
+Content-Type: application/json
+
+{
+  "orderId": "123e4567-e89b-12d3-a456-426614174002",
+  "amount": 2750.50,
+  "paymentMethod": "SBP",
+  "description": "Order #12346 - Premium Collection",
+  "returnUrl": "https://melulingerie.ru/orders/12346/success",
+  "confirmationUrl": "https://melulingerie.ru/orders/12346/confirm",
+  "idempotenceKey": "123e4567-e89b-12d3-a456-426614174003"
+}
+
+### Get Payment by ID
+GET http://localhost:8080/api/payments/1
+
+### Get Payment by External ID
+GET http://localhost:8080/api/payments/external/yookassa_payment_id_123
+
+### Cancel Payment
+POST http://localhost:8080/api/payments/1/cancel
+Content-Type: application/json
+
+{
+  "paymentId": 1,
+  "idempotenceKey": "123e4567-e89b-12d3-a456-426614174004",
+  "transitionReason": "USER_CANCELLED",
+  "transitionActor": {
+    "actorId": "user_123",
+    "actorType": "USER"
+  }
+}
+
+### Refund Payment
+POST http://localhost:8080/api/payments/1/refund?reason=Customer requested refund
+
+### Test Manual Payment Creation (bypassing generated client)
+POST http://localhost:8080/api/payments/test/manual
+Content-Type: application/json
+
+{
+  "orderId": "123e4567-e89b-12d3-a456-426614174000",
+  "amount": 2.00,
+  "paymentMethod": "CARD",
+  "description": "Test manual payment",
+  "returnUrl": "https://example.com/return",
+  "idempotenceKey": "123e4567-e89b-12d3-a456-426614174001"
+}
+
+### Test Webhook - YooKassa
+POST http://localhost:8080/api/payments/webhooks/yookassa
+Content-Type: application/json
+Authorization: Bearer webhook_secret_key
+
+{
+  "id": "test_payment_id_123",
+  "status": "succeeded",
+  "amount": {
+    "value": "1500.00",
+    "currency": "RUB"
+  },
+  "description": "Order #12345 - Lingerie Set",
+  "metadata": {
+    "order_id": "123e4567-e89b-12d3-a456-426614174000"
+  },
+  "paid": true,
+  "refundable": true,
+  "test": true,
+  "created_at": "2025-01-15T10:30:00.000Z",
+  "payment_method": {
+    "type": "bank_card",
+    "id": "card_123",
+    "saved": false,
+    "title": "Bank card *1234"
+  }
+}

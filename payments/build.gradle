@@ -1,0 +1,116 @@
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.5.4'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.openapi.generator' version "7.15.0"
+}
+
+group = 'ru.melulingerie'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+/*dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:2025.0.0"
+    }
+}*/
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    //implementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j'
+
+    implementation 'org.openapitools:jackson-databind-nullable:0.2.6'
+    implementation 'org.apache.commons:commons-lang3:3.18.0'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    // Lombok (must be processed before MapStruct)
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // MapStruct
+    implementation 'org.mapstruct:mapstruct:1.6.2'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.2'
+
+    // Lombok-MapStruct binding for proper integration
+    annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+    runtimeOnly 'org.postgresql:postgresql'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+// Custom OpenAPI generation task named "clientConfig"
+def paymentsGeneratedOutput = "$project.buildDir/generated/sources/openapi/yookassa"
+
+tasks.register('clientConfig', GenerateTask) {
+    generatorName.set('java')
+    inputSpec.set("$projectDir/src/main/resources/static/client/yookassa-openapi-specification.yaml")
+    outputDir.set(paymentsGeneratedOutput)
+
+    apiPackage.set('ru.melulingerie.payments.generated.api')
+    modelPackage.set('ru.melulingerie.payments.generated.model')
+    invokerPackage.set('ru.melulingerie.payments.generated.client')
+
+    configOptions.set([
+            library                   : 'restclient',
+            dateLibrary               : 'java8',
+            serializationLibrary      : 'jackson',
+            useJakartaEe              : 'true',
+            hideGenerationTimestamp   : 'true',
+            useSpringBoot3            : 'true',
+            useSpringController       : 'false',
+            useTags                   : 'true',
+            supportUrlQuery           : 'false',
+            supportingFiles           : 'false',
+            useBeanValidation         : 'true',
+            performBeanValidation     : 'true',
+    ])
+
+    generateApiTests.set(false)
+    generateModelTests.set(false)
+    generateModelDocumentation.set(false)
+    generateApiDocumentation.set(false)
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir (paymentsGeneratedOutput.toString() + '/src/main/java')
+        }
+    }
+}
+
+// Make compilation depend on codegen
+compileJava.dependsOn tasks.named('clientConfig')
+
+// Clean generated code on clean
+tasks.named('clean') {
+    doFirst { delete(paymentsGeneratedOutput) }
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+bootJar {
+    enabled = false
+}

@@ -43,6 +43,31 @@ server:
   port: 8080
   shutdown: graceful
 
+integration:
+  payments:
+    api:
+      storeId: ${STORE_ID:1166235}
+      secretKey: ${PAYMENTS_SECRET_KEY:test_jcKZyURQ6Xr3xLWsf0ZYklU0F0RUOtBSpR8Etl6ddD4}
+      baseUrl: ${PAYMENTS_API_BASE_URL:https://api.yookassa.ru/v3}
+      returnUrl: ${MERCHANT_RETURN_URL:https://melu-lingerie.ru/payments/return}
+    webhook:
+      secret: ${PAYMENTS_WEBHOOK_SECRET:}
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      payments:
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+  retry:
+    instances:
+      payments:
+        max-attempts: 3
+        wait-duration: 1s
+        exponential-backoff-multiplier: 2
+
 # Management & Actuator
 management:
   endpoints:
