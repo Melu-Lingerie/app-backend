@@ -38,7 +38,8 @@ public class FileUploadService {
                 .acl(ObjectCannedACL.PUBLIC_READ)
                 .build();
 
-        s3Client.putObject(request, RequestBody.fromInputStream(file.inputStream(), file.size()));
+        RequestBody requestBody = RequestBody.fromBytes(file.content());
+        s3Client.putObject(request, requestBody);
 
         String url = String.format(publicUrlTemplate, bucketName, key);
         log.info("File {} uploaded to S3. URL: {}", file.originalFilename(), url);
