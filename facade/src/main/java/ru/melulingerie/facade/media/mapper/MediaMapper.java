@@ -16,6 +16,9 @@ public interface MediaMapper {
     @Mapping(target = "file", source = "file", qualifiedByName = "mapFile")
     MediaRequestDto toMediaRequestDto(UploadMediaRequestDto facadeRequest);
 
+    @Mapping(target = "fileId", expression = "java(coreResponse.mediaId() != null ? java.util.UUID.randomUUID() : null)")
+    @Mapping(target = "url", source = "s3Url")
+    @Mapping(target = "message", constant = "Файл успешно загружен")
     UploadMediaResponseDto toMediaApiResponseDto(MediaResponseDto coreResponse);
 
     MediaGetInfoFacadeResponseDto toMediaInfo(MediaGetInfoResponseDto coreResponse);
@@ -25,12 +28,17 @@ public interface MediaMapper {
         if (facadeFile == null) {
             return null;
         }
-        return CustomMultipartFile.builder()
-                .inputStream(facadeFile.inputStream())
-                .originalFilename(facadeFile.originalFilename())
-                .contentType(facadeFile.contentType())
-                .size(facadeFile.size())
-                .name(facadeFile.name())
-                .build();
+        try {
+            byte[] content = facadeFile.inputStream().readAllBytes();
+            return CustomMultipartFile.builder()
+                    .content(content)
+                    .originalFilename(facadeFile.originalFilename())
+                    .contentType(facadeFile.contentType())
+                    .size(facadeFile.size())
+                    .name(facadeFile.name())
+                    .build();
+        } catch (java.io.IOException e) {
+            throw new RuntimeException("Failed to read file content", e);
+        }
     }
 }
