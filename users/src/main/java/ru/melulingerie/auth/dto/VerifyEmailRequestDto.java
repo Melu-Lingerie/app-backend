@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @Builder
@@ -19,4 +21,7 @@ public class VerifyEmailRequestDto {
     @NotBlank(message = "Код подтверждения обязателен")
     @Pattern(regexp = "\\d{6}", message = "Код должен состоять из 6 цифр")
     private String code;
+    
+    // SessionId устанавливается в контроллере из cookie
+    private UUID sessionId;
 }

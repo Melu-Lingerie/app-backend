@@ -1,7 +1,6 @@
 package ru.melulingerie.users.service;
 
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +22,6 @@ public class UserSessionCreateService {
     private final UserSessionRepository userSessionRepository;
     private final UserDeviceCreateService userDeviceCreateService;
 
-    @SneakyThrows
     @Transactional
     public UserSession createUserSession(UUID sessionId, User user, UserCreateRequestDto.DeviceInfoDto deviceInfo) {
 
@@ -33,13 +31,22 @@ public class UserSessionCreateService {
             userDevice = userDeviceCreateService.createUserDevice(deviceInfo);
         }
 
-        //TODO проверить NPE у InetAddress.getByName(deviceInfo.ipAddress())
+        // Безопасное получение IP-адреса
+        InetAddress ipAddress = null;
+        if (deviceInfo != null) {
+            try {
+                ipAddress = InetAddress.getByName(deviceInfo.ipAddress().trim());
+            } catch (Exception e) {
+                log.warn("Некорректный IP-адрес: '{}'. Сессия будет создана без IP.", deviceInfo.ipAddress(), e);
+            }
+        }
+
         UserSession userSession = UserSession.builder()
                 .sessionId(sessionId)
                 .user(user)
                 .userDevice(userDevice)
                 .status(SessionStatus.ACTIVE)
-                .ipAddress(InetAddress.getByName(deviceInfo.ipAddress()))
+                .ipAddress(ipAddress)
                 .build();
         userSession.addDevice(userDevice);
 

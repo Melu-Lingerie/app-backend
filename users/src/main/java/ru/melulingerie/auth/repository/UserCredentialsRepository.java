@@ -6,7 +6,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import ru.melulingerie.users.entity.IdentityType;
 import ru.melulingerie.users.entity.UserCredentials;
-import ru.melulingerie.users.entity.UserStatus;
 
 import java.util.Optional;
 

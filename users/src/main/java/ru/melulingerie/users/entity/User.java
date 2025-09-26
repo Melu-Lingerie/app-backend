@@ -65,7 +65,7 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @Builder.Default
     private List<UserSession> userSessions = new ArrayList<>();
-    //TODO посомтреть как разботает трансиент над методом
+
     @Transient
     public void addUserSession(UserSession userSession){
         userSessions.add(userSession);
