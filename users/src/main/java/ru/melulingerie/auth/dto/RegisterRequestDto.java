@@ -3,8 +3,6 @@ package ru.melulingerie.auth.dto;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
-import java.util.UUID;
-
 @Getter
 @Setter
 @Builder
@@ -24,7 +22,6 @@ public class RegisterRequestDto {
     @Size(max = 50, message = "Фамилия не должна превышать 50 символов") 
     private String middleName;
 
-    //TODO не забыть уточнить про все новые поля у Гриши
     @NotBlank(message = "Отчество обязательно")
     @Size(max = 50, message = "Отчество не должно превышать 50 символов")
     private String lastName;
@@ -35,7 +32,7 @@ public class RegisterRequestDto {
     @NotBlank(message = "Пароль обязателен")
     @Size(min = 8, message = "Пароль должен содержать минимум 8 символов")
     private String password;
-    //TODO заменить на userId
-    @NotNull(message = "SessionId обязателен")
-    private UUID sessionId;
+
+    @NotNull(message = "UserId обязателен")
+    private Long userId;
 }

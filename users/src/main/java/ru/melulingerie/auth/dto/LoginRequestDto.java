@@ -4,6 +4,8 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @Builder
@@ -16,4 +18,7 @@ public class LoginRequestDto {
 
     @NotBlank
     private String password;
+    
+    // SessionId устанавливается в контроллере из cookie
+    private UUID sessionId;
 }
