@@ -84,19 +84,20 @@ public class AuthService {
 
         // 3) Сверка пароля (BCrypt)
         if (creds.getPasswordHash() == null || !passwordEncoder.matches(dto.getPassword(), creds.getPasswordHash())) {
+            // TODO посолить
             // TODO счетчики failedLogin добавим позже пока просто считаем кол-во неверных запросов
             throw new IllegalArgumentException("Неверный email или пароль");
         }
 
         // 4) Найти существующую активную сессию или обработать случай без sessionId
-        UserSession session;
-        if (dto.getSessionId() != null) {
-            // Используем переданную сессию
-            session = findExistingUserSession(user, dto.getSessionId());
-        } else {
-            // Для случаев повторного логина без sessionId - требуем, чтобы клиент передавал sessionId
-            throw new IllegalArgumentException("SessionId обязателен для логина. Получите sessionId через создание гостевого пользователя.");
-        }
+        //UserSession session;
+        //if (dto.getSessionId() != null) {
+            //    // Используем переданную сессию
+            //    session = findExistingUserSession(user, dto.getSessionId());
+            //} else {
+            //    // Для случаев повторного логина без sessionId - требуем, чтобы клиент передавал sessionId
+            //    throw new IllegalArgumentException("SessionId обязателен для логина. Получите sessionId через создание гостевого пользователя.");
+            //}
 
         // 5) Сгенерировать токены
         String access = jwtService.generateAccessToken(user, creds);
@@ -106,9 +107,9 @@ public class AuthService {
         RefreshToken refreshToken = RefreshToken.builder()
                 .token(refresh)
                 .user(user)
-                .userSession(session)            // связываем сессией
                 .expiryDate(LocalDateTime.now().plusSeconds(jwtService.getRefreshTtlSeconds()))
                 .build();
+
         refreshTokenRepository.save(refreshToken);
 
         // 7) Сформировать ответ
@@ -128,6 +129,8 @@ public class AuthService {
 
     @Transactional
     public RefreshResponseDto refreshAccessToken(RefreshRequestDto dto) {
+        // TODO Подумать о хэшировании рефреш токена и хранения в БД этого хэша.
+        // TODO в токене есть userId - искать по нему?
         RefreshToken oldRt = refreshTokenRepository.findByToken(dto.getRefreshToken())
                 .orElseThrow(() -> new IllegalArgumentException("Неверный refresh token"));
 
@@ -135,12 +138,6 @@ public class AuthService {
             // Удалим просроченный токен, чтобы не копился мусор
             refreshTokenRepository.delete(oldRt);
             throw new IllegalStateException("Refresh token истёк");
-        }
-
-        UserSession session = oldRt.getUserSession();
-        if (session == null || session.getStatus() != SessionStatus.ACTIVE) {
-            // Защита: refresh должен относиться к активной сессии
-            throw new IllegalStateException("Сессия неактивна");
         }
 
         User user = oldRt.getUser();
@@ -160,9 +157,9 @@ public class AuthService {
         RefreshToken newRt = RefreshToken.builder()
                 .token(newRefresh)
                 .user(user)
-                .userSession(session)
                 .expiryDate(LocalDateTime.now().plusSeconds(jwtService.getRefreshTtlSeconds()))
                 .build();
+
         refreshTokenRepository.save(newRt);
 
         // Удалить старый refresh (простая ротация)
@@ -246,7 +243,7 @@ public class AuthService {
         emailVerificationRepository.delete(verification);
 
         // 5. Автоматически залогинить пользователя, используя существующую сессию
-        LoginResponseDto response = createLoginResponse(user, dto.getEmail(), dto.getSessionId());
+        LoginResponseDto response = createLoginResponse(user, dto.getEmail());
 
         log.info("Email подтвержден и пользователь активирован: {}", user.getId());
         return response;
@@ -274,7 +271,8 @@ public class AuthService {
     }
 
     private void createUserCredentials(User user, RegisterRequestDto dto) {
-        // Найти существующие email credentials для обновления или создать новые
+        // Найти существующие email credentials для обновления или создать
+        // TODO  А не делаем ли мы лишний поиск.
         UserCredentials emailCreds = credentialsRepository
                 .findByUserAndIdentityType(user, IdentityType.EMAIL)
                 .orElse(UserCredentials.builder()
@@ -303,13 +301,10 @@ public class AuthService {
 //        }
     }
 
-    private LoginResponseDto createLoginResponse(User user, String email, UUID sessionId) {
+    private LoginResponseDto createLoginResponse(User user, String email) {
         UserCredentials creds = credentialsRepository
                 .findByIdentifierAndIdentityType(email, IdentityType.EMAIL)
                 .orElseThrow(() -> new IllegalStateException("Email credentials не найдены"));
-
-        // Найти существующую активную сессию
-        UserSession session = findExistingUserSession(user, sessionId);
 
         // Сгенерировать токены
         String access = jwtService.generateAccessToken(user, creds);
@@ -319,7 +314,6 @@ public class AuthService {
         RefreshToken refreshToken = RefreshToken.builder()
                 .token(refresh)
                 .user(user)
-                .userSession(session)
                 .expiryDate(LocalDateTime.now().plusSeconds(jwtService.getRefreshTtlSeconds()))
                 .build();
         refreshTokenRepository.save(refreshToken);

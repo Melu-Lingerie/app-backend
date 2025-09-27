@@ -52,6 +52,7 @@ public class EmailVerificationService {
                 .email(email)
                 .code(code)
                 .expiresAt(LocalDateTime.now().plusMinutes(codeTtlMinutes))
+                // TODO ТЕХ.ДОЛГ
                 .attempts(0)
                 .createdAt(LocalDateTime.now())
                 .build();

@@ -29,18 +29,11 @@ public class RefreshToken {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "session_id")
-    private UserSession userSession;
-
     @Column(name = "expiry_date", nullable = false)
     private LocalDateTime expiryDate;
 
-    @Column(name = "ip_address", length = 45)
-    private String ipAddress;
-
-    @Column(name = "user_agent", length = 512)
-    private String userAgent;
+    @Column(name = "is_revoked")
+    private Boolean isRevoked = false;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
