@@ -16,7 +16,7 @@ import java.util.UUID;
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
-//TODO эедпоинт logout , эндпоинт изменения информации юзера
+//TODO эндпоинт logout , эндпоинт изменения информации юзера
     private final AuthService authService;
 
     @PostMapping("/login")
@@ -55,7 +55,7 @@ public class AuthController {
         LoginResponseDto response = authService.verifyEmailAndComplete(dto);
         return ResponseEntity.ok(response);
     }
-    //TODO проверить на работоспособность
+
     @PostMapping("/resend-code")
     public ResponseEntity<Map<String, String>> resendCode(@RequestBody Map<String, String> request) {
         String email = request.get("email");

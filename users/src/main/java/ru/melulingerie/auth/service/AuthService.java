@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.melulingerie.auth.dto.*;
 import ru.melulingerie.auth.entity.EmailVerification;
@@ -17,6 +18,7 @@ import ru.melulingerie.users.service.UserCreateService;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -33,13 +35,22 @@ public class AuthService {
     private final JwtService jwtService;
     private final EmailVerificationService emailVerificationService;
     private final UserCreateService userCreateService;
+    private final TokenHashService tokenHashService;
 
     /**
-     * Найти существующую активную сессию пользователя
+     * Найти существующую активную сессию пользователя или обновить существующую
+     * 
+     * Логика:
+     * 1. Если сессия найдена и принадлежит этому пользователю - обновляем активность
+     * 2. Если сессия найдена, но принадлежит другому пользователю (гость → зарегистрированный):
+     *    - Обновляем владельца сессии на текущего пользователя
+     *    - Это происходит когда гостевой пользователь регистрируется
+     * 3. Если сессия не найдена - создаем новую
      */
-    private UserSession findExistingUserSession(User user, UUID sessionId) {
+    private UserSession findOrCreateUserSession(User user, UUID sessionId) {
         if (sessionId == null) {
-            throw new IllegalArgumentException("SessionId обязателен для аутентификации");
+            log.warn("SessionId null для пользователя: {}. Создаем новую сессию", user.getId());
+            return createNewSession(user, UUID.randomUUID());
         }
         
         log.info("Поиск сессии с ID: {} для пользователя: {}", sessionId, user.getId());
@@ -51,21 +62,38 @@ public class AuthService {
             log.info("Найдена сессия: ID={}, userId={}, active={}", 
                 session.getId(), session.getUser().getId(), session.isActive());
             
-            // Проверяем, что сессия принадлежит этому пользователю и активна
-            if (session.getUser().getId().equals(user.getId()) && session.isActive()) {
-                // Обновляем время активности
-                session.touch(Duration.ofHours(24));
-                log.info("Переиспользуем существующую сессию: {}", session.getId());
-                return userSessionRepository.save(session);
-            } else if (!session.getUser().getId().equals(user.getId())) {
-                throw new IllegalStateException("Сессия принадлежит другому пользователю");
-            } else {
-                throw new IllegalStateException("Сессия неактивна или истекла");
+            // Если сессия принадлежит другому пользователю (гость → зарегистрированный)
+            if (!session.getUser().getId().equals(user.getId())) {
+                log.info("Сессия {} принадлежит пользователю {}, обновляем на пользователя {}", 
+                    sessionId, session.getUser().getId(), user.getId());
+                session.setUser(user);
             }
+            
+            // Обновляем время активности и продлеваем срок действия
+            session.touch(Duration.ofHours(24));
+            session.setStatus(SessionStatus.ACTIVE);
+            log.info("Обновлена сессия: {}", session.getId());
+            return userSessionRepository.save(session);
         }
         
-        log.warn("Сессия с ID {} не найдена", sessionId);
-        throw new IllegalStateException("Сессия с ID " + sessionId + " не найдена");
+        // Сессия не найдена - создаем новую
+        log.info("Сессия с ID {} не найдена, создаем новую для пользователя: {}", sessionId, user.getId());
+        return createNewSession(user, sessionId);
+    }
+
+    /**
+     * Создать новую сессию для пользователя
+     */
+    private UserSession createNewSession(User user, UUID sessionId) {
+        UserSession newSession = UserSession.builder()
+                .sessionId(sessionId)
+                .user(user)
+                .status(SessionStatus.ACTIVE)
+                .build();
+        
+        UserSession savedSession = userSessionRepository.save(newSession);
+        log.info("Создана новая сессия: {} для пользователя: {}", savedSession.getSessionId(), user.getId());
+        return savedSession;
     }
 
     @Transactional
@@ -84,33 +112,33 @@ public class AuthService {
 
         // 3) Сверка пароля (BCrypt)
         if (creds.getPasswordHash() == null || !passwordEncoder.matches(dto.getPassword(), creds.getPasswordHash())) {
-            // TODO посолить
-            // TODO счетчики failedLogin добавим позже пока просто считаем кол-во неверных запросов
+            // Увеличиваем счетчик неверных попыток
+            incrementFailedLoginCount(creds);
+            log.warn("Неверный пароль для пользователя с email: {}. Количество неверных попыток: {}", 
+                dto.getEmail(), creds.getFailedLoginCount());
             throw new IllegalArgumentException("Неверный email или пароль");
         }
 
-        // 4) Найти существующую активную сессию или обработать случай без sessionId
-        //UserSession session;
-        //if (dto.getSessionId() != null) {
-            //    // Используем переданную сессию
-            //    session = findExistingUserSession(user, dto.getSessionId());
-            //} else {
-            //    // Для случаев повторного логина без sessionId - требуем, чтобы клиент передавал sessionId
-            //    throw new IllegalArgumentException("SessionId обязателен для логина. Получите sessionId через создание гостевого пользователя.");
-            //}
+        // 4) Найти или создать сессию пользователя
+        UserSession session = findOrCreateUserSession(user, dto.getSessionId());
 
+        // 4.1) Сбросить счетчик неверных попыток при успешном логине
+        resetFailedLoginCount(creds);
+        
         // 5) Сгенерировать токены
         String access = jwtService.generateAccessToken(user, creds);
         String refresh = jwtService.generateRefreshToken(user, creds);
 
-        // 6) Сохранить refresh token
+        // 6) Сохранить refresh token (хэшированный)
+        String tokenHash = tokenHashService.hashToken(refresh);
         RefreshToken refreshToken = RefreshToken.builder()
-                .token(refresh)
+                .tokenHash(tokenHash)
                 .user(user)
                 .expiryDate(LocalDateTime.now().plusSeconds(jwtService.getRefreshTtlSeconds()))
                 .build();
 
         refreshTokenRepository.save(refreshToken);
+        log.info("Сохранен новый refresh token для пользователя: {}", user.getId());
 
         // 7) Сформировать ответ
         return LoginResponseDto.builder()
@@ -129,10 +157,28 @@ public class AuthService {
 
     @Transactional
     public RefreshResponseDto refreshAccessToken(RefreshRequestDto dto) {
-        // TODO Подумать о хэшировании рефреш токена и хранения в БД этого хэша.
-        // TODO в токене есть userId - искать по нему?
-        RefreshToken oldRt = refreshTokenRepository.findByToken(dto.getRefreshToken())
-                .orElseThrow(() -> new IllegalArgumentException("Неверный refresh token"));
+        // Извлекаем userId из токена для оптимизации поиска
+        Long userId;
+        try {
+            userId = jwtService.extractUserId(dto.getRefreshToken());
+        } catch (Exception e) {
+            log.warn("Невозможно извлечь userId из refresh token: {}", e.getMessage());
+            throw new IllegalArgumentException("Неверный refresh token");
+        }
+        
+        // Находим все активные токены пользователя
+        List<RefreshToken> userTokens = refreshTokenRepository.findByUserIdAndIsRevokedFalseOrderByCreatedAtDesc(userId);
+        
+        // Проверяем каждый хэш до нахождения совпадения
+        RefreshToken oldRt = userTokens.stream()
+                .filter(rt -> !rt.isExpired() && tokenHashService.matches(dto.getRefreshToken(), rt.getTokenHash()))
+                .findFirst()
+                .orElseThrow(() -> {
+                    log.warn("Не найден действительный refresh token для пользователя: {}", userId);
+                    return new IllegalArgumentException("Неверный refresh token");
+                });
+        
+        log.info("Найден действительный refresh token для пользователя: {}", userId);
 
         if (oldRt.isExpired()) {
             // Удалим просроченный токен, чтобы не копился мусор
@@ -142,8 +188,8 @@ public class AuthService {
 
         User user = oldRt.getUser();
 
-        // Вытаскиваем email из старого refresh (subject = email)
-        String email = jwtService.extractEmail(oldRt.getToken());
+        // Вытаскиваем email из токена (subject = email)
+        String email = jwtService.extractEmail(dto.getRefreshToken());
 
         UserCredentials creds = credentialsRepository
                 .findByIdentifierAndIdentityType(email, IdentityType.EMAIL)
@@ -153,14 +199,16 @@ public class AuthService {
         String newAccess = jwtService.generateAccessToken(user, creds);
         String newRefresh = jwtService.generateRefreshToken(user, creds);
 
-        // Создать новую запись refresh для той же сессии
+        // Создать новую запись refresh (хэшированную)
+        String newTokenHash = tokenHashService.hashToken(newRefresh);
         RefreshToken newRt = RefreshToken.builder()
-                .token(newRefresh)
+                .tokenHash(newTokenHash)
                 .user(user)
                 .expiryDate(LocalDateTime.now().plusSeconds(jwtService.getRefreshTtlSeconds()))
                 .build();
 
         refreshTokenRepository.save(newRt);
+        log.info("Создан новый refresh token для пользователя: {}", user.getId());
 
         // Удалить старый refresh (простая ротация)
         refreshTokenRepository.delete(oldRt);
@@ -201,6 +249,8 @@ public class AuthService {
                 // Удаляем старые неподтвержденные credentials для обновления
                 credentialsRepository.delete(creds);
                 log.info("Удалены старые неподтвержденные credentials для пользователя: {}", dto.getUserId());
+                // Очищаем existingCreds, так как сущность была удалена
+                existingCreds = Optional.empty();
             } else {
                 // Другой пользователь пытается зарегистрироваться с чужим неподтвержденным email
                 log.warn("Пользователь {} пытается зарегистрироваться с email {}, который используется пользователем {}", 
@@ -217,7 +267,7 @@ public class AuthService {
                 dto.getLastName()
         );
         // 3. Создать учетные данные (без верификации)
-        createUserCredentials(user, dto);
+        createUserCredentials(user, dto, existingCreds);
 
         // 4. Отправить код верификации (старые коды удаляются автоматически)
         emailVerificationService.sendVerificationCode(dto.getEmail(), user);
@@ -238,12 +288,12 @@ public class AuthService {
         
         // 3. Пометить email как подтвержденный
         markCredentialsAsVerified(dto.getEmail());
-        //TODO необходимо хранить коды некоторое время
+        
         // 4. Удалить использованный код
         emailVerificationRepository.delete(verification);
 
         // 5. Автоматически залогинить пользователя, используя существующую сессию
-        LoginResponseDto response = createLoginResponse(user, dto.getEmail());
+        LoginResponseDto response = createLoginResponse(user, dto.getEmail(), dto.getSessionId());
 
         log.info("Email подтвержден и пользователь активирован: {}", user.getId());
         return response;
@@ -270,11 +320,9 @@ public class AuthService {
         credentialsRepository.save(emailCreds);
     }
 
-    private void createUserCredentials(User user, RegisterRequestDto dto) {
-        // Найти существующие email credentials для обновления или создать
-        // TODO  А не делаем ли мы лишний поиск.
-        UserCredentials emailCreds = credentialsRepository
-                .findByUserAndIdentityType(user, IdentityType.EMAIL)
+    private void createUserCredentials(User user, RegisterRequestDto dto, Optional<UserCredentials> existingCreds) {
+        // Используем существующие credentials или создаем новые
+        UserCredentials emailCreds = existingCreds
                 .orElse(UserCredentials.builder()
                         .user(user)
                         .identityType(IdentityType.EMAIL)
@@ -301,22 +349,30 @@ public class AuthService {
 //        }
     }
 
-    private LoginResponseDto createLoginResponse(User user, String email) {
+    private LoginResponseDto createLoginResponse(User user, String email, UUID sessionId) {
         UserCredentials creds = credentialsRepository
                 .findByIdentifierAndIdentityType(email, IdentityType.EMAIL)
                 .orElseThrow(() -> new IllegalStateException("Email credentials не найдены"));
 
+        // Найти или создать сессию пользователя
+        UserSession session = findOrCreateUserSession(user, sessionId);
+
+        // Сбросить счетчик неверных попыток при успешной активации
+        resetFailedLoginCount(creds);
+        
         // Сгенерировать токены
         String access = jwtService.generateAccessToken(user, creds);
         String refresh = jwtService.generateRefreshToken(user, creds);
 
-        // Сохранить refresh token
+        // Сохранить refresh token (хэшированный)
+        String tokenHash = tokenHashService.hashToken(refresh);
         RefreshToken refreshToken = RefreshToken.builder()
-                .token(refresh)
+                .tokenHash(tokenHash)
                 .user(user)
                 .expiryDate(LocalDateTime.now().plusSeconds(jwtService.getRefreshTtlSeconds()))
                 .build();
         refreshTokenRepository.save(refreshToken);
+        log.info("Сохранен refresh token при подтверждении email для пользователя: {}", user.getId());
 
         return LoginResponseDto.builder()
                 .userId(user.getId())
@@ -343,5 +399,38 @@ public class AuthService {
         }
 
         return user;
+    }
+
+    /**
+     * Увеличить счетчик неверных попыток входа в отдельной транзакции
+     * Используется REQUIRES_NEW чтобы изменения сохранились даже при откате основной транзакции
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    private void incrementFailedLoginCount(UserCredentials credentials) {
+        // Перезагружаем credentials из БД для получения актуального состояния
+        UserCredentials freshCredentials = credentialsRepository.findById(credentials.getId())
+                .orElseThrow(() -> new IllegalStateException("UserCredentials не найдены"));
+        
+        int currentCount = freshCredentials.getFailedLoginCount() != null ? freshCredentials.getFailedLoginCount() : 0;
+        freshCredentials.setFailedLoginCount(currentCount + 1);
+        freshCredentials.setLastFailedLoginAt(LocalDateTime.now());
+        
+        // Сохранение произойдет автоматически в конце транзакции
+        log.info("Увеличен счетчик неверных попыток для пользователя ID: {}. Текущее значение: {}", 
+            freshCredentials.getUser().getId(), freshCredentials.getFailedLoginCount());
+    }
+
+    /**
+     * Сбросить счетчик неверных попыток входа при успешном логине
+     * Использует текущую транзакцию, так как вызывается при успешном логине
+     */
+    private void resetFailedLoginCount(UserCredentials credentials) {
+        if (credentials.getFailedLoginCount() != null && credentials.getFailedLoginCount() > 0) {
+            log.info("Сброс счетчика неверных попыток для пользователя ID: {}. Было: {}", 
+                credentials.getUser().getId(), credentials.getFailedLoginCount());
+            credentials.setFailedLoginCount(0);
+            credentials.setLastFailedLoginAt(null);
+            // Сохранение произойдет автоматически в конце транзакции login()
+        }
     }
 }

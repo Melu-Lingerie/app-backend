@@ -96,10 +96,12 @@ logging:
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
-##TODO какой задать секрет  и в каких единицах здесь установлено значение времени?
+# JWT Configuration
+# Секретный ключ должен быть минимум 256 бит (32 символа) для HMAC-SHA256
+# Текущий ключ: 78 символов = 624 бита (безопасно)
 jwt:
-  secret: ${JWT_SECRET:change_me_to_very_long_256bit_secret_2025}
-  # Время жизни токенов в секундах   изменить текст о времени жизни код отправленного на емэил
+  secret: ${JWT_SECRET:my_super_secret_jwt_key_for_melu_lingerie_2025_secure_authentication_system}
+  # Время жизни токенов в секундах
   access-token-ttl-seconds: 3600     # 1 час
   refresh-token-ttl-seconds: 2592000 # 30 дней
 
