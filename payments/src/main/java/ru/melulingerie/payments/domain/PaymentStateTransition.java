@@ -21,8 +21,8 @@ public class PaymentStateTransition {
     @Column(name = "payment_id", nullable = false)
     private Long paymentId;
 
-    @Column(name = "external_payment_id")
-    private String externalPaymentId;
+    @Column(name = "acquirer_payment_id")
+    private String acquirerPaymentId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "from_status")

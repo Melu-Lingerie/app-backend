@@ -2,83 +2,57 @@ package ru.melulingerie.payments.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import ru.melulingerie.payments.dto.ExternalPaymentCancelResponse;
-import ru.melulingerie.payments.dto.ExternalPaymentResponse;
+import ru.melulingerie.payments.api.AcquirerApi;
+import ru.melulingerie.payments.dto.acquirer.AcquirerPaymentId;
+import ru.melulingerie.payments.dto.AcquirerPaymentCancelResponse;
+import ru.melulingerie.payments.dto.AcquirerPaymentCreateResponse;
 import ru.melulingerie.payments.dto.PaymentCreateRequest;
-import ru.melulingerie.payments.generated.api.PaymentsApi;
-import ru.melulingerie.payments.generated.model.CreatePaymentRequest;
-import ru.melulingerie.payments.generated.model.Payment;
-import ru.melulingerie.payments.mapper.PaymentsAcquirerMapper;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
+import ru.melulingerie.payments.dto.acquirer.AcquirerApiPaymentResponse;
+import ru.melulingerie.payments.mapper.AcquirerApiMapper;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class PaymentsAcquirerServiceImpl implements PaymentsAcquirerService {
-    private final PaymentsApi paymentsApi;
-    private final PaymentsAcquirerMapper paymentsAcquirerMapper;
+    private final AcquirerApi acquirerApi;
+    private final AcquirerApiMapper acquirerApiMapper;
 
     @Override
-    public ExternalPaymentResponse createExternalPayment(PaymentCreateRequest request) {
-        log.info("Creating external payment for method: {}, order: {}",
-                request.getPaymentMethod(), request.getOrderId());
+    public AcquirerPaymentCreateResponse createPayment(PaymentCreateRequest request) {
+        log.info("Creating payment for method: {}, order: {}", request.getPaymentMethod(), request.getOrderId());
 
         try {
-            CreatePaymentRequest apiRequest = paymentsAcquirerMapper.toRequest(request);
+            AcquirerApiPaymentResponse response = acquirerApi.createPayment(
+                    request.getIdempotenceKey(),
+                    acquirerApiMapper.toApiRequest(request)
+            );
 
-            ResponseEntity<Payment> response =
-                    paymentsApi.paymentsPostWithHttpInfo(
-                            request.getIdempotenceKey().toString(),
-                            apiRequest
-                    );
-
-            if (!response.getStatusCode().is2xxSuccessful()) {
-                return ExternalPaymentResponse.failure("Payment provider returned error: " + response.getStatusCode(), "HTTP_ERROR");
+            if (Objects.isNull(response)) {
+                return AcquirerPaymentCreateResponse.failure("No response from payment provider", "NO_RESPONSE");
             }
 
-            if (response.hasBody()) {
-                Payment externalPayment = response.getBody();
-                String externalId = externalPayment.getId();
-                var status = paymentsAcquirerMapper.mapStatus(externalPayment.getStatus());
-                String confirmationUrl = paymentsAcquirerMapper.extractConfirmationUrl(externalPayment);
-
-                log.info("Successfully created external payment with ID: {}", externalId);
-
-                return ExternalPaymentResponse.success(externalId, status, confirmationUrl);
-            }
-
-            return ExternalPaymentResponse.failure("No response from payment provider", "NO_RESPONSE");
-
-        } catch (HttpClientErrorException | HttpServerErrorException e) {
-            log.error("HTTP error creating external payment: {}", e.getStatusCode());
-            return ExternalPaymentResponse.failure("Payment provider error", "HTTP_ERROR");
+            AcquirerPaymentId acquirerPaymentId = AcquirerPaymentId.of(response.id());
+            log.info("Successfully created payment with ID: {}", acquirerPaymentId);
+            return acquirerApiMapper.toAcquirerPaymentCreateResponse(acquirerPaymentId, response);
         } catch (Exception e) {
-            log.error("Failed to create external payment for method: {}", request.getPaymentMethod(), e);
-            return ExternalPaymentResponse.failure(e.getMessage(), "API_ERROR");
+            log.error("Failed to create payment for method: {}", request.getPaymentMethod(), e);
+            return AcquirerPaymentCreateResponse.failure(e.getMessage(), "API_ERROR");
         }
     }
 
     @Override
-    public ExternalPaymentCancelResponse cancelExternalPayment(String externalPaymentId, UUID idempotenceKey) {
-        if (externalPaymentId == null) {
-            return ExternalPaymentCancelResponse.invalidRequest("External payment ID is null");
-        }
-
+    public AcquirerPaymentCancelResponse cancelPayment(UUID idempotenceKey, AcquirerPaymentId acquirerPaymentId) {
         try {
-            paymentsApi.paymentsPaymentIdCancelPost(
-                    externalPaymentId,
-                    idempotenceKey.toString()
-            );
-            log.info("Successfully canceled external payment: {}", externalPaymentId);
-            return ExternalPaymentCancelResponse.success(externalPaymentId);
+            acquirerApi.cancelPayment(idempotenceKey, acquirerPaymentId);
+            log.info("Successfully canceled payment: {}", acquirerPaymentId);
+            return AcquirerPaymentCancelResponse.success(acquirerPaymentId);
         } catch (Exception e) {
-            log.error("Failed to cancel external payment: {}", externalPaymentId, e);
-            return ExternalPaymentCancelResponse.failure(externalPaymentId, e.getMessage(), "API_ERROR");
+            log.error("Failed to cancel payment: {}", acquirerPaymentId, e);
+            return AcquirerPaymentCancelResponse.failure(acquirerPaymentId, e.getMessage(), "API_ERROR");
         }
     }
 }

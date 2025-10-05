@@ -33,8 +33,8 @@ public class PaymentFacadeServiceImpl implements PaymentFacadeService {
     }
 
     @Override
-    public PaymentFacadeResponseDto getPaymentByExternalId(String externalPaymentId) {
-        PaymentResponse response = paymentService.getPaymentByExternalId(externalPaymentId);
+    public PaymentFacadeResponseDto getPaymentByAcquirerPaymentId(String acquirerPaymentId) {
+        PaymentResponse response = paymentService.getPaymentByAcquirerPaymentId(acquirerPaymentId);
         return paymentFacadeMapper.toFacadeResponse(response);
     }
 
@@ -46,8 +46,8 @@ public class PaymentFacadeServiceImpl implements PaymentFacadeService {
     }
 
     @Override
-    public PaymentFacadeResponseDto refundPayment(Long paymentId, String reason) {
-        PaymentResponse response = paymentService.refundPayment(paymentId, reason);
+    public PaymentFacadeResponseDto refundPayment(Long paymentId) {
+        PaymentResponse response = paymentService.refundPayment(paymentId);
         return paymentFacadeMapper.toFacadeResponse(response);
     }
 }

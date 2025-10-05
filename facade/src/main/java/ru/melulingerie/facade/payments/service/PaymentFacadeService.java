@@ -7,7 +7,7 @@ import ru.melulingerie.facade.payments.dto.response.PaymentFacadeResponseDto;
 public interface PaymentFacadeService {
     PaymentFacadeResponseDto createPayment(PaymentCreateFacadeRequestDto request);
     PaymentFacadeResponseDto getPaymentById(Long paymentId);
-    PaymentFacadeResponseDto getPaymentByExternalId(String externalPaymentId);
+    PaymentFacadeResponseDto getPaymentByAcquirerPaymentId(String acquirerPaymentId);
     PaymentFacadeResponseDto cancelPayment(PaymentCancelFacadeRequestDto request);
-    PaymentFacadeResponseDto refundPayment(Long paymentId, String reason);
+    PaymentFacadeResponseDto refundPayment(Long paymentId);
 }

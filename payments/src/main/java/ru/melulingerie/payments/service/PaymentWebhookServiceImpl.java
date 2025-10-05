@@ -31,7 +31,7 @@ public class PaymentWebhookServiceImpl implements PaymentWebhookService {
 
         String externalPaymentId = webhookPayment.getId();
 
-        PaymentResponse localPayment = paymentService.getPaymentByExternalId(externalPaymentId);
+        PaymentResponse localPayment = paymentService.getPaymentByAcquirerPaymentId(externalPaymentId);
 
         ru.melulingerie.payments.domain.PaymentStatus newStatus = paymentsAcquirerMapper.mapStatus(webhookPayment.getStatus());
 

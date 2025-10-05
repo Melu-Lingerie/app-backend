@@ -30,9 +30,9 @@ public class PaymentController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/external/{externalPaymentId}")
-    public ResponseEntity<PaymentFacadeResponseDto> getPaymentByExternalId(@PathVariable String externalPaymentId) {
-        PaymentFacadeResponseDto response = paymentFacadeService.getPaymentByExternalId(externalPaymentId);
+    @GetMapping("/external/{acquirerPaymentId}")
+    public ResponseEntity<PaymentFacadeResponseDto> getPaymentByExternalId(@PathVariable String acquirerPaymentId) {
+        PaymentFacadeResponseDto response = paymentFacadeService.getPaymentByAcquirerPaymentId(acquirerPaymentId);
         return ResponseEntity.ok(response);
     }
 
@@ -43,8 +43,8 @@ public class PaymentController {
     }
 
     @PostMapping("/{paymentId}/refund")
-    public ResponseEntity<PaymentFacadeResponseDto> refundPayment(@PathVariable Long paymentId, @RequestParam String reason) {
-        PaymentFacadeResponseDto response = paymentFacadeService.refundPayment(paymentId, reason);
+    public ResponseEntity<PaymentFacadeResponseDto> refundPayment(@PathVariable Long paymentId) {
+        PaymentFacadeResponseDto response = paymentFacadeService.refundPayment(paymentId);
         return ResponseEntity.ok(response);
     }
 }

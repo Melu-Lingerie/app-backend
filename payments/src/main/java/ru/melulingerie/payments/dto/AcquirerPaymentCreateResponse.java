@@ -1,12 +1,15 @@
 package ru.melulingerie.payments.dto;
 
+import lombok.Builder;
+import ru.melulingerie.payments.dto.acquirer.AcquirerPaymentId;
 import ru.melulingerie.payments.domain.PaymentStatus;
 
 import java.time.LocalDateTime;
 
-public record ExternalPaymentResponse(
+@Builder
+public record AcquirerPaymentCreateResponse(
         boolean isSuccess,
-        String externalPaymentId,
+        AcquirerPaymentId acquirerPaymentId,
         PaymentStatus status,
         String confirmationUrl,
         String errorMessage,
@@ -22,10 +25,10 @@ public record ExternalPaymentResponse(
         return confirmationUrl != null && !confirmationUrl.isBlank();
     }
 
-    public static ExternalPaymentResponse success(String externalPaymentId, PaymentStatus status, String confirmationUrl) {
-        return new ExternalPaymentResponse(
+    public static AcquirerPaymentCreateResponse success(AcquirerPaymentId acquirerPaymentId, PaymentStatus status, String confirmationUrl) {
+        return new AcquirerPaymentCreateResponse(
                 true,
-                externalPaymentId,
+                acquirerPaymentId,
                 status,
                 confirmationUrl,
                 null,
@@ -34,8 +37,8 @@ public record ExternalPaymentResponse(
         );
     }
 
-    public static ExternalPaymentResponse failure(String errorMessage, String errorCode) {
-        return new ExternalPaymentResponse(
+    public static AcquirerPaymentCreateResponse failure(String errorMessage, String errorCode) {
+        return new AcquirerPaymentCreateResponse(
                 false,
                 null,
                 null,
@@ -46,7 +49,7 @@ public record ExternalPaymentResponse(
         );
     }
 
-    public static ExternalPaymentResponse failure(String errorMessage) {
-        return failure(errorMessage, "EXTERNAL_ERROR");
+    public static AcquirerPaymentCreateResponse failure(String errorMessage) {
+        return failure(errorMessage, "ACQUIRER_ERROR");
     }
 }

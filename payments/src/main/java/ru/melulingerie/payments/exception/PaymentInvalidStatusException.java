@@ -9,7 +9,7 @@ public class PaymentInvalidStatusException extends PaymentException {
               String.format("Cannot %s payment in status: %s", operation, currentStatus));
     }
 
-    public PaymentInvalidStatusException(String operation, PaymentStatus currentStatus, PaymentStatus... requiredStatuses) {
+    public PaymentInvalidStatusException(PaymentInvalidStatusOperation operation, PaymentStatus currentStatus, PaymentStatus... requiredStatuses) {
         super(PaymentErrorCode.PAYMENT_INVALID_STATUS,
               String.format("Cannot %s payment in status %s. Required status: %s",
                           operation, currentStatus, java.util.Arrays.toString(requiredStatuses)));

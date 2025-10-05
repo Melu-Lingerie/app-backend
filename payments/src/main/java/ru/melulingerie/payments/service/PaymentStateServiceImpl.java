@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.melulingerie.payments.domain.Payment;
 import ru.melulingerie.payments.domain.PaymentStateTransition;
 import ru.melulingerie.payments.domain.PaymentStatus;
+import ru.melulingerie.payments.exception.PaymentInvalidStatusException;
 import ru.melulingerie.payments.exception.PaymentNotFoundException;
 import ru.melulingerie.payments.repository.PaymentRepository;
 import ru.melulingerie.payments.repository.PaymentStateTransitionRepository;
@@ -19,36 +20,24 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class PaymentStateServiceImpl implements PaymentStateService {
-    private final PaymentRepository paymentRepository;
-    private final PaymentStateTransitionRepository stateTransitionRepository;
-    private final PaymentStatusTransitionValidator transitionValidator;
     private final PaymentStateTransitionMapper stateTransitionMapper;
+    private final PaymentStatusTransitionValidator transitionValidator;
+    private final PaymentStateTransitionRepository stateTransitionRepository;
 
     @Override
-    @Transactional
+    @Transactional(noRollbackFor = PaymentInvalidStatusException.class)
     public void transitPaymentStatus(PaymentStateTransitionRequest request) {
-        Payment payment = paymentRepository.findById(request.paymentId())
-                .orElseThrow(() -> new PaymentNotFoundException(request.paymentId()));
+        PaymentStatus fromStatus = request.oldStatus();
+        PaymentStatus toStatus = request.newStatus();
 
-        PaymentStatus oldStatus = payment.getStatus();
+        transitionValidator.validateTransition(fromStatus, toStatus);
 
-        if (oldStatus == request.newStatus()) {
-            log.debug("Payment {} already in status {}", request.paymentId(), request.newStatus());
-            return;
-        }
+        PaymentStateTransition transition = stateTransitionMapper.createTransition(request);
 
-        transitionValidator.validateTransition(oldStatus, request.newStatus());
-
-        PaymentStateTransition transition = stateTransitionMapper.createTransition(
-                payment, oldStatus, request.newStatus(), request.reason(), request.createdBy());
-
-        payment.setStatus(request.newStatus());
-
-        paymentRepository.save(payment);
         stateTransitionRepository.save(transition);
 
-        log.info("Payment {} transitioned from {} to {} with reason: {}",
-                request.paymentId(), oldStatus, request.newStatus(), request.reason());
+        log.info("Payment[paymentId = {}] transitioned from {} to {} with reason: {}",
+                request.paymentId(), fromStatus, toStatus, request.reason());
     }
 
     @Override

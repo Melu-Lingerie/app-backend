@@ -1,4 +1,4 @@
-package ru.melulingerie.payments.domain;
+package ru.melulingerie.payments.dto.acquirer;
 
 import ru.melulingerie.payments.exception.InvalidAcquirerPaymentIdException;
 

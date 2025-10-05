@@ -1,14 +1,15 @@
 package ru.melulingerie.payments.service;
 
-import ru.melulingerie.payments.dto.ExternalPaymentCancelResponse;
-import ru.melulingerie.payments.dto.ExternalPaymentResponse;
+import ru.melulingerie.payments.dto.acquirer.AcquirerPaymentId;
+import ru.melulingerie.payments.dto.AcquirerPaymentCancelResponse;
+import ru.melulingerie.payments.dto.AcquirerPaymentCreateResponse;
 import ru.melulingerie.payments.dto.PaymentCreateRequest;
 
 import java.util.UUID;
 
 public interface PaymentsAcquirerService {
 
-    ExternalPaymentResponse createExternalPayment(PaymentCreateRequest request);
+    AcquirerPaymentCreateResponse createPayment(PaymentCreateRequest request);
 
-    ExternalPaymentCancelResponse cancelExternalPayment(String externalPaymentId, UUID idempotenceKey);
+    AcquirerPaymentCancelResponse cancelPayment( UUID idempotenceKey, AcquirerPaymentId acquirerPaymentId);
 }

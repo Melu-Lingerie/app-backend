@@ -4,9 +4,9 @@ import lombok.Getter;
 
 @Getter
 public enum PaymentTransitionReason {
-    EXTERNAL_PAYMENT_CREATED("External payment was successfully created"),
-    EXTERNAL_PAYMENT_FAILED("External payment creation failed"),
-    EXTERNAL_PAYMENT_STATUS_UPDATED("External payment status was updated"),
+    ACQUIRER_PAYMENT_CREATED("Acquirer payment was successfully created"),
+    ACQUIRER_PAYMENT_FAILED("Acquirer payment creation failed"),
+    ACQUIRER_PAYMENT_STATUS_UPDATED("Acquirer payment status was updated"),
 
     USER_CANCELLED("Payment was cancelled by user"),
     ADMIN_CANCELLED("Payment was cancelled by administrator"),

@@ -1,8 +1,14 @@
 package ru.melulingerie.facade.payments.dto.request;
 
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import ru.melulingerie.facade.payments.dto.PaymentMethodDto;
 
 import java.math.BigDecimal;
@@ -19,7 +25,9 @@ public class PaymentCreateFacadeRequestDto {
     private UUID orderId;
 
     @NotNull(message = "Amount is required")
-    @Positive(message = "Amount must be positive")
+    @DecimalMin(value = "1.00", message = "Amount must be at least 1.00")
+    @DecimalMax(value = "1000000.00", message = "Amount must not exceed 1000000.00")
+    @Digits(integer = 8, fraction = 2, message = "Amount must have at most 2 decimal places")
     private BigDecimal amount;
 
     @NotNull(message = "Payment method is required")

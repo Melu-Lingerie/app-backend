@@ -17,19 +17,13 @@ import ru.melulingerie.payments.dto.PaymentStateTransitionRequest;
 public interface PaymentStateTransitionMapper {
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "paymentId", source = "payment.id")
+    @Mapping(target = "paymentId", source = "id")
     @Mapping(target = "fromStatus", source = "oldStatus")
     @Mapping(target = "toStatus", source = "newStatus")
     @Mapping(target = "transitionReason", source = "reason")
-    @Mapping(target = "externalPaymentId", source = "payment.externalPaymentId")
+    @Mapping(target = "acquirerPaymentId", source = "acquirerPaymentId")
     @Mapping(target = "createdBy", source = "createdBy")
-    PaymentStateTransition createTransition(
-            Payment payment,
-            PaymentStatus oldStatus,
-            PaymentStatus newStatus,
-            PaymentTransitionReason reason,
-            TransitionActor createdBy
-    );
+    PaymentStateTransition createTransition(PaymentStateTransitionRequest request);
 
     @Mapping(target = "paymentId", source = "paymentId")
     @Mapping(target = "newStatus", source = "newStatus")

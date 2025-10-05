@@ -4,97 +4,72 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
+import ru.melulingerie.payments.dto.acquirer.AcquirerPaymentId;
 import ru.melulingerie.payments.domain.Payment;
 import ru.melulingerie.payments.domain.PaymentStatus;
 import ru.melulingerie.payments.domain.PaymentTransitionReason;
-import ru.melulingerie.payments.dto.ExternalPaymentCancelResponse;
-import ru.melulingerie.payments.dto.ExternalPaymentResponse;
+import ru.melulingerie.payments.dto.AcquirerPaymentCancelResponse;
+import ru.melulingerie.payments.dto.AcquirerPaymentCreateResponse;
 import ru.melulingerie.payments.dto.PaymentCancelRequest;
 import ru.melulingerie.payments.dto.PaymentCreateRequest;
 import ru.melulingerie.payments.dto.PaymentResponse;
-import ru.melulingerie.payments.exception.PaymentCreationException;
-import ru.melulingerie.payments.exception.PaymentInvalidStatusException;
-import ru.melulingerie.payments.exception.PaymentNotFoundException;
-import ru.melulingerie.payments.exception.PaymentOperationException;
+import ru.melulingerie.payments.exception.*;
 import ru.melulingerie.payments.mapper.PaymentMapper;
 import ru.melulingerie.payments.mapper.PaymentStateTransitionMapper;
 import ru.melulingerie.payments.repository.PaymentRepository;
-import ru.melulingerie.payments.config.properties.PaymentsApiProperties;
+import ru.melulingerie.payments.validator.PaymentCreateValidator;
 
-import java.util.UUID;
+import java.util.Objects;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
+    private final PaymentMapper paymentMapper;
     private final PaymentRepository paymentRepository;
     private final PaymentStateService paymentStateService;
     private final PaymentsAcquirerService paymentsAcquirerService;
-    private final PaymentsApiProperties paymentsApiProperties;
-    private final PaymentMapper paymentMapper;
     private final PaymentStateTransitionMapper stateTransitionMapper;
+    private final PaymentCreateValidator paymentCreateValidator;
 
     @Override
-    @Transactional
+    @Transactional(noRollbackFor = { PaymentCreationException.class, PaymentInvalidStatusException.class })
     public PaymentResponse createPayment(PaymentCreateRequest request) {
         log.info("Creating payment for order: {}, amount: {}, method: {}",
                 request.getOrderId(), request.getAmount(), request.getPaymentMethod());
 
-        String returnUrl = StringUtils.hasText(request.getReturnUrl())
-            ? request.getReturnUrl()
-            : paymentsApiProperties.api().returnUrl();
+        // TODO В Фасаде засетить returnURL, если управлять будем с бэка.
+        paymentCreateValidator.validate(request);
 
-        PaymentCreateRequest requestWithIdempotence = PaymentCreateRequest.builder()
-                .orderId(request.getOrderId())
-                .amount(request.getAmount())
-                .paymentMethod(request.getPaymentMethod())
-                .description(request.getDescription())
-                .returnUrl(returnUrl)
-                .confirmationUrl(request.getConfirmationUrl())
-                .idempotenceKey(UUID.randomUUID())
-                .build();
+        Payment payment = paymentRepository.save(
+                paymentMapper.toEntity(request)
+        );
 
-        Payment payment = paymentMapper.toEntity(requestWithIdempotence);
-        payment = paymentRepository.save(payment);
+        AcquirerPaymentCreateResponse acquirerResponse = paymentsAcquirerService.createPayment(request);
 
-        ExternalPaymentResponse externalResponse = paymentsAcquirerService.createExternalPayment(requestWithIdempotence);
+        handleFailedResponse(request, acquirerResponse, payment);
 
-        if (externalResponse.isFailed()) {
-            try {
-                paymentStateService.transitPaymentStatus(
-                        stateTransitionMapper.createFailureRequest(
-                                payment.getId(),
-                                PaymentTransitionReason.EXTERNAL_PAYMENT_FAILED
-                        )
-                );
-            } catch (Exception e) {
-                log.error("Failed to update payment status after external failure for payment: {}", payment.getId(), e);
-            }
+        if (Objects.nonNull(acquirerResponse.acquirerPaymentId())) {
+            payment.setAcquirerPaymentId(acquirerResponse.acquirerPaymentId().toString());
+            payment.setConfirmationUrl(acquirerResponse.confirmationUrl());
 
-            throw new PaymentCreationException(request.getOrderId(), externalResponse.errorMessage());
-        }
-
-        if (externalResponse.externalPaymentId() != null) {
-            payment.setExternalPaymentId(externalResponse.externalPaymentId());
-            payment.setConfirmationUrl(externalResponse.confirmationUrl());
-
-            payment = paymentRepository.save(payment);
-
-            if (externalResponse.status() != null && externalResponse.status() != payment.getStatus()) {
+            if (Objects.nonNull(acquirerResponse.status()) && acquirerResponse.status() != payment.getStatus()) {
                 paymentStateService.transitPaymentStatus(
                         stateTransitionMapper.createStatusUpdateRequest(
                                 payment.getId(),
-                                externalResponse.status(),
-                                PaymentTransitionReason.EXTERNAL_PAYMENT_STATUS_UPDATED
+                                acquirerResponse.status(),
+                                PaymentTransitionReason.ACQUIRER_PAYMENT_STATUS_UPDATED
                         )
                 );
+            } else {
+                log.error("Acquirer respond with nullable status or status is equal to payment status: " +
+                        "paymentStatus = {}, acquirerStatus = {}", payment.getStatus(), acquirerResponse.status());
+                throw new PaymentCreationException(request.getOrderId(), "Acquirer respond with nullable status or status is equal to payment status");
             }
 
-            log.info("Successfully created payment with ID: {}, external ID: {}",
-                    payment.getId(), externalResponse.externalPaymentId());
+            log.info("Successfully created payment with ID: {}, acquirer ID: {}", payment.getId(), acquirerResponse.acquirerPaymentId());
         } else {
-            // ! handle this case externalResponse.externalPaymentId() == null
+            throw new PaymentCreationException(request.getOrderId(), "No acquirer payment ID returned");
         }
 
         return paymentMapper.toResponse(payment);
@@ -110,9 +85,9 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional(readOnly = true)
-    public PaymentResponse getPaymentByExternalId(String externalPaymentId) {
-        Payment payment = paymentRepository.findByExternalPaymentId(externalPaymentId)
-                .orElseThrow(() -> new PaymentNotFoundException(externalPaymentId));
+    public PaymentResponse getPaymentByAcquirerPaymentId(String acquirerPaymentId) {
+        Payment payment = paymentRepository.findByAcquirerPaymentId(acquirerPaymentId)
+                .orElseThrow(() -> new PaymentNotFoundException(acquirerPaymentId));
         return paymentMapper.toResponse(payment);
     }
 
@@ -122,19 +97,30 @@ public class PaymentServiceImpl implements PaymentService {
         Payment payment = paymentRepository.findById(request.paymentId())
                 .orElseThrow(() -> new PaymentNotFoundException(request.paymentId()));
 
+        /*
+            TODO Логика в payment.canBeCancelled() дублирует логику в компоненте PaymentStatusTransitionMatrix.
+            Необходимо подумать и определиться, как написать так, чтобы эта логика была в одном месте.
+         */
         if (!payment.canBeCancelled()) {
-            throw new PaymentInvalidStatusException("cancel", payment.getStatus(),
-                    PaymentStatus.PENDING, PaymentStatus.WAITING_FOR_CAPTURE);
+            throw new PaymentInvalidStatusException(
+                    PaymentInvalidStatusOperation.CANCEL,
+                    payment.getStatus(),
+                    PaymentStatus.PENDING,
+                    PaymentStatus.WAITING_FOR_CAPTURE
+            );
         }
 
-        String externalPaymentId = payment.getExternalPaymentId();
-        ExternalPaymentCancelResponse cancelResponse =
-                paymentsAcquirerService.cancelExternalPayment(externalPaymentId, request.idempotenceKey());
+        AcquirerPaymentCancelResponse cancelResponse = paymentsAcquirerService.cancelPayment(
+                        request.idempotenceKey(),
+                        AcquirerPaymentId.of(payment.getAcquirerPaymentId())
+                );
 
         if (cancelResponse.isFailed()) {
-            log.error("Failed to cancel external payment: {}", cancelResponse.errorMessage());
+            log.error("Failed to cancel acquirer payment: {}", cancelResponse.errorMessage());
             throw PaymentOperationException.cancellation(request.paymentId(), cancelResponse.errorMessage());
         }
+
+        payment.setStatus(PaymentStatus.CANCELED);
 
         paymentStateService.transitPaymentStatus(
                 stateTransitionMapper.fromCancelRequest(request)
@@ -147,14 +133,24 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional
-    public PaymentResponse refundPayment(Long paymentId, String reason) {
+    // TODO подумаь о переименовании в requestRefundPayment и создании отдельного refundPayment метода, который будет запускать только админ.
+    public PaymentResponse refundPayment(Long paymentId) {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new PaymentNotFoundException(paymentId));
 
+        /*
+            TODO Логика в payment.canBeRefunded() дублирует логику в компоненте PaymentStatusTransitionMatrix.
+            Необходимо подумать и определиться, как написать так, чтобы эта логика была в одном месте.
+         */
         if (!payment.canBeRefunded()) {
-            throw new PaymentInvalidStatusException("refund", payment.getStatus(), PaymentStatus.SUCCEEDED);
+            throw new PaymentInvalidStatusException(
+                    PaymentInvalidStatusOperation.REFUND,
+                    payment.getStatus(),
+                    PaymentStatus.SUCCEEDED
+            );
         }
-
+        // TODO Отсутствует запрос на возврат денежных средств клиенту у эквайера.
+        // Видимо в этом методе необходимо сделать запрос на возврат денежных средств, а одобрить или отказать - решает администратор магазина.
         try {
             paymentStateService.transitPaymentStatus(
                     stateTransitionMapper.createRefundRequest(
@@ -170,5 +166,24 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         return paymentMapper.toResponse(payment);
+    }
+
+    private void handleFailedResponse(PaymentCreateRequest request, AcquirerPaymentCreateResponse acquirerResponse, Payment payment) {
+        if (acquirerResponse.isFailed()) {
+            log.error("Failed to create payment[paymentId = {}] due {}", payment.getId(), acquirerResponse.errorMessage());
+            payment.setStatus(PaymentStatus.FAILED);
+            try {
+                paymentStateService.transitPaymentStatus(
+                        stateTransitionMapper.createFailureRequest(
+                                payment.getId(),
+                                PaymentTransitionReason.ACQUIRER_PAYMENT_FAILED
+                        )
+                );
+            } catch (Exception e) {
+                log.error("Failed to update payment status after acquirer failure for paymentId = {}", payment.getId(), e);
+            }
+
+            throw new PaymentCreationException(request.getOrderId(), acquirerResponse.errorMessage());
+        }
     }
 }

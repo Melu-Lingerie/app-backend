@@ -6,12 +6,8 @@ import ru.melulingerie.payments.dto.PaymentResponse;
 
 public interface PaymentService {
     PaymentResponse createPayment(PaymentCreateRequest request);
-
     PaymentResponse getPaymentById(Long paymentId);
-
-    PaymentResponse getPaymentByExternalId(String externalPaymentId);
-
+    PaymentResponse getPaymentByAcquirerPaymentId(String acquirerPaymentId);
     PaymentResponse cancelPayment(PaymentCancelRequest request);
-
-    PaymentResponse refundPayment(Long paymentId, String reason);
+    PaymentResponse refundPayment(Long paymentId);
 }
