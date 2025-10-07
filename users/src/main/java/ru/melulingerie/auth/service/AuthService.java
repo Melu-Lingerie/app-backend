@@ -38,14 +38,10 @@ public class AuthService {
     private final TokenHashService tokenHashService;
 
     /**
-     * Найти существующую активную сессию пользователя или обновить существующую
-     * 
+     * Найти существующую активную сессию пользователя или создать новую
      * Логика:
-     * 1. Если сессия найдена и принадлежит этому пользователю - обновляем активность
-     * 2. Если сессия найдена, но принадлежит другому пользователю (гость → зарегистрированный):
-     *    - Обновляем владельца сессии на текущего пользователя
-     *    - Это происходит когда гостевой пользователь регистрируется
-     * 3. Если сессия не найдена - создаем новую
+     * 1. Если сессия найдена - обновляем активность и продлеваем срок действия
+     * 2. Если сессия не найдена - создаем новую
      */
     private UserSession findOrCreateUserSession(User user, UUID sessionId) {
         if (sessionId == null) {
@@ -59,15 +55,6 @@ public class AuthService {
         Optional<UserSession> existingSession = userSessionRepository.findBySessionId(sessionId);
         if (existingSession.isPresent()) {
             UserSession session = existingSession.get();
-            log.info("Найдена сессия: ID={}, userId={}, active={}", 
-                session.getId(), session.getUser().getId(), session.isActive());
-            
-            // Если сессия принадлежит другому пользователю (гость → зарегистрированный)
-            if (!session.getUser().getId().equals(user.getId())) {
-                log.info("Сессия {} принадлежит пользователю {}, обновляем на пользователя {}", 
-                    sessionId, session.getUser().getId(), user.getId());
-                session.setUser(user);
-            }
             
             // Обновляем время активности и продлеваем срок действия
             session.touch(Duration.ofHours(24));
@@ -120,7 +107,7 @@ public class AuthService {
         }
 
         // 4) Найти или создать сессию пользователя
-        UserSession session = findOrCreateUserSession(user, dto.getSessionId());
+        findOrCreateUserSession(user, dto.getSessionId());
 
         // 4.1) Сбросить счетчик неверных попыток при успешном логине
         resetFailedLoginCount(creds);
@@ -355,7 +342,7 @@ public class AuthService {
                 .orElseThrow(() -> new IllegalStateException("Email credentials не найдены"));
 
         // Найти или создать сессию пользователя
-        UserSession session = findOrCreateUserSession(user, sessionId);
+        findOrCreateUserSession(user, sessionId);
 
         // Сбросить счетчик неверных попыток при успешной активации
         resetFailedLoginCount(creds);
@@ -406,7 +393,7 @@ public class AuthService {
      * Используется REQUIRES_NEW чтобы изменения сохранились даже при откате основной транзакции
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    private void incrementFailedLoginCount(UserCredentials credentials) {
+    protected void incrementFailedLoginCount(UserCredentials credentials) {
         // Перезагружаем credentials из БД для получения актуального состояния
         UserCredentials freshCredentials = credentialsRepository.findById(credentials.getId())
                 .orElseThrow(() -> new IllegalStateException("UserCredentials не найдены"));
