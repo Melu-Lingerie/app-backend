@@ -25,7 +25,7 @@ public class EmailVerification {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private ru.melulingerie.users.entity.User user;
-    //TODO можно удалить и определять по связи с UserCredentionals
+
     @Column(name = "email", nullable = false, length = 100)
     private String email;
 
