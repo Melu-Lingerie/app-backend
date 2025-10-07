@@ -6,14 +6,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.melulingerie.auth.entity.EmailVerification;
-import ru.melulingerie.auth.entity.EmailVerification.VerificationStatus;
+import ru.melulingerie.auth.entity.VerificationCode;
+import ru.melulingerie.auth.entity.VerificationCode.VerificationStatus;
 import ru.melulingerie.auth.repository.EmailVerificationRepository;
 import ru.melulingerie.users.entity.User;
+import ru.melulingerie.users.entity.UserCredentials;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Slf4j
 @Service
@@ -37,19 +36,19 @@ public class EmailVerificationService {
 
     @Transactional
     @SneakyThrows
-    public void sendVerificationCode(String email, User user) {
+    public void sendVerificationCode(String email, UserCredentials userCredentials) {
         // Проверяем, не слишком ли часто запрашивается код
         checkResendCooldown(email);
         
         // Отмечаем старые активные коды как замененные (вместо удаления)
-        repository.updateStatusByUserIdAndCurrentStatus(user.getId(), VerificationStatus.ACTIVE, VerificationStatus.SUPERSEDED);
-        log.info("Отмечены старые активные коды как SUPERSEDED для пользователя: {}", user.getId());
+        Long userId = userCredentials.getUser().getId();
+        repository.updateStatusByUserIdAndCurrentStatus(userId, VerificationStatus.ACTIVE, VerificationStatus.SUPERSEDED);
+        log.info("Отмечены старые активные коды как SUPERSEDED для пользователя: {}", userId);
 
         String code = OtpGenerator.sixDigits();
 
-        EmailVerification verification = EmailVerification.builder()
-                .user(user)
-                .email(email)
+        VerificationCode verification = VerificationCode.builder()
+                .userCredentials(userCredentials)
                 .code(code)
                 .expiresAt(LocalDateTime.now().plusMinutes(codeTtlMinutes))
                 // TODO ТЕХ.ДОЛГ
@@ -59,7 +58,7 @@ public class EmailVerificationService {
 
         repository.save(verification);
 
-        log.info("Отправка кода верификации на email: {} для пользователя: {}", email, user.getId());
+        log.info("Отправка кода верификации на email: {} для пользователя: {}", email, userId);
 
         emailSender.sendVerificationCode(email, code);
     }
@@ -68,11 +67,11 @@ public class EmailVerificationService {
      * Гибридная валидация кода: простота + tolerance + понятные ошибки
      */
     @Transactional
-    public EmailVerification validateCode(String email, String code) {
+    public VerificationCode validateCode(String email, String code) {
         log.info("Валидация кода для email: {}", email);
         
         // 1. Ищем последний код (самый приоритетный)
-        EmailVerification latestCode = repository.findTopByEmailOrderByIdDesc(email)
+        VerificationCode latestCode = repository.findTopByEmailOrderByIdDesc(email)
                 .orElseThrow(() -> new IllegalArgumentException("Код не найден"));
         
         // 2. Пробуем последний код
@@ -81,7 +80,7 @@ public class EmailVerificationService {
         }
         
         // 3. Если не подошел, ищем среди недавних SUPERSEDED (tolerance)
-        EmailVerification tolerantCode = findToleranceCode(email, code);
+        VerificationCode tolerantCode = findToleranceCode(email, code);
         if (tolerantCode != null) {
             log.warn("Пользователь использует старый код для email: {}", email);
             return markAsUsedAndReturn(tolerantCode);
@@ -94,7 +93,7 @@ public class EmailVerificationService {
     /**
      * Простая проверка валидности кода
      */
-    private boolean isValidCode(EmailVerification verification, String code) {
+    private boolean isValidCode(VerificationCode verification, String code) {
         return verification.getCode().equals(code) 
                && !verification.isExpired()
                && verification.getStatus() != VerificationStatus.USED
@@ -104,7 +103,7 @@ public class EmailVerificationService {
     /**
      * Поиск кода с tolerance (опционально)
      */
-    private EmailVerification findToleranceCode(String email, String code) {
+    private VerificationCode findToleranceCode(String email, String code) {
         if (toleranceMinutes <= 0) return null;
         
         LocalDateTime cutoff = LocalDateTime.now().minusMinutes(toleranceMinutes);
@@ -120,17 +119,17 @@ public class EmailVerificationService {
     /**
      * Маркировка как использованный
      */
-    private EmailVerification markAsUsedAndReturn(EmailVerification verification) {
+    private VerificationCode markAsUsedAndReturn(VerificationCode verification) {
         verification.setStatus(VerificationStatus.USED);
         repository.save(verification);
-        log.info("Код успешно подтвержден для email: {}", verification.getEmail());
+        log.info("Код успешно подтвержден для VerificationCode[id={}]", verification.getId());
         return verification;
     }
     //TODO нужно ли добавить в exceptionHnadler
     /**
      * Понятные сообщения об ошибках
      */
-    private String buildErrorMessage(EmailVerification latest, String code, String email) {
+    private String buildErrorMessage(VerificationCode latest, String code, String email) {
         if (latest.isExpired()) {
             return "Код истек. Запросите новый код";
         }

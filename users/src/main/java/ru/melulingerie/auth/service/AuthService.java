@@ -6,17 +6,23 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import ru.melulingerie.auth.dto.*;
-import ru.melulingerie.auth.entity.EmailVerification;
+import ru.melulingerie.auth.dto.LoginRequestDto;
+import ru.melulingerie.auth.dto.LoginResponseDto;
+import ru.melulingerie.auth.dto.RefreshRequestDto;
+import ru.melulingerie.auth.dto.RefreshResponseDto;
+import ru.melulingerie.auth.dto.RegisterRequestDto;
+import ru.melulingerie.auth.dto.VerifyEmailRequestDto;
+import ru.melulingerie.auth.entity.VerificationCode;
 import ru.melulingerie.auth.entity.RefreshToken;
 import ru.melulingerie.auth.repository.EmailVerificationRepository;
 import ru.melulingerie.auth.repository.RefreshTokenRepository;
 import ru.melulingerie.auth.repository.UserCredentialsRepository;
-import ru.melulingerie.users.entity.*;
-import ru.melulingerie.users.repository.UserSessionRepository;
+import ru.melulingerie.users.entity.IdentityType;
+import ru.melulingerie.users.entity.User;
+import ru.melulingerie.users.entity.UserCredentials;
+import ru.melulingerie.users.entity.UserStatus;
 import ru.melulingerie.users.service.UserCreateService;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -29,59 +35,12 @@ public class AuthService {
 
     private final UserCredentialsRepository credentialsRepository;
     private final RefreshTokenRepository refreshTokenRepository;
-    private final UserSessionRepository userSessionRepository;
     private final EmailVerificationRepository emailVerificationRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final EmailVerificationService emailVerificationService;
     private final UserCreateService userCreateService;
     private final TokenHashService tokenHashService;
-
-    /**
-     * Найти существующую активную сессию пользователя или создать новую
-     * Логика:
-     * 1. Если сессия найдена - обновляем активность и продлеваем срок действия
-     * 2. Если сессия не найдена - создаем новую
-     */
-    private UserSession findOrCreateUserSession(User user, UUID sessionId) {
-        if (sessionId == null) {
-            log.warn("SessionId null для пользователя: {}. Создаем новую сессию", user.getId());
-            return createNewSession(user, UUID.randomUUID());
-        }
-        
-        log.info("Поиск сессии с ID: {} для пользователя: {}", sessionId, user.getId());
-        
-        // Ищем существующую сессию по sessionId
-        Optional<UserSession> existingSession = userSessionRepository.findBySessionId(sessionId);
-        if (existingSession.isPresent()) {
-            UserSession session = existingSession.get();
-            
-            // Обновляем время активности и продлеваем срок действия
-            session.touch(Duration.ofHours(24));
-            session.setStatus(SessionStatus.ACTIVE);
-            log.info("Обновлена сессия: {}", session.getId());
-            return userSessionRepository.save(session);
-        }
-        
-        // Сессия не найдена - создаем новую
-        log.info("Сессия с ID {} не найдена, создаем новую для пользователя: {}", sessionId, user.getId());
-        return createNewSession(user, sessionId);
-    }
-
-    /**
-     * Создать новую сессию для пользователя
-     */
-    private UserSession createNewSession(User user, UUID sessionId) {
-        UserSession newSession = UserSession.builder()
-                .sessionId(sessionId)
-                .user(user)
-                .status(SessionStatus.ACTIVE)
-                .build();
-        
-        UserSession savedSession = userSessionRepository.save(newSession);
-        log.info("Создана новая сессия: {} для пользователя: {}", savedSession.getSessionId(), user.getId());
-        return savedSession;
-    }
 
     @Transactional
     public LoginResponseDto login(LoginRequestDto dto) {
@@ -105,9 +64,6 @@ public class AuthService {
                 dto.getEmail(), creds.getFailedLoginCount());
             throw new IllegalArgumentException("Неверный email или пароль");
         }
-
-        // 4) Найти или создать сессию пользователя
-        findOrCreateUserSession(user, dto.getSessionId());
 
         // 4.1) Сбросить счетчик неверных попыток при успешном логине
         resetFailedLoginCount(creds);
@@ -224,26 +180,12 @@ public class AuthService {
             log.info("Email принадлежит пользователю: {}, verified: {}", existingUser.getId(), creds.getIsVerified());
             
             if (Boolean.TRUE.equals(creds.getIsVerified())) {
-                // Email уже подтвержден - регистрация невозможна
+                // Email уже подтвержден - регистрация невозможна. TODO Рассмотреть вариант перенаправления на login на фронте.
                 log.warn("Попытка регистрации с уже подтвержденным email: {}", dto.getEmail());
                 throw new IllegalArgumentException("Пользователь с таким email уже зарегистрирован");
             }
-            
-            // Email не подтвержден - проверяем, тот ли это пользователь
-            if (existingUser.getId().equals(dto.getUserId())) {
-                // Тот же пользователь повторно регистрируется - разрешаем
-                log.info("Повторная регистрация пользователя {} с email: {}", dto.getUserId(), dto.getEmail());
-                // Удаляем старые неподтвержденные credentials для обновления
-                credentialsRepository.delete(creds);
-                log.info("Удалены старые неподтвержденные credentials для пользователя: {}", dto.getUserId());
-                // Очищаем existingCreds, так как сущность была удалена
-                existingCreds = Optional.empty();
-            } else {
-                // Другой пользователь пытается зарегистрироваться с чужим неподтвержденным email
-                log.warn("Пользователь {} пытается зарегистрироваться с email {}, который используется пользователем {}", 
-                    dto.getUserId(), dto.getEmail(), existingUser.getId());
-                throw new IllegalArgumentException("Этот email уже используется другим пользователем");
-            }
+
+            credentialsRepository.delete(creds);
         }
         
         // 2. Найти и обновить данные пользователя через UserCreateService
@@ -254,10 +196,10 @@ public class AuthService {
                 dto.getLastName()
         );
         // 3. Создать учетные данные (без верификации)
-        createUserCredentials(user, dto, existingCreds);
+        UserCredentials userCredentials = createUserCredentials(user, dto, existingCreds);
 
         // 4. Отправить код верификации (старые коды удаляются автоматически)
-        emailVerificationService.sendVerificationCode(dto.getEmail(), user);
+        emailVerificationService.sendVerificationCode(dto.getEmail(), userCredentials);
 
         log.info("Регистрация инициирована для пользователя: {}, код отправлен на email: {}",
                 user.getId(), dto.getEmail());
@@ -268,7 +210,7 @@ public class AuthService {
         log.info("Подтверждение email: {}", dto.getEmail());
 
         // 1. Найти и проверить код верификации
-        EmailVerification verification = emailVerificationService.validateCode(dto.getEmail(), dto.getCode());
+        VerificationCode verification = emailVerificationService.validateCode(dto.getEmail(), dto.getCode());
 
         // 2. Активировать пользователя через UserCreateService
         User user = userCreateService.activateUser(verification.getUser());
@@ -291,10 +233,10 @@ public class AuthService {
         log.info("Повторная отправка кода для email: {}", email);
 
         // Найти неподтвержденного пользователя по email
-        User user = findUnverifiedUserByEmail(email);
+        UserCredentials userCredentials = findUnverifiedUserByEmail(email);
 
         // Отправить новый код
-        emailVerificationService.sendVerificationCode(email, user);
+        emailVerificationService.sendVerificationCode(email, userCredentials);
     }
 
     private void markCredentialsAsVerified(String email) {
@@ -307,7 +249,7 @@ public class AuthService {
         credentialsRepository.save(emailCreds);
     }
 
-    private void createUserCredentials(User user, RegisterRequestDto dto, Optional<UserCredentials> existingCreds) {
+    private UserCredentials createUserCredentials(User user, RegisterRequestDto dto, Optional<UserCredentials> existingCreds) {
         // Используем существующие credentials или создаем новые
         UserCredentials emailCreds = existingCreds
                 .orElse(UserCredentials.builder()
@@ -334,6 +276,8 @@ public class AuthService {
 //                    .build();
 //            credentialsRepository.save(phoneCreds);
 //        }
+
+        return emailCreds;
     }
 
     private LoginResponseDto createLoginResponse(User user, String email, UUID sessionId) {
@@ -341,8 +285,6 @@ public class AuthService {
                 .findByIdentifierAndIdentityType(email, IdentityType.EMAIL)
                 .orElseThrow(() -> new IllegalStateException("Email credentials не найдены"));
 
-        // Найти или создать сессию пользователя
-        findOrCreateUserSession(user, sessionId);
 
         // Сбросить счетчик неверных попыток при успешной активации
         resetFailedLoginCount(creds);
@@ -375,7 +317,7 @@ public class AuthService {
                 .build();
     }
 
-    private User findUnverifiedUserByEmail(String email) {
+    private UserCredentials findUnverifiedUserByEmail(String email) {
         UserCredentials creds = credentialsRepository
                 .findByIdentifierAndIdentityType(email, IdentityType.EMAIL)
                 .orElseThrow(() -> new IllegalArgumentException("Пользователь с таким email не найден"));
@@ -385,7 +327,7 @@ public class AuthService {
             throw new IllegalStateException("Пользователь уже подтвержден или имеет некорректный статус");
         }
 
-        return user;
+        return creds;
     }
 
     /**
