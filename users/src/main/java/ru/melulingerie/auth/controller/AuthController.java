@@ -45,14 +45,10 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    //TODO подумать над тем что бы пользователя сразу пускать на сайт после подтверждения емэила
     @PostMapping("/verify-email") 
-    public ResponseEntity<LoginResponseDto> verifyEmail(
-            @CookieValue(name = "sessionId") UUID sessionId,
-            @RequestBody @Valid VerifyEmailRequestDto dto) {
-        log.info("Получен запрос на верификацию email с sessionId из cookie: {}", sessionId);
-        dto.setSessionId(sessionId);
-        LoginResponseDto response = authService.verifyEmailAndComplete(dto);
+    public ResponseEntity<VerifyEmailResponseDto> verifyEmail(@RequestBody @Valid VerifyEmailRequestDto dto) {
+        log.info("Получен запрос на верификацию email: {}", dto.getEmail());
+        VerifyEmailResponseDto response = authService.verifyEmailAndComplete(dto);
         return ResponseEntity.ok(response);
     }
 
