@@ -37,12 +37,12 @@ public record BannerMainPageFacadeDto(
         String url,
 
         @Schema(
-                description = "ID медиа (основное изображение баннера)",
-                example = "555",
+                description = "URL медиа (основное изображение баннера)",
+                example = "https://***",
                 requiredMode = Schema.RequiredMode.REQUIRED
         )
         @NotNull
-        Long mediaId,
+        String mediaUrl,
 
         @Schema(
                 description = "Порядок отображения (чем меньше — тем выше)",

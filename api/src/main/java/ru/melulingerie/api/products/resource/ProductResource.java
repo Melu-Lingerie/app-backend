@@ -45,7 +45,12 @@ public interface ProductResource {
                     required = false
             )
             @ParameterObject ProductCatalogRequestDto productCatalogRequestDto,
-            Pageable pageable
+            @Parameter (
+                    in = ParameterIn.QUERY,
+                    description = "Пагинация",
+                    required = false
+            )
+            @ParameterObject Pageable pageable
     );
 
     @Operation(
