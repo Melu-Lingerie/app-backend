@@ -99,7 +99,7 @@ public class EmailVerificationService {
                && verification.getStatus() != VerificationStatus.USED
                && verification.getAttempts() < maxAttempts;
     }
-    //TODO убрать энам для кодов и задать просто время жизни для кода верификации
+
     /**
      * Поиск кода с tolerance (опционально)
      */

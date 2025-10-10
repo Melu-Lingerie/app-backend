@@ -12,6 +12,7 @@ import ru.melulingerie.auth.dto.RefreshRequestDto;
 import ru.melulingerie.auth.dto.RefreshResponseDto;
 import ru.melulingerie.auth.dto.RegisterRequestDto;
 import ru.melulingerie.auth.dto.VerifyEmailRequestDto;
+import ru.melulingerie.auth.dto.VerifyEmailResponseDto;
 import ru.melulingerie.auth.entity.VerificationCode;
 import ru.melulingerie.auth.entity.RefreshToken;
 import ru.melulingerie.auth.repository.EmailVerificationRepository;
@@ -53,12 +54,14 @@ public class AuthService {
 
         // 2) Проверка статуса/верификации
         if (user.getStatus() != UserStatus.ACTIVE || Boolean.FALSE.equals(creds.getIsVerified())) {
+            //TODO заменить стандартные ошибки
             throw new IllegalStateException("Профиль не активирован или email не подтвержден");
         }
 
         // 3) Сверка пароля (BCrypt)
         if (creds.getPasswordHash() == null || !passwordEncoder.matches(dto.getPassword(), creds.getPasswordHash())) {
             // Увеличиваем счетчик неверных попыток
+            //TODO не работает из-за транзакции
             incrementFailedLoginCount(creds);
             log.warn("Неверный пароль для пользователя с email: {}. Количество неверных попыток: {}", 
                 dto.getEmail(), creds.getFailedLoginCount());
@@ -184,8 +187,6 @@ public class AuthService {
                 log.warn("Попытка регистрации с уже подтвержденным email: {}", dto.getEmail());
                 throw new IllegalArgumentException("Пользователь с таким email уже зарегистрирован");
             }
-
-            credentialsRepository.delete(creds);
         }
         
         // 2. Найти и обновить данные пользователя через UserCreateService
@@ -206,7 +207,7 @@ public class AuthService {
     }
 
     @Transactional
-    public LoginResponseDto verifyEmailAndComplete(VerifyEmailRequestDto dto) {
+    public VerifyEmailResponseDto verifyEmailAndComplete(VerifyEmailRequestDto dto) {
         log.info("Подтверждение email: {}", dto.getEmail());
 
         // 1. Найти и проверить код верификации
@@ -221,11 +222,12 @@ public class AuthService {
         // 4. Удалить использованный код
         emailVerificationRepository.delete(verification);
 
-        // 5. Автоматически залогинить пользователя, используя существующую сессию
-        LoginResponseDto response = createLoginResponse(user, dto.getEmail(), dto.getSessionId());
-
         log.info("Email подтвержден и пользователь активирован: {}", user.getId());
-        return response;
+        
+        return VerifyEmailResponseDto.builder()
+                .userId(user.getId())
+                .isVerified(true)
+                .build();
     }
 
     @Transactional

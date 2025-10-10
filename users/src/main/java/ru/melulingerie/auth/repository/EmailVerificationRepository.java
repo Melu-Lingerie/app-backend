@@ -19,12 +19,12 @@ public interface EmailVerificationRepository extends JpaRepository<VerificationC
     Optional<VerificationCode> findTopByEmailOrderByIdDesc(String email);
     
     // Для tolerance логики - поиск недавних кодов
-    @Query("SELECT ev FROM VerificationCode ev WHERE ev.email = :email AND ev.createdAt >= :since ORDER BY ev.id DESC")
+    @Query("SELECT ev FROM VerificationCode ev WHERE ev.userCredentials.identifier = :email AND ev.createdAt >= :since ORDER BY ev.id DESC")
     List<VerificationCode> findRecentByEmail(String email, LocalDateTime since);
     
     // Отмечаем старые коды как замененные (при отправке нового)
     @Modifying
-    @Query("UPDATE VerificationCode ev SET ev.status = :newStatus WHERE ev.user.id = :userId AND ev.status = :currentStatus")
+    @Query("UPDATE VerificationCode ev SET ev.status = :newStatus WHERE ev.userCredentials.user.id = :userId AND ev.status = :currentStatus")
     void updateStatusByUserIdAndCurrentStatus(Long userId, VerificationStatus currentStatus, VerificationStatus newStatus);
     
     // Простая очистка - удаляем коды старше N часов
@@ -34,5 +34,5 @@ public interface EmailVerificationRepository extends JpaRepository<VerificationC
 
     // Обратная совместимость (постепенно удалим)
     @Modifying
-    void deleteByUserId(Long userId);
+    void deleteByUserCredentials_User_Id(Long userId);
 }
