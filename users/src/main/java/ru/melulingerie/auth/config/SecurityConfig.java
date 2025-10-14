@@ -37,10 +37,15 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/api/auth/**",
-                                "/actuator/**",
-                                "/api/v1/users/guests/**"
+                .requestMatchers(
+                        "/api/v1/users/guests",
+                        "/api/auth/login",
+                        "/api/auth/register",
+                        "/api/auth/verify-email",
+                        "/api/auth/resend-code",
+                        "/api/auth/refresh-token",
+                        "/api/auth/logout",
+                        "/api/auth/logout-all"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

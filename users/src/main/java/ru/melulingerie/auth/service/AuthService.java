@@ -13,6 +13,9 @@ import ru.melulingerie.auth.dto.RefreshResponseDto;
 import ru.melulingerie.auth.dto.RegisterRequestDto;
 import ru.melulingerie.auth.dto.VerifyEmailRequestDto;
 import ru.melulingerie.auth.dto.VerifyEmailResponseDto;
+import ru.melulingerie.auth.dto.ForgotPasswordRequestDto;
+import ru.melulingerie.auth.dto.ForgotPasswordResponseDto;
+import ru.melulingerie.auth.dto.ResetPasswordRequestDto;
 import ru.melulingerie.auth.entity.VerificationCode;
 import ru.melulingerie.auth.entity.RefreshToken;
 import ru.melulingerie.auth.repository.EmailVerificationRepository;
@@ -363,5 +366,145 @@ public class AuthService {
             credentials.setLastFailedLoginAt(null);
             // Сохранение произойдет автоматически в конце транзакции login()
         }
+    }
+
+    /**
+     * Logout с текущего устройства - удаляет конкретный refresh token
+     */
+    @Transactional
+    public void logout(String refreshToken) {
+        // Извлекаем userId из refresh token
+        Long userId;
+        try {
+            userId = jwtService.extractUserId(refreshToken);
+        } catch (Exception e) {
+            log.warn("Невозможно извлечь userId из refresh token при logout: {}", e.getMessage());
+            throw new IllegalArgumentException("Неверный refresh token");
+        }
+        
+        log.info("Logout: начало процесса для пользователя: {}", userId);
+        
+        List<RefreshToken> userTokens = refreshTokenRepository
+            .findByUserIdAndIsRevokedFalseOrderByCreatedAtDesc(userId);
+        
+        boolean tokenFound = userTokens.stream()
+            .filter(rt -> tokenHashService.matches(refreshToken, rt.getTokenHash()))
+            .findFirst()
+            .map(rt -> {
+                refreshTokenRepository.delete(rt);
+                log.info("Logout: удален refresh token для пользователя: {}", userId);
+                return true;
+            })
+            .orElse(false);
+        
+        if (!tokenFound) {
+            log.warn("Logout: refresh token не найден для пользователя: {}", userId);
+        }
+    }
+
+    /**
+     * Logout со всех устройств - удаляет все refresh токены пользователя
+     */
+    @Transactional
+    public void logoutFromAllDevices(String refreshToken) {
+        // Извлекаем userId из refresh token
+        Long userId;
+        try {
+            userId = jwtService.extractUserId(refreshToken);
+        } catch (Exception e) {
+            log.warn("Невозможно извлечь userId из refresh token при logout-all: {}", e.getMessage());
+            throw new IllegalArgumentException("Неверный refresh token");
+        }
+        
+        log.info("Logout All: начало процесса для пользователя: {}", userId);
+        
+        refreshTokenRepository.deleteByUserId(userId);
+        log.info("Logout All: удалены все refresh токены для пользователя: {}", userId);
+    }
+
+    /**
+     * Запрос на сброс пароля - отправка OTP кода на email
+     */
+    @Transactional
+    public ForgotPasswordResponseDto requestPasswordReset(ForgotPasswordRequestDto dto) {
+        log.info("Запрос на сброс пароля для email: {}", dto.getEmail());
+        
+        // Найти пользователя по email
+        UserCredentials credentials = credentialsRepository
+                .findByIdentifierAndIdentityType(dto.getEmail(), IdentityType.EMAIL)
+                .orElseThrow(() -> {
+                    // Для безопасности логируем, но не раскрываем факт отсутствия email
+                    log.warn("Попытка сброса пароля для несуществующего email: {}", dto.getEmail());
+                    // Возвращаем общее исключение, чтобы не раскрывать информацию о существовании email
+                    throw new IllegalArgumentException("Если email существует в системе, код был отправлен");
+                });
+        
+        User user = credentials.getUser();
+        
+        // Проверка: пользователь должен быть активным
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            log.warn("Попытка сброса пароля для неактивного пользователя: {}", user.getId());
+            throw new IllegalStateException("Аккаунт не активирован. Пожалуйста, завершите регистрацию");
+        }
+        
+        // Проверка: email должен быть подтвержден
+        if (Boolean.FALSE.equals(credentials.getIsVerified())) {
+            log.warn("Попытка сброса пароля для неподтвержденного email: {}", dto.getEmail());
+            throw new IllegalStateException("Email не подтвержден. Пожалуйста, завершите регистрацию");
+        }
+        
+        // Отправить код верификации для сброса пароля
+        // EmailVerificationService автоматически обработает:
+        // - cooldown (не чаще раза в минуту)
+        // - supersede старых кодов
+        // - создание нового кода с TTL 15 минут
+        emailVerificationService.sendPasswordResetCode(dto.getEmail(), credentials);
+        
+        log.info("Код для сброса пароля отправлен на email: {} для пользователя: {}", 
+            dto.getEmail(), user.getId());
+        
+        return ForgotPasswordResponseDto.builder()
+                .message("Код для сброса пароля отправлен на email")
+                .email(dto.getEmail())
+                .codeExpiresInMinutes(15)
+                .build();
+    }
+
+    /**
+     * Сброс пароля с использованием OTP кода
+     */
+    @Transactional
+    public void resetPassword(ResetPasswordRequestDto dto) {
+        log.info("Попытка сброса пароля для email: {}", dto.getEmail());
+        
+        // 1. Валидировать код через существующую логику
+        // Это автоматически проверит: TTL, attempts, status
+        VerificationCode verification = emailVerificationService.validateCode(dto.getEmail(), dto.getCode());
+        
+        // 2. Найти credentials
+        UserCredentials credentials = credentialsRepository
+                .findByIdentifierAndIdentityType(dto.getEmail(), IdentityType.EMAIL)
+                .orElseThrow(() -> new IllegalStateException("Учетные данные не найдены"));
+        
+        User user = credentials.getUser();
+        
+        // 3. Обновить пароль
+        credentials.setPasswordHash(passwordEncoder.encode(dto.getNewPassword()));
+        credentials.setFailedLoginCount(0);
+        credentials.setLastFailedLoginAt(null);
+        credentialsRepository.save(credentials);
+        
+        log.info("Пароль обновлен для пользователя: {}", user.getId());
+        
+        // 4. ВАЖНО: Выйти со всех устройств для безопасности
+        // Если кто-то украл access token, он станет недействительным после смены пароля
+         refreshTokenRepository.deleteByUserId(user.getId());
+        log.info("Удаление refresh токенов для пользователя: {} (logout со всех устройств после сброса пароля)",
+             user.getId());
+        
+        // 5. Удалить использованный код верификации
+        emailVerificationRepository.delete(verification);
+        
+        log.info("Пароль успешно сброшен для пользователя: {}. Требуется повторный вход", user.getId());
     }
 }

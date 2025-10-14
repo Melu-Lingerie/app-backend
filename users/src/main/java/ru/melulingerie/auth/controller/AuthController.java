@@ -16,7 +16,7 @@ import java.util.UUID;
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
-//TODO эндпоинт logout , эндпоинт изменения информации юзера
+    //TODO эндпоинт изменения информации юзера
     private final AuthService authService;
 
     @PostMapping("/login")
@@ -57,5 +57,44 @@ public class AuthController {
         String email = request.get("email");
         authService.resendVerificationCode(email);
         return ResponseEntity.ok(Map.of("message", "Код отправлен повторно"));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Map<String, String>> logout(
+            @RequestBody @Valid LogoutRequestDto dto) {
+        log.info("Получен запрос на logout");
+        
+        authService.logout(dto.getRefreshToken());
+        
+        return ResponseEntity.ok(Map.of("message", "Вы успешно вышли из системы"));
+    }
+
+    @PostMapping("/logout-all")
+    public ResponseEntity<Map<String, String>> logoutAll(
+            @RequestBody @Valid LogoutRequestDto dto) {
+        log.info("Получен запрос на logout со всех устройств");
+        
+        authService.logoutFromAllDevices(dto.getRefreshToken());
+        
+        return ResponseEntity.ok(Map.of("message", "Вы успешно вышли из системы на всех устройствах"));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ForgotPasswordResponseDto> forgotPassword(
+            @RequestBody @Valid ForgotPasswordRequestDto dto) {
+        log.info("Получен запрос на сброс пароля для email: {}", dto.getEmail());
+        ForgotPasswordResponseDto response = authService.requestPasswordReset(dto);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Map<String, String>> resetPassword(
+            @RequestBody @Valid ResetPasswordRequestDto dto) {
+        log.info("Получен запрос на установку нового пароля для email: {}", dto.getEmail());
+        authService.resetPassword(dto);
+        return ResponseEntity.ok(Map.of(
+            "message", "Пароль успешно изменен. Войдите с новым паролем",
+            "email", dto.getEmail()
+        ));
     }
 }

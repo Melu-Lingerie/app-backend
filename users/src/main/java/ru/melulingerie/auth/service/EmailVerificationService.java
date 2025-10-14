@@ -175,4 +175,36 @@ public class EmailVerificationService {
                     }
                 });
     }
+
+    /**
+     * Отправить код для сброса пароля (переиспользует основную логику верификации)
+     */
+    @Transactional
+    @SneakyThrows
+    public void sendPasswordResetCode(String email, UserCredentials userCredentials) {
+        // Проверяем cooldown (защита от спама)
+        checkResendCooldown(email);
+        
+        // Отмечаем старые активные коды как замененные (вместо удаления)
+        Long userId = userCredentials.getUser().getId();
+        repository.updateStatusByUserIdAndCurrentStatus(userId, VerificationStatus.ACTIVE, VerificationStatus.SUPERSEDED);
+        log.info("Отмечены старые активные коды как SUPERSEDED для пользователя: {} (password reset)", userId);
+
+        String code = OtpGenerator.sixDigits();
+
+        VerificationCode verification = VerificationCode.builder()
+                .userCredentials(userCredentials)
+                .code(code)
+                .expiresAt(LocalDateTime.now().plusMinutes(codeTtlMinutes))
+                .attempts(0)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        repository.save(verification);
+
+        log.info("Отправка кода сброса пароля на email: {} для пользователя: {}", email, userId);
+
+        // Используем специальный метод для отправки кода сброса пароля
+        emailSender.sendPasswordResetCode(email, code);
+    }
 }

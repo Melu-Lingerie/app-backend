@@ -33,4 +33,31 @@ public class EmailSenderService {
         messageHelper.setText(htmlMessage, true);
         mailSender.send(message);
     }
+
+    public void sendPasswordResetCode(String toEmail, String code) throws MessagingException {
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper messageHelper = new MimeMessageHelper(message, true);
+        messageHelper.setTo(toEmail);
+        messageHelper.setSubject("Сброс пароля Melu-Lingerie");
+        String htmlMessage = "<html>"
+                + "<body style=\"font-family: Arial, sans-serif;\">"
+                + "<div style=\"background-color: #f5f5f5; padding: 20px;\">"
+                + "<h2 style=\"color: #333;\">Запрос на сброс пароля</h2>"
+                + "<p style=\"font-size: 16px;\">Вы запросили сброс пароля для вашего аккаунта в Melu-Lingerie.</p>"
+                + "<p style=\"font-size: 16px;\">Используйте код ниже для установки нового пароля:</p>"
+                + "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">"
+                + "<h3 style=\"color: #333;\">Код для сброса пароля:</h3>"
+                + "<p style=\"font-size: 18px; font-weight: bold; color: #dc3545;\">" + code + "</p>"
+                + "<p style=\"font-size: 14px; color: #666; margin-top: 10px;\">Код действителен 15 минут</p>"
+                + "</div>"
+                + "<p style=\"font-size: 14px; color: #999; margin-top: 20px;\">"
+                + "Если вы не запрашивали сброс пароля, просто проигнорируйте это письмо. "
+                + "Ваш пароль останется без изменений."
+                + "</p>"
+                + "</div>"
+                + "</body>"
+                + "</html>";
+        messageHelper.setText(htmlMessage, true);
+        mailSender.send(message);
+    }
 }
