@@ -66,14 +66,14 @@ public class AuthService {
             // Увеличиваем счетчик неверных попыток
             //TODO не работает из-за транзакции
             incrementFailedLoginCount(creds);
-            log.warn("Неверный пароль для пользователя с email: {}. Количество неверных попыток: {}", 
-                dto.getEmail(), creds.getFailedLoginCount());
+            log.warn("Неверный пароль для пользователя с email: {}. Количество неверных попыток: {}",
+                    dto.getEmail(), creds.getFailedLoginCount());
             throw new IllegalArgumentException("Неверный email или пароль");
         }
 
         // 4.1) Сбросить счетчик неверных попыток при успешном логине
         resetFailedLoginCount(creds);
-        
+
         // 5) Сгенерировать токены
         String access = jwtService.generateAccessToken(user, creds);
         String refresh = jwtService.generateRefreshToken(user, creds);
@@ -114,10 +114,10 @@ public class AuthService {
             log.warn("Невозможно извлечь userId из refresh token: {}", e.getMessage());
             throw new IllegalArgumentException("Неверный refresh token");
         }
-        
+
         // Находим все активные токены пользователя
         List<RefreshToken> userTokens = refreshTokenRepository.findByUserIdAndIsRevokedFalseOrderByCreatedAtDesc(userId);
-        
+
         // Проверяем каждый хэш до нахождения совпадения
         RefreshToken oldRt = userTokens.stream()
                 .filter(rt -> !rt.isExpired() && tokenHashService.matches(dto.getRefreshToken(), rt.getTokenHash()))
@@ -126,7 +126,7 @@ public class AuthService {
                     log.warn("Не найден действительный refresh token для пользователя: {}", userId);
                     return new IllegalArgumentException("Неверный refresh token");
                 });
-        
+
         log.info("Найден действительный refresh token для пользователя: {}", userId);
 
         if (oldRt.isExpired()) {
@@ -178,25 +178,25 @@ public class AuthService {
         log.info("Проверяем существование email: {} для пользователя: {}", dto.getEmail(), dto.getUserId());
         Optional<UserCredentials> existingCreds = credentialsRepository
                 .findByIdentifierAndIdentityType(dto.getEmail(), IdentityType.EMAIL);
-        
+
         if (existingCreds.isPresent()) {
             log.info("Найдены существующие credentials для email: {}", dto.getEmail());
             UserCredentials creds = existingCreds.get();
             User existingUser = creds.getUser();
             log.info("Email принадлежит пользователю: {}, verified: {}", existingUser.getId(), creds.getIsVerified());
-            
+
             if (Boolean.TRUE.equals(creds.getIsVerified())) {
                 // Email уже подтвержден - регистрация невозможна. TODO Рассмотреть вариант перенаправления на login на фронте.
                 log.warn("Попытка регистрации с уже подтвержденным email: {}", dto.getEmail());
                 throw new IllegalArgumentException("Пользователь с таким email уже зарегистрирован");
             }
         }
-        
+
         // 2. Найти и обновить данные пользователя через UserCreateService
         User user = userCreateService.updateUserForRegistration(
                 dto.getUserId(),
                 dto.getFirstName(),
-                dto.getMiddleName(), 
+                dto.getMiddleName(),
                 dto.getLastName()
         );
         // 3. Создать учетные данные (без верификации)
@@ -218,15 +218,15 @@ public class AuthService {
 
         // 2. Активировать пользователя через UserCreateService
         User user = userCreateService.activateUser(verification.getUser());
-        
+
         // 3. Пометить email как подтвержденный
         markCredentialsAsVerified(dto.getEmail());
-        
+
         // 4. Удалить использованный код
         emailVerificationRepository.delete(verification);
 
         log.info("Email подтвержден и пользователь активирован: {}", user.getId());
-        
+
         return VerifyEmailResponseDto.builder()
                 .userId(user.getId())
                 .isVerified(true)
@@ -293,7 +293,7 @@ public class AuthService {
 
         // Сбросить счетчик неверных попыток при успешной активации
         resetFailedLoginCount(creds);
-        
+
         // Сгенерировать токены
         String access = jwtService.generateAccessToken(user, creds);
         String refresh = jwtService.generateRefreshToken(user, creds);
@@ -344,14 +344,14 @@ public class AuthService {
         // Перезагружаем credentials из БД для получения актуального состояния
         UserCredentials freshCredentials = credentialsRepository.findById(credentials.getId())
                 .orElseThrow(() -> new IllegalStateException("UserCredentials не найдены"));
-        
+
         int currentCount = freshCredentials.getFailedLoginCount() != null ? freshCredentials.getFailedLoginCount() : 0;
         freshCredentials.setFailedLoginCount(currentCount + 1);
         freshCredentials.setLastFailedLoginAt(LocalDateTime.now());
-        
+
         // Сохранение произойдет автоматически в конце транзакции
-        log.info("Увеличен счетчик неверных попыток для пользователя ID: {}. Текущее значение: {}", 
-            freshCredentials.getUser().getId(), freshCredentials.getFailedLoginCount());
+        log.info("Увеличен счетчик неверных попыток для пользователя ID: {}. Текущее значение: {}",
+                freshCredentials.getUser().getId(), freshCredentials.getFailedLoginCount());
     }
 
     /**
@@ -360,8 +360,8 @@ public class AuthService {
      */
     private void resetFailedLoginCount(UserCredentials credentials) {
         if (credentials.getFailedLoginCount() != null && credentials.getFailedLoginCount() > 0) {
-            log.info("Сброс счетчика неверных попыток для пользователя ID: {}. Было: {}", 
-                credentials.getUser().getId(), credentials.getFailedLoginCount());
+            log.info("Сброс счетчика неверных попыток для пользователя ID: {}. Было: {}",
+                    credentials.getUser().getId(), credentials.getFailedLoginCount());
             credentials.setFailedLoginCount(0);
             credentials.setLastFailedLoginAt(null);
             // Сохранение произойдет автоматически в конце транзакции login()
@@ -381,22 +381,22 @@ public class AuthService {
             log.warn("Невозможно извлечь userId из refresh token при logout: {}", e.getMessage());
             throw new IllegalArgumentException("Неверный refresh token");
         }
-        
+
         log.info("Logout: начало процесса для пользователя: {}", userId);
-        
+
         List<RefreshToken> userTokens = refreshTokenRepository
-            .findByUserIdAndIsRevokedFalseOrderByCreatedAtDesc(userId);
-        
+                .findByUserIdAndIsRevokedFalseOrderByCreatedAtDesc(userId);
+
         boolean tokenFound = userTokens.stream()
-            .filter(rt -> tokenHashService.matches(refreshToken, rt.getTokenHash()))
-            .findFirst()
-            .map(rt -> {
-                refreshTokenRepository.delete(rt);
-                log.info("Logout: удален refresh token для пользователя: {}", userId);
-                return true;
-            })
-            .orElse(false);
-        
+                .filter(rt -> tokenHashService.matches(refreshToken, rt.getTokenHash()))
+                .findFirst()
+                .map(rt -> {
+                    refreshTokenRepository.delete(rt);
+                    log.info("Logout: удален refresh token для пользователя: {}", userId);
+                    return true;
+                })
+                .orElse(false);
+
         if (!tokenFound) {
             log.warn("Logout: refresh token не найден для пользователя: {}", userId);
         }
@@ -415,9 +415,9 @@ public class AuthService {
             log.warn("Невозможно извлечь userId из refresh token при logout-all: {}", e.getMessage());
             throw new IllegalArgumentException("Неверный refresh token");
         }
-        
+
         log.info("Logout All: начало процесса для пользователя: {}", userId);
-        
+
         refreshTokenRepository.deleteByUserId(userId);
         log.info("Logout All: удалены все refresh токены для пользователя: {}", userId);
     }
@@ -428,7 +428,7 @@ public class AuthService {
     @Transactional
     public ForgotPasswordResponseDto requestPasswordReset(ForgotPasswordRequestDto dto) {
         log.info("Запрос на сброс пароля для email: {}", dto.getEmail());
-        
+
         // Найти пользователя по email
         UserCredentials credentials = credentialsRepository
                 .findByIdentifierAndIdentityType(dto.getEmail(), IdentityType.EMAIL)
@@ -438,31 +438,31 @@ public class AuthService {
                     // Возвращаем общее исключение, чтобы не раскрывать информацию о существовании email
                     throw new IllegalArgumentException("Если email существует в системе, код был отправлен");
                 });
-        
+
         User user = credentials.getUser();
-        
+
         // Проверка: пользователь должен быть активным
         if (user.getStatus() != UserStatus.ACTIVE) {
             log.warn("Попытка сброса пароля для неактивного пользователя: {}", user.getId());
             throw new IllegalStateException("Аккаунт не активирован. Пожалуйста, завершите регистрацию");
         }
-        
+
         // Проверка: email должен быть подтвержден
         if (Boolean.FALSE.equals(credentials.getIsVerified())) {
             log.warn("Попытка сброса пароля для неподтвержденного email: {}", dto.getEmail());
             throw new IllegalStateException("Email не подтвержден. Пожалуйста, завершите регистрацию");
         }
-        
+
         // Отправить код верификации для сброса пароля
         // EmailVerificationService автоматически обработает:
         // - cooldown (не чаще раза в минуту)
         // - supersede старых кодов
         // - создание нового кода с TTL 15 минут
         emailVerificationService.sendPasswordResetCode(dto.getEmail(), credentials);
-        
-        log.info("Код для сброса пароля отправлен на email: {} для пользователя: {}", 
-            dto.getEmail(), user.getId());
-        
+
+        log.info("Код для сброса пароля отправлен на email: {} для пользователя: {}",
+                dto.getEmail(), user.getId());
+
         return ForgotPasswordResponseDto.builder()
                 .message("Код для сброса пароля отправлен на email")
                 .email(dto.getEmail())
@@ -476,35 +476,35 @@ public class AuthService {
     @Transactional
     public void resetPassword(ResetPasswordRequestDto dto) {
         log.info("Попытка сброса пароля для email: {}", dto.getEmail());
-        
+
         // 1. Валидировать код через существующую логику
         // Это автоматически проверит: TTL, attempts, status
         VerificationCode verification = emailVerificationService.validateCode(dto.getEmail(), dto.getCode());
-        
+
         // 2. Найти credentials
         UserCredentials credentials = credentialsRepository
                 .findByIdentifierAndIdentityType(dto.getEmail(), IdentityType.EMAIL)
                 .orElseThrow(() -> new IllegalStateException("Учетные данные не найдены"));
-        
+
         User user = credentials.getUser();
-        
+
         // 3. Обновить пароль
         credentials.setPasswordHash(passwordEncoder.encode(dto.getNewPassword()));
         credentials.setFailedLoginCount(0);
         credentials.setLastFailedLoginAt(null);
         credentialsRepository.save(credentials);
-        
+
         log.info("Пароль обновлен для пользователя: {}", user.getId());
-        
+
         // 4. ВАЖНО: Выйти со всех устройств для безопасности
         // Если кто-то украл access token, он станет недействительным после смены пароля
-         refreshTokenRepository.deleteByUserId(user.getId());
+        refreshTokenRepository.deleteByUserId(user.getId());
         log.info("Удаление refresh токенов для пользователя: {} (logout со всех устройств после сброса пароля)",
-             user.getId());
-        
+                user.getId());
+
         // 5. Удалить использованный код верификации
         emailVerificationRepository.delete(verification);
-        
+
         log.info("Пароль успешно сброшен для пользователя: {}. Требуется повторный вход", user.getId());
     }
 }
