@@ -24,8 +24,10 @@ import ru.melulingerie.auth.repository.UserCredentialsRepository;
 import ru.melulingerie.users.entity.IdentityType;
 import ru.melulingerie.users.entity.User;
 import ru.melulingerie.users.entity.UserCredentials;
+import ru.melulingerie.users.entity.UserSession;
 import ru.melulingerie.users.entity.UserStatus;
 import ru.melulingerie.users.service.UserCreateService;
+import ru.melulingerie.users.service.UserSessionQueryService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -45,6 +47,7 @@ public class AuthService {
     private final EmailVerificationService emailVerificationService;
     private final UserCreateService userCreateService;
     private final TokenHashService tokenHashService;
+    private final UserSessionQueryService userSessionQueryService;
 
     @Transactional
     public LoginResponseDto login(LoginRequestDto dto) {
@@ -174,7 +177,19 @@ public class AuthService {
     public void registerUser(RegisterRequestDto dto) {
         log.info("Начинаем регистрацию пользователя с email: {}", dto.getEmail());
 
-        // 1. Проверить статус email и обработать разные сценарии
+        // 1. Проверка безопасности: userId должен соответствовать sessionId
+        UserSession userSession = userSessionQueryService.findBySessionId(dto.getSessionId())
+                .orElseThrow(() -> new IllegalArgumentException("Сессия не найдена. Пожалуйста, создайте гостевого пользователя сначала."));
+        
+        Long sessionUserId = userSession.getUser().getId();
+        if (!sessionUserId.equals(dto.getUserId())) {
+            log.error("Попытка регистрации с несоответствующими userId={} и sessionId={} (ожидался userId={})", 
+                    dto.getUserId(), dto.getSessionId(), sessionUserId);
+            throw new SecurityException("UserId не соответствует текущей сессии. Возможная попытка взлома.");
+        }
+        log.info("Проверка безопасности пройдена: userId={} соответствует sessionId={}", dto.getUserId(), dto.getSessionId());
+
+        // 2. Проверить статус email и обработать разные сценарии
         log.info("Проверяем существование email: {} для пользователя: {}", dto.getEmail(), dto.getUserId());
         Optional<UserCredentials> existingCreds = credentialsRepository
                 .findByIdentifierAndIdentityType(dto.getEmail(), IdentityType.EMAIL);
@@ -192,17 +207,19 @@ public class AuthService {
             }
         }
 
-        // 2. Найти и обновить данные пользователя через UserCreateService
+        // 3. Найти и обновить данные пользователя через UserCreateService
         User user = userCreateService.updateUserForRegistration(
                 dto.getUserId(),
                 dto.getFirstName(),
                 dto.getMiddleName(),
-                dto.getLastName()
+                dto.getLastName(),
+                dto.getEmail(),
+                dto.getPhoneNumber()
         );
-        // 3. Создать учетные данные (без верификации)
+        // 4. Создать учетные данные (без верификации)
         UserCredentials userCredentials = createUserCredentials(user, dto, existingCreds);
 
-        // 4. Отправить код верификации (старые коды удаляются автоматически)
+        // 5. Отправить код верификации (старые коды удаляются автоматически)
         emailVerificationService.sendVerificationCode(dto.getEmail(), userCredentials);
 
         log.info("Регистрация инициирована для пользователя: {}, код отправлен на email: {}",

@@ -70,7 +70,7 @@ public class UserCreateService {
      * Обновляет данные пользователя для регистрации
      */
     @Transactional
-    public User updateUserForRegistration(Long userId, String firstName, String middleName, String lastName) {
+    public User updateUserForRegistration(Long userId, String firstName, String middleName, String lastName, String phoneNumber, String email) {
         User user = getUserById(userId)
                 .filter(u -> u.getRole() == UserRole.GUEST &&
                         (u.getStatus() == UserStatus.UNREGISTERED || u.getStatus() == UserStatus.PENDING_VERIFICATION))
@@ -80,6 +80,8 @@ public class UserCreateService {
         user.setMiddleName(middleName);
         user.setLastName(lastName);
         user.setStatus(UserStatus.PENDING_VERIFICATION);
+        user.setEmail(email);
+        user.setPhoneNumber(phoneNumber);
 
         return userRepository.save(user);
     }
