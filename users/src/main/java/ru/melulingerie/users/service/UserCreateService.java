@@ -23,7 +23,7 @@ public class UserCreateService {
     private final UserRepository userRepository;
     private final UserSessionQueryService userSessionQueryService;
     private final UserSessionCreateService userSessionCreateService;
-
+    //TODO увеличить id юзера на тысячу
     @Transactional
     public Long createGuestUser(@NonNull UserCreateRequestDto request) {
         try {
@@ -39,7 +39,7 @@ public class UserCreateService {
     }
 
     private Long handleExistingSession(UserSession existingSession) {
-        //TODO проверить живая ли сессия
+        //TODO проверить живая ли сессия если сессия стухла то нужно создать новую нежно
         User user = existingSession.getUser();
         log.info("У пользователя userId: {}, уже существует сессия с id: {}", user.getId(), existingSession.getId());
         return user.getId();
@@ -64,5 +64,35 @@ public class UserCreateService {
 
     public Optional<User> getUserById(Long userId) {
         return userRepository.findById(userId);
+    }
+
+    /**
+     * Обновляет данные пользователя для регистрации
+     */
+    @Transactional
+    public User updateUserForRegistration(Long userId, String firstName, String middleName, String lastName, String phoneNumber, String email) {
+        User user = getUserById(userId)
+                .filter(u -> u.getRole() == UserRole.GUEST &&
+                        (u.getStatus() == UserStatus.UNREGISTERED || u.getStatus() == UserStatus.PENDING_VERIFICATION))
+                .orElseThrow(() -> new IllegalArgumentException("Гостевой пользователь не найден или уже зарегистрирован"));
+
+        user.setFirstName(firstName);
+        user.setMiddleName(middleName);
+        user.setLastName(lastName);
+        user.setStatus(UserStatus.PENDING_VERIFICATION);
+        user.setEmail(email);
+        user.setPhoneNumber(phoneNumber);
+
+        return userRepository.save(user);
+    }
+
+    /**
+     * Активирует пользователя после верификации
+     */
+    @Transactional
+    public User activateUser(User user) {
+        user.setStatus(UserStatus.ACTIVE);
+        user.setRole(UserRole.CUSTOMER);
+        return userRepository.save(user);
     }
 }

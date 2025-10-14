@@ -30,7 +30,7 @@ public class UserCredentials {
     @Enumerated(EnumType.STRING)
     @Column(name = "identity_type", nullable = false)
     private IdentityType identityType;
-
+    //Телефон или почта
     @Column(name = "identifier", length = 100, nullable = false, unique = true)
     private String identifier;
 

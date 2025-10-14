@@ -3,6 +3,14 @@ spring:
     name: melu-lingerie
   profiles:
     active: dev
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: leikoplasterr@gmail.com
+    password: 'uotlpkeohedwjtdc'
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
 
   # Data Source Configuration
   datasource:
@@ -88,3 +96,19 @@ logging:
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+# JWT Configuration
+# Секретный ключ должен быть минимум 256 бит (32 символа) для HMAC-SHA256
+# Текущий ключ: 78 символов = 624 бита (безопасно)
+jwt:
+  secret: ${JWT_SECRET:my_super_secret_jwt_key_for_melu_lingerie_2025_secure_authentication_system}
+  # Время жизни токенов в секундах
+  access-token-ttl-seconds: 3600     # 1 час
+  refresh-token-ttl-seconds: 2592000 # 30 дней
+
+app:
+  verification:
+    code-ttl-minutes: 15
+    max-attempts: 3
+    resend-cooldown-minutes: 1
+    cleanup-interval-ms: 7200000  # 2 часа в миллисекундах
+

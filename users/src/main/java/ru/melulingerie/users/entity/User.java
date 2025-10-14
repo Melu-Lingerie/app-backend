@@ -1,6 +1,8 @@
 package ru.melulingerie.users.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Pattern;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -37,6 +39,10 @@ public class User {
     @Column(name = "birth_date")
     private LocalDate birthDate;
 
+    private String phoneNumber;
+
+    private String email;
+
     @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
@@ -65,7 +71,7 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @Builder.Default
     private List<UserSession> userSessions = new ArrayList<>();
-    //TODO посомтреть как разботает трансиент над методом
+
     @Transient
     public void addUserSession(UserSession userSession){
         userSessions.add(userSession);
